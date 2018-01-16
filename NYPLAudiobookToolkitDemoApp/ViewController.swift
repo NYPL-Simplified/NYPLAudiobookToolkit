@@ -13,7 +13,7 @@ class ViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         let vc = AudiobookViewController()
-        self.present(vc, animated: true, completion: nil)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {
