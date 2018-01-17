@@ -94,6 +94,22 @@ class Scrubber: UIView {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let postion = touch.location(in: self)
+            self.progressBar.frame.size.width = postion.x
+            self.setNeedsLayout()
+        }
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let postion = touch.location(in: self)
+            self.progressBar.frame.size.width = postion.x
+            self.setNeedsLayout()
+        }
+    }
 }
 
 public class AudiobookViewController: UIViewController {
