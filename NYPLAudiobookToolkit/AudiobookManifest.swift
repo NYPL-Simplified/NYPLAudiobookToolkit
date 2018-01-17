@@ -9,12 +9,18 @@
 import UIKit
 import AudioEngine
 
+enum Disjunction<A, B> {
+    case first(value: A)
+    case second(value: B)
+    case both(first: A, second: B)
+}
+
 private func findawayKey(_ key: String) -> String {
     return "findaway:\(key)"
 }
 
 public class AudiobookManifest: NSObject {
-    private let spine: [SpineLink]
+    private let spine: [Disjunction<AudiobookLink, FindawayLink>]
     
     public init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -22,24 +28,20 @@ public class AudiobookManifest: NSObject {
         guard let spine = payload["spine"] as? [Any] else { return nil }
         if let sessionKey = metadata[findawayKey("sessionKey")] as? String,
             let audiobookID = metadata[findawayKey("fulfillmentId")] as? String {
-            self.spine = spine.flatMap { (possibleLink) -> FindawayLink? in
-                FindawayLink(
-                    JSON: possibleLink,
-                    sessionKey: sessionKey,
-                    audiobookID: audiobookID
-                )
+            let links = spine.flatMap { (possibleLink) -> FindawayLink? in
+                FindawayLink(JSON: possibleLink, sessionKey: sessionKey, audiobookID: audiobookID)
             }
+            self.spine = links.map{ Disjunction.second(value: $0) }
         } else {
-            self.spine = spine.flatMap { (possibleLink) -> AudiobookLink? in
+            let links = spine.flatMap { (possibleLink) -> AudiobookLink? in
                 AudiobookLink(JSON: possibleLink)
             }
+            self.spine = links.map { Disjunction.first(value: $0) }
         }
     }
 }
 
-protocol SpineLink { }
-
-class AudiobookLink: SpineLink {
+struct AudiobookLink {
     let url: URL
     let mediaType: String
     let duration: Int
@@ -59,7 +61,7 @@ class AudiobookLink: SpineLink {
     }
 }
 
-class FindawayLink: SpineLink {
+class FindawayLink {
     let chapterNumber: UInt
     let partNumber: UInt
     let sessionKey: String
