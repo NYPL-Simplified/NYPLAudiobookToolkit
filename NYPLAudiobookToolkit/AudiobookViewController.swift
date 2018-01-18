@@ -27,8 +27,15 @@ class Scrubber: UIView {
     var progressBar = UIView()
     let progressBackground = UIView()
     let gripper = UIView()
+    let leftLabel = UILabel()
+    let rightLabel = UILabel()
     private var states: [ScrubberUIState] = []
-    var state: ScrubberUIState = ScrubberUIState(progressPosition: 0, gripperRadius: 4, leftText: "0:00", rightText: "5:00") {
+    var state: ScrubberUIState = ScrubberUIState(
+        progressPosition: 0,
+        gripperRadius: 4,
+        leftText: "0:00",
+        rightText: "5:00"
+    ) {
         didSet {
             states.append(self.state)
             self.updateUIWith(self.state)
@@ -66,7 +73,7 @@ class Scrubber: UIView {
         self.addSubview(self.progressBackground)
         self.progressBackground.layer.cornerRadius = CGFloat(self.barHeight / 2)
         self.progressBackground.backgroundColor = UIColor.lightGray
-        
+
         self.addSubview(self.progressBar)
         self.progressBar.backgroundColor = UIColor.gray
         self.progressBar.layer.cornerRadius = CGFloat(self.barHeight / 2)
@@ -74,6 +81,14 @@ class Scrubber: UIView {
         self.addSubview(self.gripper)
         self.gripper.backgroundColor = UIColor.gray
         self.gripper.layer.cornerRadius = CGFloat(self.state.gripperRadius)
+        
+        self.addSubview(self.leftLabel)
+        self.leftLabel.autoPinEdge(.left, to: .left, of: self)
+        self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
+        
+        self.addSubview(self.rightLabel)
+        self.rightLabel.autoPinEdge(.right, to: .right, of: self)
+        self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
     }
     
     override func layoutSubviews() {
@@ -96,6 +111,8 @@ class Scrubber: UIView {
             origin: barPosition,
             size: CGSize(width: CGFloat(self.state.progressPosition), height: CGFloat(self.barHeight))
         )
+        self.leftLabel.text = self.state.leftText
+        self.rightLabel.text = self.state.rightText
         UIView.commitAnimations()
     }
     
@@ -183,7 +200,7 @@ public class AudiobookViewController: UIViewController {
         if let bar = self.seekBar {
             self.view.addSubview(bar)
         }
-        self.seekBar?.autoPinEdge(.top, to: .top, of: self.view, withOffset: 76)
+        self.seekBar?.autoPin(toTopLayoutGuideOf: self, withInset: 16)
         self.seekBar?.autoPinEdge(.left, to: .left, of: self.view, withOffset: 8)
         self.seekBar?.autoPinEdge(.right, to: .right, of: self.view, withOffset: -8)
         self.seekBar?.autoSetDimensions(to: CGSize(width: self.view.frame.size.width - 16, height: 18))

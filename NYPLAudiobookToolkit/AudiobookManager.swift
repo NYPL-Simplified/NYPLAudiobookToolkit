@@ -13,6 +13,6 @@ import UIKit
 }
 
 public class AudiobookManager: NSObject {
-    public func fetchAudiobook(for metadata: AudiobookMetadata, AudiobookManifest: AudiobookManifest, refreshDelegate: Refreshable) {
+    public func fetchAudiobook(metadata: AudiobookMetadata, audiobookManifest: AudiobookManifest, refreshDelegate: Refreshable) {
     }
 }
