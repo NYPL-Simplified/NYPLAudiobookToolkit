@@ -9,16 +9,35 @@
 import UIKit
 import PureLayout
 
+struct ScrubberUIState {
+    let progressPosition: Int
+    let gripperRadius: Int
+    let leftText: String
+    let rightText: String
+    var gripperDiameter: Int {
+        return gripperRadius * 2
+    }
+    var gripperPostion: Int {
+        return progressPosition - gripperRadius
+    }
+}
+
 class Scrubber: UIView {
-    let barHeight = 10
-    let gripperHeight = 14
-    let progressBar = UIView()
+    let barHeight = 4
+    var progressBar = UIView()
     let progressBackground = UIView()
     let gripper = UIView()
+    private var states: [ScrubberUIState] = []
+    var state: ScrubberUIState = ScrubberUIState(progressPosition: 0, gripperRadius: 4, leftText: "0:00", rightText: "5:00") {
+        didSet {
+            states.append(self.state)
+            self.updateUIWith(self.state)
+        }
+    }
 
     var timer: Timer?
 
-    func play() {
+    public func play() {
         self.timer?.invalidate()
         self.timer = Timer.scheduledTimer(
             timeInterval: 1,
@@ -29,6 +48,14 @@ class Scrubber: UIView {
             true
         )
     }
+    
+    public func updateUIWith(_ state: ScrubberUIState) {
+        self.setNeedsLayout()
+    }
+
+    public func pause() {
+        self.timer?.invalidate()
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -37,77 +64,105 @@ class Scrubber: UIView {
 
     func setup () {
         self.addSubview(self.progressBackground)
-        self.progressBackground.layer.borderWidth = 1
-        self.progressBackground.layer.cornerRadius = 5
-        self.progressBackground.backgroundColor = UIColor.gray
-
-        self.addSubview(self.progressBar)
-        self.progressBar.backgroundColor = UIColor.blue
-        self.progressBar.layer.cornerRadius = 5
+        self.progressBackground.layer.cornerRadius = CGFloat(self.barHeight / 2)
+        self.progressBackground.backgroundColor = UIColor.lightGray
         
+        self.addSubview(self.progressBar)
+        self.progressBar.backgroundColor = UIColor.gray
+        self.progressBar.layer.cornerRadius = CGFloat(self.barHeight / 2)
+
         self.addSubview(self.gripper)
-        self.gripper.backgroundColor = UIColor.blue
-        self.gripper.layer.cornerRadius = 5
-        self.gripper.layer.borderWidth = 1
-        self.gripper.layer.borderColor = UIColor.gray.cgColor
+        self.gripper.backgroundColor = UIColor.gray
+        self.gripper.layer.cornerRadius = CGFloat(self.state.gripperRadius)
     }
     
     override func layoutSubviews() {
-        self.progressBackground.frame = CGRect(
-                x: self.bounds.origin.x,
-                y: self.bounds.origin.y,
-                width: self.bounds.size.width,
-                height: CGFloat(barHeight)
-        )
-
-        self.progressBar.frame = CGRect(
-            x: self.bounds.origin.x,
-            y: self.bounds.origin.y,
-            width: self.progressBar.frame.size.width,
-            height: CGFloat(barHeight)
-        )
+        UIView.beginAnimations("layout", context: nil)
+        let centerY = self.bounds.height / 2
         self.gripper.frame = CGRect(
-            x: self.progressBar.frame.width - 5,
-            y: self.bounds.origin.y / 2,
-            width: 10,
-            height: CGFloat(gripperHeight)
+            x: CGFloat(self.state.progressPosition),
+            y: centerY - CGFloat(self.state.gripperRadius),
+            width: CGFloat(self.state.gripperDiameter),
+            height: CGFloat(self.state.gripperDiameter)
         )
+        self.gripper.layer.cornerRadius = CGFloat(self.state.gripperRadius)
+        
+        let barPosition =  CGPoint(x: 0, y: centerY - CGFloat(self.barHeight / 2))
+        self.progressBackground.frame = CGRect(
+            origin: barPosition,
+            size: CGSize(width: self.bounds.size.width, height: CGFloat(self.barHeight))
+        )
+        self.progressBar.frame = CGRect(
+            origin: barPosition,
+            size: CGSize(width: CGFloat(self.state.progressPosition), height: CGFloat(self.barHeight))
+        )
+        UIView.commitAnimations()
     }
     
     @objc func updateProgress(_ sender: Any) {
-        var newWidth: CGFloat = 0
-        if self.progressBar.frame.size.width + 1 < self.frame.size.width {
-            newWidth = CGFloat(self.progressBar.frame.size.width + CGFloat(3))
+        var newWidth = 0
+        if self.progressBar.frame.size.width <= self.frame.size.width {
+            newWidth = self.state.progressPosition + 3
         }
-    
-        let newFrame = CGRect(
-            x: self.progressBar.frame.origin.x,
-            y: self.progressBar.frame.origin.y,
-            width: CGFloat(newWidth),
-            height: CGFloat(barHeight)
+        self.state = ScrubberUIState(
+            progressPosition: newWidth,
+            gripperRadius: 4,
+            leftText: self.state.leftText,
+            rightText: self.state.rightText
         )
-        
-        self.progressBar.frame = newFrame
-        self.setNeedsLayout()
+
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let postion = touch.location(in: self)
-            self.progressBar.frame.size.width = postion.x
-            self.setNeedsLayout()
+            self.state = ScrubberUIState(
+                progressPosition: Int(postion.x),
+                gripperRadius: 9,
+                leftText: self.state.leftText,
+                rightText: self.state.rightText
+            )
         }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let postion = touch.location(in: self)
-            self.progressBar.frame.size.width = postion.x
-            self.setNeedsLayout()
+            self.state = ScrubberUIState(
+                progressPosition: Int(postion.x),
+                gripperRadius: 9,
+                leftText: self.state.leftText,
+                rightText: self.state.rightText
+            )
+        }
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let postion = touch.location(in: self)
+            self.state = ScrubberUIState(
+                progressPosition: Int(postion.x),
+                gripperRadius: 4,
+                leftText: self.state.leftText,
+                rightText: self.state.rightText
+            )
+        }
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let postion = touch.location(in: self)
+            self.state = ScrubberUIState(
+                progressPosition: Int(postion.x),
+                gripperRadius: 4,
+                leftText: self.state.leftText,
+                rightText: self.state.rightText
+            )
         }
     }
 }
@@ -128,10 +183,10 @@ public class AudiobookViewController: UIViewController {
         if let bar = self.seekBar {
             self.view.addSubview(bar)
         }
-        self.seekBar?.autoPinEdge(.top, to: .top, of: self.view, withOffset: 70)
+        self.seekBar?.autoPinEdge(.top, to: .top, of: self.view, withOffset: 76)
         self.seekBar?.autoPinEdge(.left, to: .left, of: self.view, withOffset: 8)
         self.seekBar?.autoPinEdge(.right, to: .right, of: self.view, withOffset: -8)
-        self.seekBar?.autoSetDimensions(to: CGSize(width: self.view.frame.size.width - 16, height: 14))
+        self.seekBar?.autoSetDimensions(to: CGSize(width: self.view.frame.size.width - 16, height: 18))
         self.seekBar?.play()
     }
     
