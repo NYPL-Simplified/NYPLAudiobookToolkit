@@ -31,12 +31,18 @@ class TextOverImageView: UIView {
     
     private let backgroundImageView = UIImageView()
     private let textLabel = UILabel()
-    private override init(frame: CGRect) {
+    
+    override init(frame: CGRect) {
         super.init(frame: frame)
+        self.setup()
     }
     
     init() {
         super.init(frame: .zero)
+        self.setup()
+    }
+    
+    func setup() {
         self.addSubview(self.backgroundImageView)
         self.backgroundImageView.autoPinEdgesToSuperviewEdges()
         self.addSubview(self.textLabel)
