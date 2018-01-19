@@ -10,10 +10,11 @@ import UIKit
 import PureLayout
 
 struct ScrubberUIState {
-    let progressPosition: Int
+    let progressXPosition: Int
     let gripperRadius: Int
     let leftText: String
     let rightText: String
+    let progressColor: UIColor
     var gripperDiameter: Int {
         return gripperRadius * 2
     }
@@ -30,10 +31,11 @@ class Scrubber: UIView {
     var gripperSizeConstraints: [NSLayoutConstraint]?
     private var states: [ScrubberUIState] = []
     var state: ScrubberUIState = ScrubberUIState(
-        progressPosition: 0,
+        progressXPosition: 0,
         gripperRadius: 4,
         leftText: "0:00",
-        rightText: "5:00"
+        rightText: "5:00",
+        progressColor: UIColor.gray
         ) {
         didSet {
             states.append(self.state)
@@ -86,7 +88,7 @@ class Scrubber: UIView {
         self.progressBackground.accessibilityIdentifier = "progress_background"
         
         self.addSubview(self.progressBar)
-        self.progressBar.backgroundColor = UIColor.gray
+        self.progressBar.backgroundColor = self.state.progressColor
         self.progressBar.layer.cornerRadius = CGFloat(self.barHeight / 2)
         self.progressBar.autoPinEdge(.left, to: .left, of: self.progressBackground)
         self.progressBar.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
@@ -94,7 +96,7 @@ class Scrubber: UIView {
         self.progressBar.accessibilityIdentifier = "progress_bar"
         
         self.addSubview(self.gripper)
-        self.gripper.backgroundColor = UIColor.gray
+        self.gripper.backgroundColor = self.state.progressColor
         self.gripper.layer.cornerRadius = CGFloat(self.state.gripperRadius)
         self.gripper.autoPinEdge(.top, to: .top, of: self)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBackground)
@@ -124,7 +126,7 @@ class Scrubber: UIView {
     override func updateConstraints() {
         super.updateConstraints()
         UIView.beginAnimations("layout", context: nil)
-        self.barWidthConstraint?.constant = CGFloat(self.state.progressPosition)
+        self.barWidthConstraint?.constant = CGFloat(self.state.progressXPosition)
         self.gripper.layer.cornerRadius = CGFloat(self.state.gripperRadius)
         self.gripperSizeConstraints?.forEach{ (constraint) in
             constraint.constant = CGFloat(self.state.gripperDiameter)
@@ -132,19 +134,22 @@ class Scrubber: UIView {
 
         self.leftLabel.text = self.state.leftText
         self.rightLabel.text = self.state.rightText
+        self.progressBar.backgroundColor = self.state.progressColor
+        self.gripper.backgroundColor = self.state.progressColor
         UIView.commitAnimations()
     }
     
     @objc func updateProgress(_ sender: Any) {
         var newWidth = 0
         if self.progressBar.frame.size.width <= self.frame.size.width {
-            newWidth = self.state.progressPosition + 3
+            newWidth = self.state.progressXPosition + 3
         }
         self.state = ScrubberUIState(
-            progressPosition: newWidth,
+            progressXPosition: newWidth,
             gripperRadius: 4,
             leftText: self.state.leftText,
-            rightText: self.state.rightText
+            rightText: self.state.rightText,
+            progressColor: UIColor.gray
         )
     }
     
@@ -157,10 +162,11 @@ class Scrubber: UIView {
         if let touch = touches.first {
             let postion = touch.location(in: self)
             self.state = ScrubberUIState(
-                progressPosition: Int(postion.x),
+                progressXPosition: Int(postion.x),
                 gripperRadius: 9,
                 leftText: self.state.leftText,
-                rightText: self.state.rightText
+                rightText: self.state.rightText,
+                progressColor: self.tintColor
             )
             self.timer?.invalidate()
             self.timer = nil
@@ -171,10 +177,11 @@ class Scrubber: UIView {
         if let touch = touches.first {
             let postion = touch.location(in: self)
             self.state = ScrubberUIState(
-                progressPosition: Int(postion.x),
+                progressXPosition: Int(postion.x),
                 gripperRadius: 9,
                 leftText: self.state.leftText,
-                rightText: self.state.rightText
+                rightText: self.state.rightText,
+                progressColor: self.tintColor
             )
             self.timer?.invalidate()
             self.timer = nil
@@ -185,10 +192,11 @@ class Scrubber: UIView {
         if let touch = touches.first {
             let postion = touch.location(in: self)
             self.state = ScrubberUIState(
-                progressPosition: Int(postion.x),
+                progressXPosition: Int(postion.x),
                 gripperRadius: 4,
                 leftText: self.state.leftText,
-                rightText: self.state.rightText
+                rightText: self.state.rightText,
+                progressColor: UIColor.gray
             )
             self.timer?.invalidate()
             self.timer = Timer.scheduledTimer(
@@ -206,10 +214,11 @@ class Scrubber: UIView {
         if let touch = touches.first {
             let postion = touch.location(in: self)
             self.state = ScrubberUIState(
-                progressPosition: Int(postion.x),
+                progressXPosition: Int(postion.x),
                 gripperRadius: 4,
                 leftText: self.state.leftText,
-                rightText: self.state.rightText
+                rightText: self.state.rightText,
+                progressColor: UIColor.gray
             )
             self.timer?.invalidate()
             self.timer = Timer.scheduledTimer(

@@ -16,7 +16,6 @@ public class AudiobookViewController: UIViewController {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.accessibilityIdentifier = "cover_art"
-        imageView.backgroundColor = UIColor.blue
         return imageView
     }()
     
@@ -24,16 +23,13 @@ public class AudiobookViewController: UIViewController {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.accessibilityIdentifier = "skip_back"
-        imageView.backgroundColor = UIColor.blue
         return imageView
     }()
     
     private var skipForwardView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "skip_forward")
-        let image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.accessibilityIdentifier = "skip_forward"
-        imageView.backgroundColor = UIColor.blue
         return imageView
     }()
     
@@ -44,7 +40,15 @@ public class AudiobookViewController: UIViewController {
         return imageView
     }()
     
-    let audiobookMetadata = AudiobookMetadata(title: "Vacationland", authors: ["John Hodgeman"], narrators: ["John Hodgeman"], publishers: ["Random House"], published: Date(), modified: Date(), language: "en")
+    let audiobookMetadata = AudiobookMetadata(
+        title: "Les Trois Mousquetaires",
+        authors: ["Alexandre Dumas"],
+        narrators: ["John Hodgeman"],
+        publishers: ["LibriVox"],
+        published: Date(),
+        modified: Date(),
+        language: "en"
+    )
 
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -53,7 +57,6 @@ public class AudiobookViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = bbi
         self.navigationItem.title = self.audiobookMetadata.title
         self.view.backgroundColor = UIColor.white
-        self.coverView.backgroundColor = UIColor.blue
         
         self.view.addSubview(self.coverView)
         self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: 16)
@@ -71,15 +74,15 @@ public class AudiobookViewController: UIViewController {
 
         self.view.addSubview(self.skipBackView)
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton)
+        self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -16)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
-        self.skipBackView.autoSetDimensions(to: CGSize(width: 30, height: 30))
+        self.skipBackView.autoSetDimensions(to: CGSize(width: 60, height: 60))
 
         self.view.addSubview(self.skipForwardView)
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton)
+        self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: 16)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
-        self.skipForwardView.autoSetDimensions(to: CGSize(width: 30, height: 30))
+        self.skipForwardView.autoSetDimensions(to: CGSize(width: 60, height: 60))
 
         self.seekBar.play()
     }
