@@ -68,6 +68,11 @@ class Scrubber: UIView {
         self.setup()
     }
     
+    init() {
+        super.init(frame: CGRect.zero)
+        self.setup()
+    }
+    
     func setup () {
         self.accessibilityIdentifier = "container"
         
@@ -134,7 +139,6 @@ class Scrubber: UIView {
         if self.progressBar.frame.size.width <= self.frame.size.width {
             newWidth = self.state.progressPosition + 3
         }
-        
         self.state = ScrubberUIState(
             progressPosition: newWidth,
             gripperRadius: 4,
@@ -157,6 +161,7 @@ class Scrubber: UIView {
                 leftText: self.state.leftText,
                 rightText: self.state.rightText
             )
+            self.timer?.invalidate()
         }
     }
     
@@ -169,6 +174,7 @@ class Scrubber: UIView {
                 leftText: self.state.leftText,
                 rightText: self.state.rightText
             )
+            self.timer?.invalidate()
         }
     }
     
@@ -181,6 +187,15 @@ class Scrubber: UIView {
                 leftText: self.state.leftText,
                 rightText: self.state.rightText
             )
+            self.timer?.invalidate()
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 1,
+                target: self,
+                selector: #selector(Scrubber.updateProgress(_:)),
+                userInfo: nil,
+                repeats:
+                true
+            )
         }
     }
     
@@ -192,6 +207,15 @@ class Scrubber: UIView {
                 gripperRadius: 4,
                 leftText: self.state.leftText,
                 rightText: self.state.rightText
+            )
+            self.timer?.invalidate()
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 1,
+                target: self,
+                selector: #selector(Scrubber.updateProgress(_:)),
+                userInfo: nil,
+                repeats:
+                true
             )
         }
     }
