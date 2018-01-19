@@ -12,7 +12,7 @@ import MediaPlayer
 
 public class AudiobookViewController: UIViewController {
 
-    private var seekBar = Scrubber()
+    private var seekBar = ScrubberView()
     private var coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)

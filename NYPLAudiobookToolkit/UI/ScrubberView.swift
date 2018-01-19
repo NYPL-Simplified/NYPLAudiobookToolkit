@@ -28,7 +28,7 @@ struct ScrubberUIState: Equatable {
     }
 }
 
-class Scrubber: UIView {
+class ScrubberView: UIView {
     let barHeight = 4
     var progressBar = UIView()
     let progressBackground = UIView()
@@ -73,7 +73,7 @@ class Scrubber: UIView {
         self.timer = Timer.scheduledTimer(
             timeInterval: 1,
             target: self,
-            selector: #selector(Scrubber.updateProgress(_:)),
+            selector: #selector(ScrubberView.updateProgress(_:)),
             userInfo: nil,
             repeats:
             true
@@ -229,7 +229,7 @@ class Scrubber: UIView {
             self.timer = Timer.scheduledTimer(
                 timeInterval: 1,
                 target: self,
-                selector: #selector(Scrubber.updateProgress(_:)),
+                selector: #selector(ScrubberView.updateProgress(_:)),
                 userInfo: nil,
                 repeats:
                 true
@@ -251,7 +251,7 @@ class Scrubber: UIView {
             self.timer = Timer.scheduledTimer(
                 timeInterval: 1,
                 target: self,
-                selector: #selector(Scrubber.updateProgress(_:)),
+                selector: #selector(ScrubberView.updateProgress(_:)),
                 userInfo: nil,
                 repeats:
                 true
