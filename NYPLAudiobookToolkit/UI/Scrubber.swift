@@ -9,7 +9,7 @@
 import UIKit
 import PureLayout
 
-struct ScrubberUIState {
+struct ScrubberUIState: Equatable {
     let progressXPosition: Int
     let gripperRadius: Int
     let leftText: String
@@ -17,6 +17,14 @@ struct ScrubberUIState {
     let progressColor: UIColor
     var gripperDiameter: Int {
         return gripperRadius * 2
+    }
+    
+    static func ==(lhs: ScrubberUIState, rhs: ScrubberUIState) -> Bool {
+        return lhs.progressXPosition == rhs.progressXPosition &&
+            lhs.gripperRadius == rhs.gripperRadius &&
+            lhs.leftText == rhs.leftText &&
+            lhs.rightText == rhs.rightText &&
+            lhs.progressColor == rhs.progressColor
     }
 }
 
@@ -38,10 +46,18 @@ class Scrubber: UIView {
         progressColor: UIColor.gray
         ) {
         didSet {
-            states.append(self.state)
-            self.updateUIWith(self.state)
+            if let currentState = self.states.first {
+                if currentState != self.state {
+                    self.states.append(self.state)
+                    self.updateUIWith(self.state)
+                }
+            } else {
+                self.states.append(self.state)
+                self.updateUIWith(self.state)
+            }
         }
     }
+    
     
     var timer: Timer?
     
