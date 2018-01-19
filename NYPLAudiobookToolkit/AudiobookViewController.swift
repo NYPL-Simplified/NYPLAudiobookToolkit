@@ -12,7 +12,13 @@ import PureLayout
 public class AudiobookViewController: UIViewController {
 
     private var seekBar = Scrubber()
-    private var coverView = UIImageView()
+    private var coverView: UIImageView = { () -> UIImageView in
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.accessibilityIdentifier = "cover_art"
+        imageView.backgroundColor = UIColor.blue
+        return imageView
+    }()
     
     private var skipBackView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
@@ -46,9 +52,7 @@ public class AudiobookViewController: UIViewController {
         let bbi = UIBarButtonItem(barButtonSystemItem: .bookmarks, target: self, action: #selector(AudiobookViewController.tocWasPressed))
         self.navigationItem.rightBarButtonItem = bbi
         self.navigationItem.title = self.audiobookMetadata.title
-        
         self.view.backgroundColor = UIColor.white
-        self.coverView.image = UIImage(named: "exampleCover")
         self.coverView.backgroundColor = UIColor.blue
         
         self.view.addSubview(self.coverView)
