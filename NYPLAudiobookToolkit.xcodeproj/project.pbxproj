@@ -37,6 +37,7 @@
 		7BAFF98C20125D1900DCA92A /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; };
 		7BAFF98D20125D1900DCA92A /* AudioEngine.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759B4201279BB004CE65F /* TextWithImageView.swift */; };
+		7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD759B720127E31004CE65F /* MediaPlayer.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +131,7 @@
 		7B5441F0200EAAA20047B6C6 /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 		7B5441F3200FB3EE0047B6C6 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		7BD759B4201279BB004CE65F /* TextWithImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextWithImageView.swift; sourceTree = "<group>"; };
+		7BD759B720127E31004CE65F /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +139,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */,
 				7B5441EA200EA8750047B6C6 /* AudioEngine.framework in Frameworks */,
 				7B5441F1200EAAA20047B6C6 /* PureLayout.framework in Frameworks */,
 			);
@@ -272,6 +275,7 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
 				7B5441F0200EAAA20047B6C6 /* PureLayout.framework */,
 				7B5441E9200EA8740047B6C6 /* AudioEngine.framework */,
 			);

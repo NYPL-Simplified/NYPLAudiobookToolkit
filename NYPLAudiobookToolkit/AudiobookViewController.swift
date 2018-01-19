@@ -8,6 +8,7 @@
 
 import UIKit
 import PureLayout
+import MediaPlayer
 
 public class AudiobookViewController: UIViewController {
 
@@ -18,7 +19,7 @@ public class AudiobookViewController: UIViewController {
         imageView.accessibilityIdentifier = "cover_art"
         return imageView
     }()
-    
+
     private var skipBackView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -26,7 +27,7 @@ public class AudiobookViewController: UIViewController {
         view.accessibilityIdentifier = "skip_back"
         return view
     }()
-    
+
     private var skipForwardView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -34,7 +35,7 @@ public class AudiobookViewController: UIViewController {
         view.accessibilityIdentifier = "skip_forward"
         return view
     }()
-    
+
     private var playButton: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "play", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -42,6 +43,13 @@ public class AudiobookViewController: UIViewController {
         return imageView
     }()
     
+    private var audioRouteButton: MPVolumeView = { () -> MPVolumeView in
+        let view = MPVolumeView()
+        view.showsVolumeSlider = false
+        view.sizeToFit()
+        return view
+    }()
+
     let audiobookMetadata = AudiobookMetadata(
         title: "Les Trois Mousquetaires",
         authors: ["Alexandre Dumas"],
@@ -92,6 +100,23 @@ public class AudiobookViewController: UIViewController {
         self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: 16)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
+
+        
+        self.view.backgroundColor = UIColor.groupTableViewBackground
+        let airplayView = UIView()
+        self.view.addSubview(airplayView)
+        airplayView.autoSetDimensions(to: CGSize(width: 30, height: 30))
+        airplayView.autoAlignAxis(.vertical, toSameAxisOf: self.playButton)
+        airplayView.autoPinEdge(.top, to: .bottom, of: self.playButton, withOffset: 8)
+        airplayView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
+        airplayView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
+        let mpv = MPVolumeView(frame: airplayView.bounds)
+        mpv.showsVolumeSlider = false
+        mpv.showsRouteButton = true
+        mpv.translatesAutoresizingMaskIntoConstraints = false
+        airplayView.addSubview(mpv)
+        mpv.autoPinEdgesToSuperviewEdges()
+        mpv.sizeToFit()
 
         self.seekBar.play()
     }
