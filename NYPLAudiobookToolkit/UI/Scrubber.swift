@@ -60,6 +60,14 @@ class Scrubber: UIView {
 
     var timer: Timer?
     
+    public func toggle() {
+        if self.timer != nil {
+            self.pause()
+        } else {
+            self.play()
+        }
+    }
+
     public func play() {
         self.timer?.invalidate()
         self.timer = Timer.scheduledTimer(
@@ -71,16 +79,16 @@ class Scrubber: UIView {
             true
         )
     }
-    
-    public func updateUIWith(_ state: ScrubberUIState) {
-        self.setNeedsUpdateConstraints()
-    }
-    
+
     public func pause() {
         self.timer?.invalidate()
         self.timer = nil
     }
-    
+
+    public func updateUIWith(_ state: ScrubberUIState) {
+        self.setNeedsUpdateConstraints()
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.setup()
@@ -176,30 +184,34 @@ class Scrubber: UIView {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let postion = touch.location(in: self)
-            self.state = ScrubberUIState(
-                progressXPosition: Int(postion.x),
-                gripperRadius: 9,
-                leftText: self.state.leftText,
-                rightText: self.state.rightText,
-                progressColor: self.tintColor
-            )
-            self.timer?.invalidate()
-            self.timer = nil
+            if postion.x > 0 && postion.x < self.bounds.size.width {
+                self.state = ScrubberUIState(
+                    progressXPosition: Int(postion.x),
+                    gripperRadius: 9,
+                    leftText: self.state.leftText,
+                    rightText: self.state.rightText,
+                    progressColor: self.tintColor
+                )
+                self.timer?.invalidate()
+                self.timer = nil
+            }
         }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let postion = touch.location(in: self)
-            self.state = ScrubberUIState(
-                progressXPosition: Int(postion.x),
-                gripperRadius: 9,
-                leftText: self.state.leftText,
-                rightText: self.state.rightText,
-                progressColor: self.tintColor
-            )
-            self.timer?.invalidate()
-            self.timer = nil
+            if postion.x > 0 && postion.x < self.bounds.size.width {
+                self.state = ScrubberUIState(
+                    progressXPosition: Int(postion.x),
+                    gripperRadius: 9,
+                    leftText: self.state.leftText,
+                    rightText: self.state.rightText,
+                    progressColor: self.tintColor
+                )
+                self.timer?.invalidate()
+                self.timer = nil
+            }
         }
     }
     

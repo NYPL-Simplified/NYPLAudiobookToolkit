@@ -102,9 +102,12 @@ public class AudiobookViewController: UIViewController {
 
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-    
+
+    @objc public func playButtonWasTapped(_ sender: Any) {
+        self.seekBar.toggle()
+    }
+
     @objc public func tocWasPressed(_ sender: Any) {
         let tbvc = UITableViewController()
         tbvc.tableView.dataSource = self
