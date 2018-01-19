@@ -57,8 +57,7 @@ class Scrubber: UIView {
             }
         }
     }
-    
-    
+
     var timer: Timer?
     
     public func play() {
@@ -94,7 +93,7 @@ class Scrubber: UIView {
     
     func setup () {
         self.accessibilityIdentifier = "scrubber_container"
-        
+
         self.addSubview(self.progressBackground)
         self.progressBackground.layer.cornerRadius = CGFloat(self.barHeight / 2)
         self.progressBackground.backgroundColor = UIColor.lightGray
