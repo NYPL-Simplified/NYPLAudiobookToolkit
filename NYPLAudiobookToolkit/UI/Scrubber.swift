@@ -75,7 +75,7 @@ class Scrubber: UIView {
     }
     
     func setup () {
-        self.accessibilityIdentifier = "container"
+        self.accessibilityIdentifier = "scrubber_container"
         
         self.addSubview(self.progressBackground)
         self.progressBackground.layer.cornerRadius = CGFloat(self.barHeight / 2)
@@ -83,7 +83,7 @@ class Scrubber: UIView {
         self.progressBackground.autoPinEdge(.left, to: .left, of: self)
         self.progressBackground.autoPinEdge(.right, to: .right, of: self)
         self.progressBackground.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
-        self.progressBackground.accessibilityIdentifier = "background"
+        self.progressBackground.accessibilityIdentifier = "progress_background"
         
         self.addSubview(self.progressBar)
         self.progressBar.backgroundColor = UIColor.gray
@@ -91,7 +91,7 @@ class Scrubber: UIView {
         self.progressBar.autoPinEdge(.left, to: .left, of: self.progressBackground)
         self.progressBar.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
         self.barWidthConstraint = self.progressBar.autoSetDimension(.width, toSize: 0)
-        self.progressBar.accessibilityIdentifier = "bar"
+        self.progressBar.accessibilityIdentifier = "progress_bar"
         
         self.addSubview(self.gripper)
         self.gripper.backgroundColor = UIColor.gray
@@ -106,19 +106,19 @@ class Scrubber: UIView {
                 height: self.state.gripperDiameter
             )
         )
-        self.gripper.accessibilityIdentifier = "grip"
+        self.gripper.accessibilityIdentifier = "progress_grip"
         
         self.addSubview(self.leftLabel)
         self.leftLabel.autoPinEdge(.left, to: .left, of: self)
         self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
         self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self)
-        self.leftLabel.accessibilityIdentifier = "leftLabel"
+        self.leftLabel.accessibilityIdentifier = "progress_leftLabel"
         
         self.addSubview(self.rightLabel)
         self.rightLabel.autoPinEdge(.right, to: .right, of: self)
         self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
 
-        self.rightLabel.accessibilityIdentifier = "rightLabel"
+        self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
     }
     
     override func updateConstraints() {
