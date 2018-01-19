@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B3BD9C82011739E002C5416 /* Scrubber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* Scrubber.swift */; };
 		7B544196200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; };
 		7B54419B200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B54419A200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift */; };
 		7B54419D200EA7C20047B6C6 /* NYPLAudiobookToolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = 7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -91,6 +92,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7B3BD9C72011739E002C5416 /* Scrubber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scrubber.swift; sourceTree = "<group>"; };
 		7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NYPLAudiobookToolkit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NYPLAudiobookToolkit.h; sourceTree = "<group>"; };
 		7B544190200EA7C20047B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -165,6 +167,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7B3BD9C62011737B002C5416 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				7B3BD9C72011739E002C5416 /* Scrubber.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		7B544182200EA7C20047B6C6 = {
 			isa = PBXGroup;
 			children = (
@@ -193,6 +203,7 @@
 		7B54418E200EA7C20047B6C6 /* NYPLAudiobookToolkit */ = {
 			isa = PBXGroup;
 			children = (
+				7B3BD9C62011737B002C5416 /* UI */,
 				7B5441DB200EA82C0047B6C6 /* AudiobookConfiguration.swift */,
 				7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */,
 				7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */,
@@ -467,6 +478,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B5441E4200EA82C0047B6C6 /* AudiobookViewController.swift in Sources */,
+				7B3BD9C82011739E002C5416 /* Scrubber.swift in Sources */,
 				7B5441E5200EA82C0047B6C6 /* AudiobookPlayer.swift in Sources */,
 				7B5441E2200EA82C0047B6C6 /* AudiobookConfiguration.swift in Sources */,
 				7B5441E3200EA82C0047B6C6 /* AudiobookManifest.swift in Sources */,
