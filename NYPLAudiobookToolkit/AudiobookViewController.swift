@@ -10,21 +10,42 @@ import UIKit
 import PureLayout
 
 public class AudiobookViewController: UIViewController {
+
     private var seekBar = Scrubber()
     private var coverView = UIImageView()
+    
+    private var skipBackView: UIImageView = { () -> UIImageView in
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        return imageView
+    }()
+    
+    private var skipForwardView: UIImageView = { () -> UIImageView in
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "skip_forward")
+        let image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        return imageView
+    }()
+    
+    private var playButton: UIImageView = { () -> UIImageView in
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "play", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        return imageView
+    }()
     
     let audiobookMetadata = AudiobookMetadata(title: "Vacationland", authors: ["John Hodgeman"], narrators: ["John Hodgeman"], publishers: ["Random House"], published: Date(), modified: Date(), language: "en")
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-
         self.navigationItem.backBarButtonItem?.title = nil
         let bbi = UIBarButtonItem(barButtonSystemItem: .bookmarks, target: self, action: #selector(AudiobookViewController.tocWasPressed))
         self.navigationItem.rightBarButtonItem = bbi
         self.navigationItem.title = self.audiobookMetadata.title
+        
         self.view.backgroundColor = UIColor.white
         self.coverView.image = UIImage(named: "exampleCover")
         self.coverView.backgroundColor = UIColor.blue
+        
         self.view.addSubview(self.coverView)
         self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: 16)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
@@ -35,6 +56,10 @@ public class AudiobookViewController: UIViewController {
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: 8)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -8)
 
+        self.view.addSubview(self.playButton)
+        self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self.view)
+        self.playButton.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: 16)
+        
         self.seekBar.play()
     }
     

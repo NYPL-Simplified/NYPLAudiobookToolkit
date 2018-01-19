@@ -61,6 +61,7 @@ class Scrubber: UIView {
     
     public func pause() {
         self.timer?.invalidate()
+        self.timer = nil
     }
     
     override init(frame: CGRect) {
@@ -162,6 +163,7 @@ class Scrubber: UIView {
                 rightText: self.state.rightText
             )
             self.timer?.invalidate()
+            self.timer = nil
         }
     }
     
@@ -175,6 +177,7 @@ class Scrubber: UIView {
                 rightText: self.state.rightText
             )
             self.timer?.invalidate()
+            self.timer = nil
         }
     }
     
