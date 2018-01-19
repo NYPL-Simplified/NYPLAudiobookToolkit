@@ -52,17 +52,6 @@ public class AudiobookViewController: UIViewController {
         tbvc.tableView.dataSource = self
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
-    
-    private func imageWithView(inView: UIView) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(inView.bounds.size, inView.isOpaque, 0.0)
-        defer { UIGraphicsEndImageContext() }
-        if let context = UIGraphicsGetCurrentContext() {
-            inView.layer.render(in: context)
-            let image = UIGraphicsGetImageFromCurrentImageContext()
-            return image
-        }
-        return nil
-    }
 }
 
 extension AudiobookViewController: UITableViewDataSource {
