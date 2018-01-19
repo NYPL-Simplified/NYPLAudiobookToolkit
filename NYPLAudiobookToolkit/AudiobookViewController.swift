@@ -19,18 +19,20 @@ public class AudiobookViewController: UIViewController {
         return imageView
     }()
     
-    private var skipBackView: UIImageView = { () -> UIImageView in
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
-        imageView.accessibilityIdentifier = "skip_back"
-        return imageView
+    private var skipBackView: TextOverImageView = { () -> TextOverImageView in
+        let view = TextOverImageView()
+        view.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        view.text = "15"
+        view.accessibilityIdentifier = "skip_back"
+        return view
     }()
     
-    private var skipForwardView: UIImageView = { () -> UIImageView in
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
-        imageView.accessibilityIdentifier = "skip_forward"
-        return imageView
+    private var skipForwardView: TextOverImageView = { () -> TextOverImageView in
+        let view = TextOverImageView()
+        view.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        view.text = "15"
+        view.accessibilityIdentifier = "skip_forward"
+        return view
     }()
     
     private var playButton: UIImageView = { () -> UIImageView in
@@ -71,18 +73,25 @@ public class AudiobookViewController: UIViewController {
         self.view.addSubview(self.playButton)
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self.view)
         self.playButton.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: 16)
+        self.playButton.addGestureRecognizer(
+            UITapGestureRecognizer(
+                target: self,
+                action: #selector(AudiobookViewController.playButtonWasTapped(_:))
+            )
+        )
+        self.playButton.isUserInteractionEnabled = true
 
         self.view.addSubview(self.skipBackView)
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
         self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -16)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
-        self.skipBackView.autoSetDimensions(to: CGSize(width: 60, height: 60))
+        self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
 
         self.view.addSubview(self.skipForwardView)
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
         self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: 16)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
-        self.skipForwardView.autoSetDimensions(to: CGSize(width: 60, height: 60))
+        self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
 
         self.seekBar.play()
     }
