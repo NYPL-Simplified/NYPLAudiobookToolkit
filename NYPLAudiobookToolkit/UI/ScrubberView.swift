@@ -115,7 +115,7 @@ class ScrubberView: UIView {
         self.progressBar.layer.cornerRadius = CGFloat(self.barHeight / 2)
         self.progressBar.autoPinEdge(.left, to: .left, of: self.progressBackground)
         self.progressBar.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
-        self.barWidthConstraint = self.progressBar.autoSetDimension(.width, toSize: 0)
+        self.barWidthConstraint = self.progressBar.autoSetDimension(.width, toSize: CGFloat(self.state.gripperRadius))
         self.progressBar.accessibilityIdentifier = "progress_bar"
         
         self.addSubview(self.gripper)
@@ -138,12 +138,14 @@ class ScrubberView: UIView {
         self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
         self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.leftLabel.accessibilityIdentifier = "progress_leftLabel"
+        self.leftLabel.text = self.state.leftText
         
         self.addSubview(self.rightLabel)
         self.rightLabel.autoPinEdge(.right, to: .right, of: self)
         self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
-
+        self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
+        self.rightLabel.text = self.state.rightText
     }
     
     override func updateConstraints() {
@@ -163,8 +165,8 @@ class ScrubberView: UIView {
     }
     
     @objc func updateProgress(_ sender: Any) {
-        var newWidth = 0
-        if self.progressBar.frame.size.width <= self.frame.size.width {
+        var newWidth = self.state.gripperRadius
+        if (self.barWidthConstraint?.constant ?? CGFloat(0)) <= (self.frame.size.width - CGFloat(self.state.gripperRadius)) {
             newWidth = self.state.progressXPosition + 3
         }
         self.state = ScrubberUIState(
