@@ -8,46 +8,17 @@
 
 import UIKit
 import PureLayout
-import MediaPlayer
 
-public class AudiobookViewController: UIViewController {
+public class AudiobookViewController: UIViewController, PlaybackControlViewDelegate {
 
-    private var seekBar = ScrubberView()
-    private var coverView: UIImageView = { () -> UIImageView in
+    private let padding = CGFloat(8)
+    private let seekBar = ScrubberView()
+    private let playbackControlView = PlaybackControlView()
+    private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.accessibilityIdentifier = "cover_art"
         return imageView
-    }()
-
-    private var skipBackView: TextOverImageView = { () -> TextOverImageView in
-        let view = TextOverImageView()
-        view.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
-        view.text = "15"
-        view.accessibilityIdentifier = "skip_back"
-        return view
-    }()
-
-    private var skipForwardView: TextOverImageView = { () -> TextOverImageView in
-        let view = TextOverImageView()
-        view.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
-        view.text = "15"
-        view.accessibilityIdentifier = "skip_forward"
-        return view
-    }()
-
-    private var playButton: UIImageView = { () -> UIImageView in
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "play", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
-        imageView.accessibilityIdentifier = "play_button"
-        return imageView
-    }()
-    
-    private var audioRouteButton: MPVolumeView = { () -> MPVolumeView in
-        let view = MPVolumeView()
-        view.showsVolumeSlider = false
-        view.sizeToFit()
-        return view
     }()
 
     let audiobookMetadata = AudiobookMetadata(
@@ -69,55 +40,22 @@ public class AudiobookViewController: UIViewController {
         self.view.backgroundColor = UIColor.white
         
         self.view.addSubview(self.coverView)
-        self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: 16)
+        self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.coverView.autoSetDimensions(to: CGSize(width: 300, height: 300))
+        self.coverView.autoSetDimensions(to: CGSize(width: 266, height: 266))
         
         self.view.addSubview(self.seekBar)
-        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: 16)
-        self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: 8)
-        self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -8)
+        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
+        self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
+        self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
 
-        self.view.addSubview(self.playButton)
-        self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.playButton.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: 16)
-        self.playButton.addGestureRecognizer(
-            UITapGestureRecognizer(
-                target: self,
-                action: #selector(AudiobookViewController.playButtonWasTapped(_:))
-            )
-        )
-        self.playButton.isUserInteractionEnabled = true
-
-        self.view.addSubview(self.skipBackView)
-        self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -16)
-        self.skipBackView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
-        self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
-
-        self.view.addSubview(self.skipForwardView)
-        self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: 16)
-        self.skipForwardView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
-        self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
-
-        
-        self.view.backgroundColor = UIColor.groupTableViewBackground
-        let airplayView = UIView()
-        self.view.addSubview(airplayView)
-        airplayView.autoSetDimensions(to: CGSize(width: 30, height: 30))
-        airplayView.autoAlignAxis(.vertical, toSameAxisOf: self.playButton)
-        airplayView.autoPinEdge(.top, to: .bottom, of: self.playButton, withOffset: 8)
-        airplayView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
-        airplayView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
-        let mpv = MPVolumeView(frame: airplayView.bounds)
-        mpv.showsVolumeSlider = false
-        mpv.showsRouteButton = true
-        mpv.translatesAutoresizingMaskIntoConstraints = false
-        airplayView.addSubview(mpv)
-        mpv.autoPinEdgesToSuperviewEdges()
-        mpv.sizeToFit()
-
+        self.view.addSubview(self.playbackControlView)
+        self.playbackControlView.delegate = self
+        self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: self.padding)
+        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding, relation: .lessThanOrEqual)
+        self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
+        self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
+        self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
         self.seekBar.play()
     }
     
@@ -129,15 +67,15 @@ public class AudiobookViewController: UIViewController {
         super.didReceiveMemoryWarning()
     }
 
-    @objc public func playButtonWasTapped(_ sender: Any) {
-        self.seekBar.toggle()
-    }
-
     @objc public func tocWasPressed(_ sender: Any) {
         let tbvc = UITableViewController()
         tbvc.tableView.dataSource = self
         tbvc.navigationItem.title = "Table Of Contents"
         self.navigationController?.pushViewController(tbvc, animated: true)
+    }
+
+    func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.seekBar.toggle()
     }
 }
 

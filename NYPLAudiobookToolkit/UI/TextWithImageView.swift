@@ -44,8 +44,11 @@ class TextOverImageView: UIView {
     
     func setup() {
         self.addSubview(self.backgroundImageView)
+        self.backgroundImageView.accessibilityIdentifier = "TextOverImageView.backgroundImageView"
+        self.backgroundImageView.contentMode = .scaleAspectFit
         self.backgroundImageView.autoPinEdgesToSuperviewEdges()
         self.addSubview(self.textLabel)
+        self.textLabel.accessibilityIdentifier = "TextOverImageView.textLabel"
         self.textLabel.autoCenterInSuperview()
         self.textLabel.textAlignment = .center
         self.textLabel.numberOfLines = 1
