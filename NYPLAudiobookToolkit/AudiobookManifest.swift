@@ -21,7 +21,9 @@ private func findawayKey(_ key: String) -> String {
 
 public class AudiobookManifest: NSObject {
     private let spine: [Disjunction<AudiobookLink, FindawayLink>]
-    
+    public var expired: Bool {
+        return true
+    }
     public init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }

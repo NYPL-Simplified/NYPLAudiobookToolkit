@@ -9,8 +9,23 @@
 import UIKit
 import PureLayout
 
-public class AudiobookViewController: UIViewController, PlaybackControlViewDelegate {
+struct AudiobookDetailViewState {
+    
+}
 
+public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate {
+
+    let audiobookManager: AudiobookManager
+
+    public required init(audiobookManager: AudiobookManager) {
+        self.audiobookManager = audiobookManager
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
     private let playbackControlView = PlaybackControlView()
@@ -21,7 +36,7 @@ public class AudiobookViewController: UIViewController, PlaybackControlViewDeleg
         return imageView
     }()
 
-    let audiobookMetadata = AudiobookMetadata(
+    public let audiobookMetadata = AudiobookMetadata(
         title: "Les Trois Mousquetaires",
         authors: ["Alexandre Dumas"],
         narrators: ["John Hodgeman"],
@@ -34,7 +49,11 @@ public class AudiobookViewController: UIViewController, PlaybackControlViewDeleg
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.backBarButtonItem?.title = nil
-        let bbi = UIBarButtonItem(barButtonSystemItem: .bookmarks, target: self, action: #selector(AudiobookViewController.tocWasPressed))
+        let bbi = UIBarButtonItem(
+            barButtonSystemItem: .bookmarks,
+            target: self,
+            action: #selector(AudiobookDetailViewController.tocWasPressed)
+        )
         self.navigationItem.rightBarButtonItem = bbi
         self.navigationItem.title = self.audiobookMetadata.title
         self.view.backgroundColor = UIColor.white
@@ -79,7 +98,7 @@ public class AudiobookViewController: UIViewController, PlaybackControlViewDeleg
     }
 }
 
-extension AudiobookViewController: UITableViewDataSource {
+extension AudiobookDetailViewController: UITableViewDataSource {
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 10

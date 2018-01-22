@@ -12,7 +12,7 @@ import NYPLAudiobookToolkit
 class ViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
-        let vc = AudiobookViewController()
+        let vc = AudiobookDetailViewController(audiobookManager: AudiobookManager())
         self.navigationController?.pushViewController(vc, animated: true)
     }
 

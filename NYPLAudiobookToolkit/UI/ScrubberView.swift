@@ -182,9 +182,8 @@ class ScrubberView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
+    func scrub(touch: UITouch?) {
+        if let touch = touch {
             let postion = touch.location(in: self)
             if postion.x > 0 && postion.x < self.bounds.size.width {
                 self.state = ScrubberUIState(
@@ -198,67 +197,44 @@ class ScrubberView: UIView {
                 self.timer = nil
             }
         }
+    }
+    
+    func stopScrub(touch: UITouch?) {
+        if let touch = touch {
+            let postion = touch.location(in: self)
+            self.state = ScrubberUIState(
+                progressXPosition: Int(postion.x),
+                gripperRadius: 4,
+                leftText: self.state.leftText,
+                rightText: self.state.rightText,
+                progressColor: UIColor.gray
+            )
+            self.timer?.invalidate()
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 1,
+                target: self,
+                selector: #selector(ScrubberView.updateProgress(_:)),
+                userInfo: nil,
+                repeats:
+                true
+            )
+        }
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.scrub(touch: touches.first)
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            let postion = touch.location(in: self)
-            if postion.x > 0 && postion.x < self.bounds.size.width {
-                self.state = ScrubberUIState(
-                    progressXPosition: Int(postion.x),
-                    gripperRadius: 9,
-                    leftText: self.state.leftText,
-                    rightText: self.state.rightText,
-                    progressColor: self.tintColor
-                )
-                self.timer?.invalidate()
-                self.timer = nil
-            }
-        }
+        self.scrub(touch: touches.first)
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            let postion = touch.location(in: self)
-            self.state = ScrubberUIState(
-                progressXPosition: Int(postion.x),
-                gripperRadius: 4,
-                leftText: self.state.leftText,
-                rightText: self.state.rightText,
-                progressColor: UIColor.gray
-            )
-            self.timer?.invalidate()
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 1,
-                target: self,
-                selector: #selector(ScrubberView.updateProgress(_:)),
-                userInfo: nil,
-                repeats:
-                true
-            )
-        }
+        self.stopScrub(touch: touches.first)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            let postion = touch.location(in: self)
-            self.state = ScrubberUIState(
-                progressXPosition: Int(postion.x),
-                gripperRadius: 4,
-                leftText: self.state.leftText,
-                rightText: self.state.rightText,
-                progressColor: UIColor.gray
-            )
-            self.timer?.invalidate()
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 1,
-                target: self,
-                selector: #selector(ScrubberView.updateProgress(_:)),
-                userInfo: nil,
-                repeats:
-                true
-            )
-        }
+        self.stopScrub(touch: touches.first)
     }
 }
 

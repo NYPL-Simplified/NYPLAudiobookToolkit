@@ -8,11 +8,40 @@
 
 import UIKit
 
-@objc public protocol Refreshable {
+@objc public protocol AudiobookManagerDelegate {
     func updateManifest(completion: (AudiobookManifest) -> Void)
 }
 
-public class AudiobookManager: NSObject {
-    public func fetchAudiobook(metadata: AudiobookMetadata, audiobookManifest: AudiobookManifest, refreshDelegate: Refreshable) {
+protocol AudiobookManagement {
+    weak var delegate: AudiobookManagerDelegate? { get set }
+    func fetch(metadata: AudiobookMetadata, audiobookManifest: AudiobookManifest)
+    func tableOfContents(audiobookID: String) -> AudiobookTableOfContents
+    func play(audiobookID: String)
+    func pause(audiobookID: String)
+}
+
+public class AudiobookManager: AudiobookManagement {
+    
+    public init () {
+        
     }
+
+    weak var delegate: AudiobookManagerDelegate?
+    
+    func fetch(metadata: AudiobookMetadata, audiobookManifest: AudiobookManifest) {
+        
+    }
+    
+    func tableOfContents(audiobookID: String) -> AudiobookTableOfContents {
+        return AudiobookTableOfContents()
+    }
+
+    func play(audiobookID: String) {
+        
+    }
+    
+    func pause(audiobookID: String) {
+        
+    }
+    
 }

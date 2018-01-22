@@ -22,8 +22,7 @@
 		7B5441E1200EA82C0047B6C6 /* AudiobookMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */; };
 		7B5441E2200EA82C0047B6C6 /* AudiobookConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DB200EA82C0047B6C6 /* AudiobookConfiguration.swift */; };
 		7B5441E3200EA82C0047B6C6 /* AudiobookManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DC200EA82C0047B6C6 /* AudiobookManifest.swift */; };
-		7B5441E4200EA82C0047B6C6 /* AudiobookViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DD200EA82C0047B6C6 /* AudiobookViewController.swift */; };
-		7B5441E5200EA82C0047B6C6 /* AudiobookPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DE200EA82C0047B6C6 /* AudiobookPlayer.swift */; };
+		7B5441E4200EA82C0047B6C6 /* AudiobookDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DD200EA82C0047B6C6 /* AudiobookDetailViewController.swift */; };
 		7B5441E6200EA82C0047B6C6 /* AudiobookLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */; };
 		7B5441E7200EA82C0047B6C6 /* AudiobookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */; };
 		7B5441EA200EA8750047B6C6 /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; };
@@ -39,6 +38,7 @@
 		7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759B4201279BB004CE65F /* TextWithImageView.swift */; };
 		7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD759B720127E31004CE65F /* MediaPlayer.framework */; };
 		7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BC20163B71004CE65F /* PlaybackControlView.swift */; };
+		7BD759BF20168995004CE65F /* AudiobookTableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,8 +124,7 @@
 		7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookMetadata.swift; sourceTree = "<group>"; };
 		7B5441DB200EA82C0047B6C6 /* AudiobookConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookConfiguration.swift; sourceTree = "<group>"; };
 		7B5441DC200EA82C0047B6C6 /* AudiobookManifest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookManifest.swift; sourceTree = "<group>"; };
-		7B5441DD200EA82C0047B6C6 /* AudiobookViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookViewController.swift; sourceTree = "<group>"; };
-		7B5441DE200EA82C0047B6C6 /* AudiobookPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookPlayer.swift; sourceTree = "<group>"; };
+		7B5441DD200EA82C0047B6C6 /* AudiobookDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookDetailViewController.swift; sourceTree = "<group>"; };
 		7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookLifecycleManager.swift; sourceTree = "<group>"; };
 		7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookManager.swift; sourceTree = "<group>"; };
 		7B5441E9200EA8740047B6C6 /* AudioEngine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioEngine.framework; path = AudioEngine/Debug/AudioEngine.framework; sourceTree = "<group>"; };
@@ -134,6 +133,7 @@
 		7BD759B4201279BB004CE65F /* TextWithImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextWithImageView.swift; sourceTree = "<group>"; };
 		7BD759B720127E31004CE65F /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		7BD759BC20163B71004CE65F /* PlaybackControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControlView.swift; sourceTree = "<group>"; };
+		7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTableOfContents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -226,11 +226,11 @@
 				7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */,
 				7B5441DC200EA82C0047B6C6 /* AudiobookManifest.swift */,
 				7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */,
-				7B5441DE200EA82C0047B6C6 /* AudiobookPlayer.swift */,
-				7B5441DD200EA82C0047B6C6 /* AudiobookViewController.swift */,
+				7B5441DD200EA82C0047B6C6 /* AudiobookDetailViewController.swift */,
 				7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */,
 				7B544190200EA7C20047B6C6 /* Info.plist */,
 				7B5441F3200FB3EE0047B6C6 /* Media.xcassets */,
+				7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */,
 			);
 			path = NYPLAudiobookToolkit;
 			sourceTree = "<group>";
@@ -495,9 +495,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7B5441E4200EA82C0047B6C6 /* AudiobookViewController.swift in Sources */,
+				7B5441E4200EA82C0047B6C6 /* AudiobookDetailViewController.swift in Sources */,
 				7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */,
-				7B5441E5200EA82C0047B6C6 /* AudiobookPlayer.swift in Sources */,
 				7B5441E2200EA82C0047B6C6 /* AudiobookConfiguration.swift in Sources */,
 				7B5441E3200EA82C0047B6C6 /* AudiobookManifest.swift in Sources */,
 				7B5441E6200EA82C0047B6C6 /* AudiobookLifecycleManager.swift in Sources */,
@@ -505,6 +504,7 @@
 				7B5441E1200EA82C0047B6C6 /* AudiobookMetadata.swift in Sources */,
 				7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */,
 				7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */,
+				7BD759BF20168995004CE65F /* AudiobookTableOfContents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
