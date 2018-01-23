@@ -7,40 +7,53 @@
 //
 
 import UIKit
+import AudioEngine
 
 @objc public protocol AudiobookManagerDelegate {
     func updateManifest(completion: (AudiobookManifest) -> Void)
 }
 
-protocol AudiobookManagement {
+public protocol AudiobookManagement {
     weak var delegate: AudiobookManagerDelegate? { get set }
-    func fetch(metadata: AudiobookMetadata, audiobookManifest: AudiobookManifest)
-    func tableOfContents(audiobookID: String) -> AudiobookTableOfContents
-    func play(audiobookID: String)
-    func pause(audiobookID: String)
+    var metadata: AudiobookMetadata { get }
+    var manifest: AudiobookManifest { get }
+    var isPlaying: Bool { get }
+    func fetch()
+    func play()
+    func pause()
 }
 
 public class AudiobookManager: AudiobookManagement {
-    
-    public init () {
-        
+    public let metadata: AudiobookMetadata
+    public let manifest: AudiobookManifest
+    public var isPlaying: Bool {
+        return true
     }
 
-    weak var delegate: AudiobookManagerDelegate?
-    
-    func fetch(metadata: AudiobookMetadata, audiobookManifest: AudiobookManifest) {
-        
+    let requester: AudiobookNetworkRequester
+
+    public init (metadata: AudiobookMetadata, manifest: AudiobookManifest, requester: AudiobookNetworkRequester) {
+        self.metadata = metadata
+        self.manifest = manifest
+        self.requester = requester
     }
     
-    func tableOfContents(audiobookID: String) -> AudiobookTableOfContents {
-        return AudiobookTableOfContents()
+    public convenience init (metadata: AudiobookMetadata, manifest: AudiobookManifest) {
+        let requester = AudiobookNetworkService(manifest: manifest)
+        self.init(metadata: metadata, manifest: manifest, requester: requester)
     }
 
-    func play(audiobookID: String) {
+    weak public var delegate: AudiobookManagerDelegate?
+    
+    public func fetch() {
+        self.requester.fetch()
+    }
+
+    public func play() {
         
     }
     
-    func pause(audiobookID: String) {
+    public func pause() {
         
     }
     

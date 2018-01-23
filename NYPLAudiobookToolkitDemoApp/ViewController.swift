@@ -12,7 +12,22 @@ import NYPLAudiobookToolkit
 class ViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
-        let vc = AudiobookDetailViewController(audiobookManager: AudiobookManager())
+        let metadata = AudiobookMetadata(
+            title: "Les Trois Mousquetaires",
+            authors: ["Alexandre Dumas"],
+            narrators: ["John Hodgeman"],
+            publishers: ["LibriVox"],
+            published: Date(),
+            modified: Date(),
+            language: "en"
+        )
+        let manifest = AudiobookManifest(placeholder: "")
+        let vc = AudiobookDetailViewController(
+            audiobookManager: AudiobookManager(
+                metadata: metadata,
+                manifest: manifest
+            )
+        )
         self.navigationController?.pushViewController(vc, animated: true)
     }
 

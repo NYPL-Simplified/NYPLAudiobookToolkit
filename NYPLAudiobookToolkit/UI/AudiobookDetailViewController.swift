@@ -9,15 +9,11 @@
 import UIKit
 import PureLayout
 
-struct AudiobookDetailViewState {
-    
-}
-
 public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate {
 
-    let audiobookManager: AudiobookManager
+    let audiobookManager: AudiobookManagement
 
-    public required init(audiobookManager: AudiobookManager) {
+    public required init(audiobookManager: AudiobookManagement) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
     }
@@ -32,19 +28,10 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.isUserInteractionEnabled = true
         imageView.accessibilityIdentifier = "cover_art"
         return imageView
     }()
-
-    public let audiobookMetadata = AudiobookMetadata(
-        title: "Les Trois Mousquetaires",
-        authors: ["Alexandre Dumas"],
-        narrators: ["John Hodgeman"],
-        publishers: ["LibriVox"],
-        published: Date(),
-        modified: Date(),
-        language: "en"
-    )
 
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -55,7 +42,7 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
         self.navigationItem.rightBarButtonItem = bbi
-        self.navigationItem.title = self.audiobookMetadata.title
+        self.navigationItem.title = self.audiobookManager.metadata.title
         self.view.backgroundColor = UIColor.white
         
         self.view.addSubview(self.coverView)
@@ -68,6 +55,7 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
 
+        
         self.view.addSubview(self.playbackControlView)
         self.playbackControlView.delegate = self
         self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: self.padding)
@@ -75,7 +63,8 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.seekBar.play()
+        
+        self.coverView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))))
     }
     
     override public func viewDidAppear(_ animated: Bool) {
@@ -94,7 +83,17 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
     }
 
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
-        self.seekBar.toggle()
+        if self.audiobookManager.isPlaying {
+            self.audiobookManager.pause()
+            self.seekBar.pause()
+        } else {
+            self.audiobookManager.play()
+            self.seekBar.play()
+        }
+    }
+    
+    @objc func coverArtWasPressed(_ sender: Any) {
+        self.audiobookManager.fetch()
     }
 }
 

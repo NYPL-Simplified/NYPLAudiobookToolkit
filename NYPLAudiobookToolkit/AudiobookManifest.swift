@@ -9,10 +9,9 @@
 import UIKit
 import AudioEngine
 
-enum Disjunction<A, B> {
-    case first(value: A)
-    case second(value: B)
-    case both(first: A, second: B)
+public enum Spine {
+    case findaway([FindawayFragment])
+    case http([AudiobookFragment])
 }
 
 private func findawayKey(_ key: String) -> String {
@@ -20,30 +19,30 @@ private func findawayKey(_ key: String) -> String {
 }
 
 public class AudiobookManifest: NSObject {
-    private let spine: [Disjunction<AudiobookLink, FindawayLink>]
-    public var expired: Bool {
-        return true
+    public let spine: Spine
+    public init(placeholder: Any) {
+        self.spine = .http([])
+        super.init()
     }
+
     public init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
         if let sessionKey = metadata[findawayKey("sessionKey")] as? String,
             let audiobookID = metadata[findawayKey("fulfillmentId")] as? String {
-            let links = spine.flatMap { (possibleLink) -> FindawayLink? in
-                FindawayLink(JSON: possibleLink, sessionKey: sessionKey, audiobookID: audiobookID)
-            }
-            self.spine = links.map{ Disjunction.second(value: $0) }
+            self.spine = .findaway(spine.flatMap({ (possibleLink) -> FindawayFragment? in
+                FindawayFragment(JSON: possibleLink, sessionKey: sessionKey, audiobookID: audiobookID)
+            }))
         } else {
-            let links = spine.flatMap { (possibleLink) -> AudiobookLink? in
-                AudiobookLink(JSON: possibleLink)
-            }
-            self.spine = links.map { Disjunction.first(value: $0) }
+            self.spine = .http(spine.flatMap({ (possibleLink) -> AudiobookFragment? in
+                AudiobookFragment(JSON: possibleLink)
+            }))
         }
     }
 }
 
-struct AudiobookLink {
+public class AudiobookFragment: NSObject {
     let url: URL
     let mediaType: String
     let duration: Int
@@ -63,16 +62,19 @@ struct AudiobookLink {
     }
 }
 
-class FindawayLink {
+public class FindawayFragment: NSObject {
     let chapterNumber: UInt
     let partNumber: UInt
     let sessionKey: String
     let audiobookID: String
+    let licenseID: String
 
     public init?(JSON: Any?, sessionKey: String, audiobookID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let sequence = payload[findawayKey("sequence")] as? UInt else { return nil }
         guard let partNumber = payload[findawayKey("part")] as? UInt else { return nil }
+        guard let licenseID = payload[findawayKey("licenseId")] as? String else { return nil }
+        self.licenseID = licenseID
         self.chapterNumber = sequence
         self.partNumber = partNumber
         self.sessionKey = sessionKey

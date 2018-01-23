@@ -9,12 +9,17 @@
 import UIKit
 import PureLayout
 
+protocol ScrubberViewDelegate: class {
+    func scrubberView(_ scrubberView: ScrubberView, DidRequestScrubTo completionPercentage: Int)
+}
+
 struct ScrubberUIState: Equatable {
     let progressXPosition: Int
     let gripperRadius: Int
     let leftText: String
     let rightText: String
     let progressColor: UIColor
+    let isScrubbing: Bool
     var gripperDiameter: Int {
         return gripperRadius * 2
     }
@@ -24,11 +29,14 @@ struct ScrubberUIState: Equatable {
             lhs.gripperRadius == rhs.gripperRadius &&
             lhs.leftText == rhs.leftText &&
             lhs.rightText == rhs.rightText &&
-            lhs.progressColor == rhs.progressColor
+            lhs.progressColor == rhs.progressColor &&
+            lhs.isScrubbing == rhs.isScrubbing
     }
 }
 
 class ScrubberView: UIView {
+    var delegate: ScrubberViewDelegate?
+    
     let barHeight = 4
     var progressBar = UIView()
     let progressBackground = UIView()
@@ -43,7 +51,8 @@ class ScrubberView: UIView {
         gripperRadius: 4,
         leftText: "0:00",
         rightText: "5:00",
-        progressColor: UIColor.gray
+        progressColor: UIColor.gray,
+        isScrubbing: false
         ) {
         didSet {
             if let currentState = self.states.first {
@@ -59,30 +68,27 @@ class ScrubberView: UIView {
     }
 
     var timer: Timer?
-    
-    public func toggle() {
-        if self.timer != nil {
-            self.pause()
-        } else {
-            self.play()
-        }
-    }
 
     public func play() {
-        self.timer?.invalidate()
-        self.timer = Timer.scheduledTimer(
-            timeInterval: 1,
-            target: self,
-            selector: #selector(ScrubberView.updateProgress(_:)),
-            userInfo: nil,
-            repeats:
-            true
+        self.state = ScrubberUIState(
+            progressXPosition: self.state.gripperRadius,
+            gripperRadius: self.state.gripperRadius,
+            leftText: self.state.leftText,
+            rightText: self.state.rightText,
+            progressColor: self.state.progressColor,
+            isScrubbing: true
         )
     }
 
     public func pause() {
-        self.timer?.invalidate()
-        self.timer = nil
+        self.state = ScrubberUIState(
+            progressXPosition: self.state.gripperRadius,
+            gripperRadius: self.state.gripperRadius,
+            leftText: self.state.leftText,
+            rightText: self.state.rightText,
+            progressColor: self.state.progressColor,
+            isScrubbing: false
+        )
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
@@ -162,6 +168,19 @@ class ScrubberView: UIView {
         self.progressBar.backgroundColor = self.state.progressColor
         self.gripper.backgroundColor = self.state.progressColor
         UIView.commitAnimations()
+        
+        if self.timer == nil && self.state.isScrubbing {
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 1,
+                target: self,
+                selector: #selector(ScrubberView.updateProgress(_:)),
+                userInfo: nil,
+                repeats: true
+            )
+        } else if !self.state.isScrubbing {
+            self.timer?.invalidate()
+            self.timer = nil
+        }
     }
     
     @objc func updateProgress(_ sender: Any) {
@@ -174,7 +193,8 @@ class ScrubberView: UIView {
             gripperRadius: 4,
             leftText: self.state.leftText,
             rightText: self.state.rightText,
-            progressColor: UIColor.gray
+            progressColor: UIColor.gray,
+            isScrubbing: self.state.isScrubbing
         )
     }
     
@@ -191,10 +211,10 @@ class ScrubberView: UIView {
                     gripperRadius: 9,
                     leftText: self.state.leftText,
                     rightText: self.state.rightText,
-                    progressColor: self.tintColor
+                    progressColor: self.tintColor,
+                    isScrubbing: false
                 )
-                self.timer?.invalidate()
-                self.timer = nil
+
             }
         }
     }
@@ -207,16 +227,8 @@ class ScrubberView: UIView {
                 gripperRadius: 4,
                 leftText: self.state.leftText,
                 rightText: self.state.rightText,
-                progressColor: UIColor.gray
-            )
-            self.timer?.invalidate()
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 1,
-                target: self,
-                selector: #selector(ScrubberView.updateProgress(_:)),
-                userInfo: nil,
-                repeats:
-                true
+                progressColor: UIColor.gray,
+                isScrubbing: true
             )
         }
     }
