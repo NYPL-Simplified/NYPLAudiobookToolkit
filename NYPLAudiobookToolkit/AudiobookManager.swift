@@ -9,12 +9,18 @@
 import UIKit
 import AudioEngine
 
-@objc public protocol AudiobookManagerDelegate {
+@objc public protocol RefreshDelegate {
     func updateManifest(completion: (AudiobookManifest) -> Void)
 }
 
-public protocol AudiobookManagement {
-    weak var delegate: AudiobookManagerDelegate? { get set }
+@objc public protocol AudiobookManagementDelegate {
+    func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int)
+    func audiobookManagerDidCompleteDownload(_ AudiobookManagment: AudiobookManagement)
+}
+
+@objc public protocol AudiobookManagement {
+    weak var refreshDelegate: RefreshDelegate? { get set }
+    weak var delegate: AudiobookManagementDelegate? { get set }
     var metadata: AudiobookMetadata { get }
     var manifest: AudiobookManifest { get }
     var isPlaying: Bool { get }
@@ -23,7 +29,19 @@ public protocol AudiobookManagement {
     func pause()
 }
 
-public class AudiobookManager: AudiobookManagement {
+public class AudiobookManager: AudiobookManagement, AudiobookNetworkRequesterDelegate {
+    
+    public var delegate: AudiobookManagementDelegate?
+
+
+    public func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService) {
+        self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.requester.downloadProgress)
+    }
+    
+    public func audiobookNetworkServiceDidCompleteDownload(_ audiobookNetworkService: AudiobookNetworkService) {
+        self.delegate?.audiobookManagerDidCompleteDownload(self)
+    }
+    
     public let metadata: AudiobookMetadata
     public let manifest: AudiobookManifest
     public var isPlaying: Bool {
@@ -41,9 +59,10 @@ public class AudiobookManager: AudiobookManagement {
     public convenience init (metadata: AudiobookMetadata, manifest: AudiobookManifest) {
         let requester = AudiobookNetworkService(manifest: manifest)
         self.init(metadata: metadata, manifest: manifest, requester: requester)
+        requester.delegate = self
     }
 
-    weak public var delegate: AudiobookManagerDelegate?
+    weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
         self.requester.fetch()

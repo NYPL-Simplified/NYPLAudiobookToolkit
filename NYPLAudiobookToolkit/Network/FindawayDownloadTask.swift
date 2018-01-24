@@ -22,6 +22,16 @@ class FindawayDownloadTask: DownloadTask {
     var delegate: DownloadTaskDelegate?
 
     let spine: [FindawayFragment]
+    
+    private var downloadStatus: FAEDownloadStatus {
+        var status = FAEDownloadStatus.notDownloaded
+        if let audiobookID = self.spine.first?.audiobookID {
+            status = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: audiobookID) ?? .notDownloaded
+        }
+        return status
+    }
+
+    private var timer: Timer?
     public init(spine: [FindawayFragment]) {
         self.spine = spine
     }
@@ -40,15 +50,20 @@ class FindawayDownloadTask: DownloadTask {
         )
 
         if let downloadRequest = request {
+            FAEAudioEngine.shared()?.downloadEngine?.delete(forAudiobookID: downloadRequest.audiobookID)
             FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: downloadRequest)
-            let completion = { [weak self] in
-                if let strongSelf = self {
-                    self?.delegate?.downloadTaskDidComplete(strongSelf)
-                }
-            }
-            FAEAudioEngine.shared()?.downloadEngine?.addCompletionHandler(completion, forSession: fragment.sessionKey)
+            self.timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true, block: { [weak self] (timer) in
+                self?.notifyDelegates()
+            })
         }
     }
     
+    private func notifyDelegates() {
+        self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
+        if self.downloadStatus == .downloaded {
+            self.timer?.invalidate()
+            self.delegate?.downloadTaskDidComplete(self)
+        }
+    }
     
 }

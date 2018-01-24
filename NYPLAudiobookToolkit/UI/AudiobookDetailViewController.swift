@@ -9,13 +9,20 @@
 import UIKit
 import PureLayout
 
-public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate {
-
-    let audiobookManager: AudiobookManagement
+public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate, AudiobookManagementDelegate {
+    public func audiobookManagerDidCompleteDownload(_ AudiobookManagment: AudiobookManagement) {
+        self.navigationItem.title = "Title Downloaded!"
+    }
+    
+    public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int) {
+        self.navigationItem.title = "Downloading \(percentage)%"
+    }
+    private let audiobookManager: AudiobookManagement
 
     public required init(audiobookManager: AudiobookManagement) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
+        self.audiobookManager.delegate = self
     }
     
     public required init?(coder aDecoder: NSCoder) {

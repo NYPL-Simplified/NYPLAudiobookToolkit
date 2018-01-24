@@ -13,7 +13,7 @@ public protocol AudiobookNetworkRequesterDelegate: class {
     func audiobookNetworkServiceDidCompleteDownload(_ audiobookNetworkService: AudiobookNetworkService)
 }
 
-public protocol AudiobookNetworkRequester {
+public protocol AudiobookNetworkRequester: class {
     func fetch()
     var downloadProgress: Int { get }
     var manifest: AudiobookManifest { get }
@@ -32,17 +32,17 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
     
     public init(manifest: AudiobookManifest) {
         self.manifest = manifest
-    }
-    
-    weak public var delegate: AudiobookNetworkRequesterDelegate?
-
-    public func fetch() {
         switch self.manifest.spine {
         case .findaway(let spine):
             self.downloadTask = FindawayDownloadTask(spine: spine)
         case .http(let spine):
             print("Requires a different spine")
         }
+    }
+    
+    weak public var delegate: AudiobookNetworkRequesterDelegate?
+
+    public func fetch() {
         self.downloadTask?.delegate = self
         self.downloadTask?.fetch()
     }
