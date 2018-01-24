@@ -20,23 +20,27 @@ private func findawayKey(_ key: String) -> String {
 
 public class AudiobookManifest: NSObject {
     public let spine: Spine
-    public init(placeholder: Any) {
-        self.spine = .http([])
-        super.init()
-    }
 
     public init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
         if let sessionKey = metadata[findawayKey("sessionKey")] as? String,
-            let audiobookID = metadata[findawayKey("fulfillmentId")] as? String {
+            let audiobookID = metadata[findawayKey("fulfillmentId")] as? String,
+            let licenseID = metadata[findawayKey("licenseId")] as? String {
             self.spine = .findaway(spine.flatMap({ (possibleLink) -> FindawayFragment? in
-                FindawayFragment(JSON: possibleLink, sessionKey: sessionKey, audiobookID: audiobookID)
+                FindawayFragment(
+                    JSON: possibleLink,
+                    sessionKey: sessionKey,
+                    audiobookID: audiobookID,
+                    licenseID: licenseID
+                )
             }))
         } else {
             self.spine = .http(spine.flatMap({ (possibleLink) -> AudiobookFragment? in
-                AudiobookFragment(JSON: possibleLink)
+                AudiobookFragment(
+                    JSON: possibleLink
+                )
             }))
         }
     }
@@ -69,11 +73,10 @@ public class FindawayFragment: NSObject {
     let audiobookID: String
     let licenseID: String
 
-    public init?(JSON: Any?, sessionKey: String, audiobookID: String) {
+    public init?(JSON: Any?, sessionKey: String, audiobookID: String, licenseID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let sequence = payload[findawayKey("sequence")] as? UInt else { return nil }
         guard let partNumber = payload[findawayKey("part")] as? UInt else { return nil }
-        guard let licenseID = payload[findawayKey("licenseId")] as? String else { return nil }
         self.licenseID = licenseID
         self.chapterNumber = sequence
         self.partNumber = partNumber
