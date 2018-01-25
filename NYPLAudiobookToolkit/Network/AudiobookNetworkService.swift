@@ -22,6 +22,7 @@ public protocol AudiobookNetworkRequester: class {
 
 public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, DownloadTaskDelegate {
     
+    
     public let manifest: AudiobookManifest
 
     private var downloadTask: DownloadTask?
@@ -35,7 +36,7 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
         switch self.manifest.spine {
         case .findaway(let spine):
             self.downloadTask = FindawayDownloadTask(spine: spine)
-        case .http(let spine):
+        case .http(let _):
             print("Requires a different spine")
         }
     }
@@ -53,5 +54,9 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
     
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidUpdateProgress(self)
+    }
+    
+    func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask) {
+        
     }
 }

@@ -7,6 +7,7 @@
 //
 
 protocol DownloadTaskDelegate {
+    func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask)
     func downloadTaskDidComplete(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
 }
