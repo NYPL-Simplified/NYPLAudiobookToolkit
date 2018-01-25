@@ -21,7 +21,10 @@ class ViewController: UIViewController {
             modified: Date(),
             language: "en"
         )
-        let manifest = AudiobookManifest(placeholder: "")
+
+        let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
+        guard let json = possibleJson else { return }
+        guard let manifest = AudiobookManifest(JSON: json) else { return }
         let vc = AudiobookDetailViewController(
             audiobookManager: AudiobookManager(
                 metadata: metadata,
