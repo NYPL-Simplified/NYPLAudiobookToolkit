@@ -11,6 +11,7 @@ import AudioEngine
 
 @objc protocol AudiobookLifecycleManagmentDelegate: class {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifecycleManagment)
+    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, DidRecieve error: AudiobookError)
 }
 
 @objc protocol AudiobookLifecycleManagment: class {
@@ -23,6 +24,7 @@ import AudioEngine
 }
 
 public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
+    
     public static let shared = AudiobookLifecycleManager()
     
     // TODO: Make this a container of weak objects
@@ -36,6 +38,12 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
             name: NSNotification.Name.FAEDatabaseVerificationComplete,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(AudiobookLifecycleManager.audioEngineDidRecieveError(_:)),
+            name: NSNotification.Name.FAEDownloadRequestFailed,
+            object: nil
+        )
     }
 
     public var audioEngineDatabaseHasBeenVerified: Bool {
@@ -45,12 +53,18 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
 
     @objc public func audioEngineDatabaseVerificationStatusHasBeenUpdated(_ notification: NSNotification) {
         self._audioEngineDatabaseHasBeenVerified = true
-        self.notifyDelegates()
-    }
-    
-    func notifyDelegates() {
         self.delegates.forEach { (delegate) in
             delegate.audiobookLifecycleManagerDidUpdate(self)
+        }
+    }
+    
+    @objc public func audioEngineDidRecieveError(_ notification: NSNotification) {
+        guard let audiobookID = notification.userInfo?["audiobookID"] as? String else { return }
+        guard let audiobookError = notification.userInfo?["audioEngineError"] as? NSError else { return }
+        self.delegates.forEach { (delegate) in
+            delegate.audiobookLifecycleManager(self,
+                DidRecieve: DefaultAudiobookError(error: audiobookError, audiobookID: audiobookID)
+            )
         }
     }
     
@@ -72,7 +86,6 @@ extension AudiobookLifecycleManager {
     public func didFinishLaunching () {
         FAEAudioEngine.shared()?.didFinishLaunching()
         FAELogEngine.setLogLevel(.verbose)
-        
     }
     
     public func didEnterBackground () {

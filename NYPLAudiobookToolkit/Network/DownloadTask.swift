@@ -7,13 +7,14 @@
 //
 
 protocol DownloadTaskDelegate {
-    func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask)
-    func downloadTaskDidComplete(_ downloadTask: DownloadTask)
+    func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
+    func downloadTaskDidError(_ downloadTask: DownloadTask)
 }
 
 protocol DownloadTask {
     func fetch()
     var downloadProgress: Int { get }
+    var error: AudiobookError? { get }
     var delegate: DownloadTaskDelegate? { get set }
 }

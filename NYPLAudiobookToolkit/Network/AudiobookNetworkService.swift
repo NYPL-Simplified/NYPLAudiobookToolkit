@@ -10,7 +10,8 @@ import UIKit
 
 public protocol AudiobookNetworkRequesterDelegate: class {
     func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService)
-    func audiobookNetworkServiceDidCompleteDownload(_ audiobookNetworkService: AudiobookNetworkService)
+    func audiobookNetworkServiceReadyForPlayback(_ audiobookNetworkService: AudiobookNetworkService)
+    func audiobookNetworkServiceDidError(_ audiobookNetworkService: AudiobookNetworkService)
 }
 
 public protocol AudiobookNetworkRequester: class {
@@ -18,45 +19,56 @@ public protocol AudiobookNetworkRequester: class {
     var downloadProgress: Int { get }
     var manifest: AudiobookManifest { get }
     var delegate: AudiobookNetworkRequesterDelegate? { get set }
+    var error: AudiobookError? { get }
 }
 
 public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, DownloadTaskDelegate {
     
-    
     public let manifest: AudiobookManifest
 
     private var downloadTask: DownloadTask?
-
+    
+    public var error: AudiobookError? {
+        return self.downloadTask?.error
+    }
+    
     public var downloadProgress: Int {
         return self.downloadTask?.downloadProgress ?? 0
     }
     
-    public init(manifest: AudiobookManifest) {
+    internal init(manifest: AudiobookManifest, downloadTask: DownloadTask?) {
         self.manifest = manifest
-        switch self.manifest.spine {
+        self.downloadTask = downloadTask
+    }
+    
+    convenience init(manifest: AudiobookManifest) {
+        var downloadTask: DownloadTask? = nil
+        switch manifest.spine {
         case .findaway(let spine):
-            self.downloadTask = FindawayDownloadTask(spine: spine)
+             downloadTask = FindawayDownloadTask(spine: spine)
         case .http(let _):
             print("Requires a different spine")
         }
+        self.init(manifest: manifest, downloadTask: downloadTask)
     }
     
-    weak public var delegate: AudiobookNetworkRequesterDelegate?
+    public weak var delegate: AudiobookNetworkRequesterDelegate?
 
     public func fetch() {
         self.downloadTask?.delegate = self
         self.downloadTask?.fetch()
-    }
-
-    func downloadTaskDidComplete(_ downloadTask: DownloadTask) {
-        self.delegate?.audiobookNetworkServiceDidCompleteDownload(self)
     }
     
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidUpdateProgress(self)
     }
     
+    
+    func downloadTaskDidError(_ downloadTask: DownloadTask) {
+        self.delegate?.audiobookNetworkServiceDidError(self)
+    }
+
     func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask) {
-        
+        self.delegate?.audiobookNetworkServiceReadyForPlayback(self)
     }
 }

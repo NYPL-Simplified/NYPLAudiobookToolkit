@@ -10,10 +10,17 @@ import UIKit
 import PureLayout
 
 public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate, AudiobookManagementDelegate {
-    public func audiobookManagerDidCompleteDownload(_ AudiobookManagment: AudiobookManagement) {
+    public func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManagement) {
         self.navigationItem.title = "Title Downloaded!"
+        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
+            self.navigationItem.title = self.audiobookManager.metadata.title
+        }
     }
-    
+
+    public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didRecieve error: AudiobookError) {
+        self.present(UIAlertController(title: "Error!", message: "Big problem", preferredStyle: .alert), animated: false, completion: nil)
+    }
+
     public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int) {
         self.navigationItem.title = "Downloading \(percentage)%"
     }

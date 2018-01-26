@@ -15,7 +15,8 @@ import AudioEngine
 
 @objc public protocol AudiobookManagementDelegate {
     func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int)
-    func audiobookManagerDidCompleteDownload(_ AudiobookManagment: AudiobookManagement)
+    func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManagement)
+    func audiobookManager(_ AudiobookManagment: AudiobookManagement, didRecieve error: AudiobookError)
 }
 
 @objc public protocol AudiobookManagement {
@@ -29,18 +30,9 @@ import AudioEngine
     func pause()
 }
 
-public class AudiobookManager: AudiobookManagement, AudiobookNetworkRequesterDelegate {
+public class AudiobookManager: AudiobookManagement {
     
     public var delegate: AudiobookManagementDelegate?
-
-
-    public func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService) {
-        self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.requester.downloadProgress)
-    }
-    
-    public func audiobookNetworkServiceDidCompleteDownload(_ audiobookNetworkService: AudiobookNetworkService) {
-        self.delegate?.audiobookManagerDidCompleteDownload(self)
-    }
     
     public let metadata: AudiobookMetadata
     public let manifest: AudiobookManifest
@@ -75,5 +67,20 @@ public class AudiobookManager: AudiobookManagement, AudiobookNetworkRequesterDel
     public func pause() {
         
     }
+}
+
+extension AudiobookManager: AudiobookNetworkRequesterDelegate {
+    public func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService) {
+        self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.requester.downloadProgress)
+    }
     
+    public func audiobookNetworkServiceDidError(_ audiobookNetworkService: AudiobookNetworkService) {
+        if let error = audiobookNetworkService.error {
+            self.delegate?.audiobookManager(self, didRecieve: error)
+        }
+    }
+    
+    public func audiobookNetworkServiceReadyForPlayback(_ audiobookNetworkService: AudiobookNetworkService) {
+        self.delegate?.audiobookManagerReadyForPlayback(self)
+    }
 }
