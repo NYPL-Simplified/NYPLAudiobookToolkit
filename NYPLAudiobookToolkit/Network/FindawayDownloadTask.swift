@@ -11,7 +11,8 @@ import AudioEngine
 
 class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
-    
+    weak var delegate: DownloadTaskDelegate?
+    let spine: [FindawayFragment]
     var downloadProgress: Int {
         var progress = 0
         if let fragment = self.spine.first {
@@ -20,12 +21,17 @@ class FindawayDownloadTask: DownloadTask {
         return progress
     }
     
-    var delegate: DownloadTaskDelegate?
-    let spine: [FindawayFragment]
-
-    private var databaseHasBeenVerified: Bool
+    private var timer: Timer?
     private var retryAfterVerification = false
+    private var databaseHasBeenVerified: Bool
     private var downloadRequest: FAEDownloadRequest?
+    private var downloadStatus: FAEDownloadStatus {
+        var status = FAEDownloadStatus.notDownloaded
+        if let audiobookID = self.downloadRequest?.audiobookID {
+            status = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: audiobookID) ?? .notDownloaded
+        }
+        return status
+    }
 
     public init(spine: [FindawayFragment], audiobookLifeCycleManager: AudiobookLifecycleManagment, downloadRequest: FAEDownloadRequest?) {
         self.spine = spine
@@ -56,17 +62,6 @@ class FindawayDownloadTask: DownloadTask {
         }
         self.init(spine: spine, audiobookLifeCycleManager: AudiobookLifecycleManager.shared, downloadRequest: request)
     }
-    
-    private var downloadStatus: FAEDownloadStatus {
-        var status = FAEDownloadStatus.notDownloaded
-        if let audiobookID = self.downloadRequest?.audiobookID {
-            status = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: audiobookID) ?? .notDownloaded
-        }
-        return status
-    }
-
-    
-    private var timer: Timer?
     
     public func fetch() {
         guard self.databaseHasBeenVerified else {

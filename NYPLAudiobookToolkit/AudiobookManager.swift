@@ -26,7 +26,7 @@ import AudioEngine
     var manifest: AudiobookManifest { get }
     var isPlaying: Bool { get }
     func fetch()
-    func play()
+    func play() // needs to take some sort of offset/indication of where to start playing
     func pause()
 }
 

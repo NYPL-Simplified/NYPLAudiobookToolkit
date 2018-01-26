@@ -9,12 +9,12 @@
 import UIKit
 
 @objc public protocol AudiobookError {
-    var error: Error { get }
+    var error: Any { get }
     var audiobookID: String { get }
 }
 
 class DefaultAudiobookError: AudiobookError {
-    let error: Error
+    let error: Any
     let audiobookID: String
     init(error: Error, audiobookID: String) {
         self.error = error

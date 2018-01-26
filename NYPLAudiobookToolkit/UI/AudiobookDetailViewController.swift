@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Foundation
 import PureLayout
 
 public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate, AudiobookManagementDelegate {
@@ -17,8 +18,10 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         }
     }
 
+    // TODO: have more defined relationships for how errors come in and will be handled
     public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didRecieve error: AudiobookError) {
-        self.present(UIAlertController(title: "Error!", message: "Big problem", preferredStyle: .alert), animated: false, completion: nil)
+        let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Oops, something went wrong!")
+        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
     }
 
     public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int) {

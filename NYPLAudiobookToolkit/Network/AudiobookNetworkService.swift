@@ -23,10 +23,8 @@ public protocol AudiobookNetworkRequester: class {
 }
 
 public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, DownloadTaskDelegate {
-    
     public let manifest: AudiobookManifest
-
-    private var downloadTask: DownloadTask?
+    public weak var delegate: AudiobookNetworkRequesterDelegate?
     
     public var error: AudiobookError? {
         return self.downloadTask?.error
@@ -36,6 +34,7 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
         return self.downloadTask?.downloadProgress ?? 0
     }
     
+    private var downloadTask: DownloadTask?
     internal init(manifest: AudiobookManifest, downloadTask: DownloadTask?) {
         self.manifest = manifest
         self.downloadTask = downloadTask
@@ -51,8 +50,6 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
         }
         self.init(manifest: manifest, downloadTask: downloadTask)
     }
-    
-    public weak var delegate: AudiobookNetworkRequesterDelegate?
 
     public func fetch() {
         self.downloadTask?.delegate = self
@@ -62,7 +59,6 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidUpdateProgress(self)
     }
-    
     
     func downloadTaskDidError(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidError(self)
