@@ -9,23 +9,23 @@
 import UIKit
 import AudioEngine
 
-@objc protocol AudiobookLifecycleManagmentDelegate: class {
-    func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifecycleManagment)
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, didRecieve error: AudiobookError)
+@objc protocol AudiobookLifecycleManagerDelegate: class {
+    func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager)
+    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError)
 }
 
-@objc protocol AudiobookLifecycleManagment: class {
+@objc protocol AudiobookLifeCycleManager: class {
     var audioEngineDatabaseHasBeenVerified: Bool { get }
     func didFinishLaunching()
     func didEnterBackground()
     func willTerminate()
-    func registerDelegate(_ delegate: AudiobookLifecycleManagmentDelegate)
-    func removeDelegate(_ delegate: AudiobookLifecycleManagmentDelegate)
+    func registerDelegate(_ delegate: AudiobookLifecycleManagerDelegate)
+    func removeDelegate(_ delegate: AudiobookLifecycleManagerDelegate)
 }
 
-public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
-    public static let shared = AudiobookLifecycleManager()
-    private var delegates: NSHashTable<AudiobookLifecycleManagmentDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
+public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManager {
+    public static let shared = DefaultAudiobookLifecycleManager()
+    private var delegates: NSHashTable<AudiobookLifecycleManagerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     public var audioEngineDatabaseHasBeenVerified: Bool {
         return _audioEngineDatabaseHasBeenVerified
     }
@@ -34,13 +34,13 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
         super.init()
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(AudiobookLifecycleManager.audioEngineDatabaseVerificationStatusHasBeenUpdated(_:)),
+            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDatabaseVerificationStatusHasBeenUpdated(_:)),
             name: NSNotification.Name.FAEDatabaseVerificationComplete,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(AudiobookLifecycleManager.audioEngineDidRecieveError(_:)),
+            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDidRecieveError(_:)),
             name: NSNotification.Name.FAEDownloadRequestFailed,
             object: nil
         )
@@ -50,11 +50,11 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
         NotificationCenter.default.removeObserver(self)
     }
 
-    func registerDelegate(_ delegate: AudiobookLifecycleManagmentDelegate) {
+    func registerDelegate(_ delegate: AudiobookLifecycleManagerDelegate) {
         self.delegates.add(delegate)
     }
     
-    func removeDelegate(_ delegate: AudiobookLifecycleManagmentDelegate) {
+    func removeDelegate(_ delegate: AudiobookLifecycleManagerDelegate) {
         self.delegates.remove(delegate)
     }
 
@@ -76,7 +76,7 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
     }
 }
 
-extension AudiobookLifecycleManager {
+extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
         FAEAudioEngine.shared()?.didFinishLaunching()
         FAELogEngine.setLogLevel(.verbose)

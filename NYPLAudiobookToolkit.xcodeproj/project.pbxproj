@@ -22,8 +22,8 @@
 		7B5441E1200EA82C0047B6C6 /* AudiobookMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */; };
 		7B5441E3200EA82C0047B6C6 /* AudiobookManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DC200EA82C0047B6C6 /* AudiobookManifest.swift */; };
 		7B5441E4200EA82C0047B6C6 /* AudiobookDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DD200EA82C0047B6C6 /* AudiobookDetailViewController.swift */; };
-		7B5441E6200EA82C0047B6C6 /* AudiobookLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */; };
-		7B5441E7200EA82C0047B6C6 /* AudiobookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */; };
+		7B5441E6200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DF200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift */; };
+		7B5441E7200EA82C0047B6C6 /* DefaultAudiobookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441E0200EA82C0047B6C6 /* DefaultAudiobookManager.swift */; };
 		7B5441EA200EA8750047B6C6 /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; };
 		7B5441EC200EA8950047B6C6 /* AudioEngine.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7B5441ED200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; };
@@ -127,8 +127,8 @@
 		7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookMetadata.swift; sourceTree = "<group>"; };
 		7B5441DC200EA82C0047B6C6 /* AudiobookManifest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookManifest.swift; sourceTree = "<group>"; };
 		7B5441DD200EA82C0047B6C6 /* AudiobookDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookDetailViewController.swift; sourceTree = "<group>"; };
-		7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookLifecycleManager.swift; sourceTree = "<group>"; };
-		7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookManager.swift; sourceTree = "<group>"; };
+		7B5441DF200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultAudiobookLifecycleManager.swift; sourceTree = "<group>"; };
+		7B5441E0200EA82C0047B6C6 /* DefaultAudiobookManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultAudiobookManager.swift; sourceTree = "<group>"; };
 		7B5441E9200EA8740047B6C6 /* AudioEngine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioEngine.framework; path = AudioEngine/Debug/AudioEngine.framework; sourceTree = "<group>"; };
 		7B5441F0200EAAA20047B6C6 /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 		7B5441F3200FB3EE0047B6C6 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -231,7 +231,7 @@
 				7BD759C120168FF5004CE65F /* Network */,
 				7B987FDA201B88FF00A94B12 /* Core */,
 				7B3BD9C62011737B002C5416 /* UI */,
-				7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */,
+				7B5441E0200EA82C0047B6C6 /* DefaultAudiobookManager.swift */,
 				7B5441DC200EA82C0047B6C6 /* AudiobookManifest.swift */,
 				7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */,
 				7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */,
@@ -296,7 +296,7 @@
 		7B987FDA201B88FF00A94B12 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */,
+				7B5441DF200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift */,
 				7B987FDB201B892000A94B12 /* AudibookError.swift */,
 			);
 			path = Core;
@@ -528,8 +528,8 @@
 				7BD759C82017A8E4004CE65F /* AudiobookNetworkService.swift in Sources */,
 				7B5441E3200EA82C0047B6C6 /* AudiobookManifest.swift in Sources */,
 				7B987FDC201B892000A94B12 /* AudibookError.swift in Sources */,
-				7B5441E6200EA82C0047B6C6 /* AudiobookLifecycleManager.swift in Sources */,
-				7B5441E7200EA82C0047B6C6 /* AudiobookManager.swift in Sources */,
+				7B5441E6200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift in Sources */,
+				7B5441E7200EA82C0047B6C6 /* DefaultAudiobookManager.swift in Sources */,
 				7B5441E1200EA82C0047B6C6 /* AudiobookMetadata.swift in Sources */,
 				7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */,
 				7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */,

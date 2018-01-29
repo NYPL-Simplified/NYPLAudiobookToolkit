@@ -10,26 +10,10 @@ import UIKit
 import Foundation
 import PureLayout
 
-public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate, AudiobookManagementDelegate {
-    public func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManagement) {
-        self.navigationItem.title = "Title Downloaded!"
-        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
-            self.navigationItem.title = self.audiobookManager.metadata.title
-        }
-    }
+public class AudiobookDetailViewController: UIViewController {
+    private let audiobookManager: AudiobookManager
 
-    // TODO: have more defined relationships for how errors come in and will be handled
-    public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didRecieve error: AudiobookError) {
-        let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Oops, something went wrong!")
-        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
-    }
-
-    public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Float) {
-        self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
-    }
-    private let audiobookManager: AudiobookManagement
-
-    public required init(audiobookManager: AudiobookManagement) {
+    public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
         self.audiobookManager.delegate = self
@@ -99,6 +83,12 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
 
+    @objc func coverArtWasPressed(_ sender: Any) {
+        self.audiobookManager.fetch()
+    }
+}
+
+extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.isPlaying {
             self.audiobookManager.pause()
@@ -108,9 +98,24 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
             self.seekBar.play()
         }
     }
+}
+
+extension AudiobookDetailViewController: AudiobookManagerDelegate {
+    public func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManager) {
+        self.navigationItem.title = "Title Downloaded!"
+        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
+            self.navigationItem.title = self.audiobookManager.metadata.title
+        }
+    }
     
-    @objc func coverArtWasPressed(_ sender: Any) {
-        self.audiobookManager.fetch()
+    // TODO: have more defined relationships for how errors come in and will be handled
+    public func audiobookManager(_ AudiobookManagment: AudiobookManager, didRecieve error: AudiobookError) {
+        let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
+        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
+    }
+    
+    public func audiobookManager(_ AudiobookManagment: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
+        self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
     }
 }
 

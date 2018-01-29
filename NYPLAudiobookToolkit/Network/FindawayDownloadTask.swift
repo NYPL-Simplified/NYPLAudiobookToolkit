@@ -35,7 +35,7 @@ class FindawayDownloadTask: DownloadTask {
         return status
     }
 
-    public init(spine: [FindawayFragment], audiobookLifeCycleManager: AudiobookLifecycleManagment, downloadRequest: FAEDownloadRequest?) {
+    public init(spine: [FindawayFragment], audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest?) {
         self.spine = spine
         self.databaseHasBeenVerified = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
         if !self.databaseHasBeenVerified {
@@ -62,7 +62,7 @@ class FindawayDownloadTask: DownloadTask {
                 )
             }
         }
-        self.init(spine: spine, audiobookLifeCycleManager: AudiobookLifecycleManager.shared, downloadRequest: request)
+        self.init(spine: spine, audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request)
     }
     
     deinit {
@@ -98,8 +98,8 @@ class FindawayDownloadTask: DownloadTask {
     }
 }
 
-extension FindawayDownloadTask: AudiobookLifecycleManagmentDelegate {
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, didRecieve error: AudiobookError) {
+extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
+    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
         guard let audiobookID = self.spine.first?.audiobookID else { return }
         if error.audiobookID == audiobookID {
             self.error = error
@@ -107,7 +107,7 @@ extension FindawayDownloadTask: AudiobookLifecycleManagmentDelegate {
         }
     }
     
-    func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifecycleManagment) {
+    func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
         self.databaseHasBeenVerified = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
         guard self.databaseHasBeenVerified else { return }
         guard self.retryAfterVerification else { return }

@@ -13,15 +13,15 @@ import AudioEngine
     func updateManifest(completion: (AudiobookManifest) -> Void)
 }
 
-@objc public protocol AudiobookManagementDelegate {
-    func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Float)
-    func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManagement)
-    func audiobookManager(_ AudiobookManagment: AudiobookManagement, didRecieve error: AudiobookError)
+@objc public protocol AudiobookManagerDelegate {
+    func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float)
+    func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didRecieve error: AudiobookError)
 }
 
-@objc public protocol AudiobookManagement {
+@objc public protocol AudiobookManager {
     weak var refreshDelegate: RefreshDelegate? { get set }
-    weak var delegate: AudiobookManagementDelegate? { get set }
+    weak var delegate: AudiobookManagerDelegate? { get set }
     var metadata: AudiobookMetadata { get }
     var manifest: AudiobookManifest { get }
     var isPlaying: Bool { get }
@@ -30,9 +30,9 @@ import AudioEngine
     func pause()
 }
 
-public class AudiobookManager: AudiobookManagement {
+public class DefaultAudiobookManager: AudiobookManager {
     
-    public var delegate: AudiobookManagementDelegate?
+    public var delegate: AudiobookManagerDelegate?
     
     public let metadata: AudiobookMetadata
     public let manifest: AudiobookManifest
@@ -69,7 +69,7 @@ public class AudiobookManager: AudiobookManagement {
     }
 }
 
-extension AudiobookManager: AudiobookNetworkRequesterDelegate {
+extension DefaultAudiobookManager: AudiobookNetworkRequesterDelegate {
     public func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService) {
         self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.requester.downloadProgress)
     }
