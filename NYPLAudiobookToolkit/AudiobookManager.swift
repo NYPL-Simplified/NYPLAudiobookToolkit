@@ -14,7 +14,7 @@ import AudioEngine
 }
 
 @objc public protocol AudiobookManagementDelegate {
-    func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int)
+    func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Float)
     func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManagement)
     func audiobookManager(_ AudiobookManagment: AudiobookManagement, didRecieve error: AudiobookError)
 }

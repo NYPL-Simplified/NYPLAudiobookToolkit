@@ -11,7 +11,7 @@ import AudioEngine
 
 @objc protocol AudiobookLifecycleManagmentDelegate: class {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifecycleManagment)
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, DidRecieve error: AudiobookError)
+    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, didRecieve error: AudiobookError)
 }
 
 @objc protocol AudiobookLifecycleManagment: class {
@@ -70,7 +70,7 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
         guard let audiobookError = notification.userInfo?["audioEngineError"] as? NSError else { return }
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookLifecycleManager(self,
-                DidRecieve: DefaultAudiobookError(error: audiobookError, audiobookID: audiobookID)
+                didRecieve: DefaultAudiobookError(error: audiobookError, audiobookID: audiobookID)
             )
         }
     }

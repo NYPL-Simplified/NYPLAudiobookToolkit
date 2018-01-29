@@ -8,15 +8,16 @@
 
 import UIKit
 
-public protocol AudiobookNetworkRequesterDelegate: class {
+
+@objc public protocol AudiobookNetworkRequesterDelegate: class {
     func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService)
     func audiobookNetworkServiceReadyForPlayback(_ audiobookNetworkService: AudiobookNetworkService)
     func audiobookNetworkServiceDidError(_ audiobookNetworkService: AudiobookNetworkService)
 }
 
-public protocol AudiobookNetworkRequester: class {
+@objc public protocol AudiobookNetworkRequester: class {
     func fetch()
-    var downloadProgress: Int { get }
+    var downloadProgress: Float { get }
     var manifest: AudiobookManifest { get }
     var delegate: AudiobookNetworkRequesterDelegate? { get set }
     var error: AudiobookError? { get }
@@ -30,8 +31,8 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester {
         return self.downloadTask?.error
     }
     
-    public var downloadProgress: Int {
-        return self.downloadTask?.downloadProgress ?? 0
+    public var downloadProgress: Float {
+        return self.downloadTask?.downloadProgress ?? 0.0
     }
 
     private var downloadTask: DownloadTask?

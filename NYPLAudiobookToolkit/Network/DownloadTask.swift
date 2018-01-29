@@ -14,7 +14,7 @@ protocol DownloadTaskDelegate: class {
 
 protocol DownloadTask {
     func fetch()
-    var downloadProgress: Int { get }
+    var downloadProgress: Float { get }
     var error: AudiobookError? { get }
     var delegate: DownloadTaskDelegate? { get set }
 }

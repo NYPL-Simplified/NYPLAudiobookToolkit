@@ -13,10 +13,12 @@ class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
     let spine: [FindawayFragment]
-    var downloadProgress: Int {
-        var progress = 0
+    var downloadProgress: Float {
+        var progress: Float = 0
         if let fragment = self.spine.first {
-            progress = Int(FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: fragment.audiobookID) ?? 0)
+            progress = findawayProgressToNYPLToolkit(
+                FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: fragment.audiobookID)
+            )
         }
         return progress
     }
@@ -97,7 +99,7 @@ class FindawayDownloadTask: DownloadTask {
 }
 
 extension FindawayDownloadTask: AudiobookLifecycleManagmentDelegate {
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, DidRecieve error: AudiobookError) {
+    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifecycleManagment, didRecieve error: AudiobookError) {
         guard let audiobookID = self.spine.first?.audiobookID else { return }
         if error.audiobookID == audiobookID {
             self.error = error
@@ -107,11 +109,16 @@ extension FindawayDownloadTask: AudiobookLifecycleManagmentDelegate {
     
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifecycleManagment) {
         self.databaseHasBeenVerified = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
-        if self.databaseHasBeenVerified {
-            audiobookLifecycleManager.removeDelegate(self)
-            if self.retryAfterVerification {
-                self.fetch()
-            }
-        }
+        guard self.databaseHasBeenVerified else { return }
+        guard self.retryAfterVerification else { return }
+        self.fetch()
     }
+}
+
+private func findawayProgressToNYPLToolkit(_ progress: Float?) -> Float {
+    var toolkitProgress: Float = 0
+    if let progress = progress {
+        toolkitProgress = progress / 100
+    }
+    return toolkitProgress
 }

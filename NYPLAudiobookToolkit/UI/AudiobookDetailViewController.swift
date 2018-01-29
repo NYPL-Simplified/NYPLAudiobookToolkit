@@ -24,8 +24,8 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
     }
 
-    public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Int) {
-        self.navigationItem.title = "Downloading \(percentage)%"
+    public func audiobookManager(_ AudiobookManagment: AudiobookManagement, didUpdateDownloadPercentage percentage: Float) {
+        self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
     }
     private let audiobookManager: AudiobookManagement
 
