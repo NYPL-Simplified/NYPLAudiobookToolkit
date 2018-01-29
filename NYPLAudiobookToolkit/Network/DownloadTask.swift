@@ -6,7 +6,7 @@
 //  Copyright © 2018 Dean Silfen. All rights reserved.
 //
 
-protocol DownloadTaskDelegate {
+protocol DownloadTaskDelegate: class {
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
     func downloadTaskDidError(_ downloadTask: DownloadTask)

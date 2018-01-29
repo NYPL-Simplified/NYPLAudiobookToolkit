@@ -105,6 +105,11 @@ class ScrubberView: UIView {
         self.setup()
     }
     
+    deinit {
+        self.timer?.invalidate()
+        self.timer = nil
+    }
+    
     func setup () {
         self.accessibilityIdentifier = "scrubber_container"
 

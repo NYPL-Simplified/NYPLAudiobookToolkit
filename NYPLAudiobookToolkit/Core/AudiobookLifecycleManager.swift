@@ -24,12 +24,12 @@ import AudioEngine
 }
 
 public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
-    
     public static let shared = AudiobookLifecycleManager()
-    
-    // TODO: Make this a container of weak objects
-    private var delegates: [AudiobookLifecycleManagmentDelegate] = []
-
+    private var delegates: NSHashTable<AudiobookLifecycleManagmentDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
+    public var audioEngineDatabaseHasBeenVerified: Bool {
+        return _audioEngineDatabaseHasBeenVerified
+    }
+    private var _audioEngineDatabaseHasBeenVerified = false
     private override init() {
         super.init()
         NotificationCenter.default.addObserver(
@@ -45,15 +45,22 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
             object: nil
         )
     }
-
-    public var audioEngineDatabaseHasBeenVerified: Bool {
-        return _audioEngineDatabaseHasBeenVerified
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
-    private var _audioEngineDatabaseHasBeenVerified = false
+
+    func registerDelegate(_ delegate: AudiobookLifecycleManagmentDelegate) {
+        self.delegates.add(delegate)
+    }
+    
+    func removeDelegate(_ delegate: AudiobookLifecycleManagmentDelegate) {
+        self.delegates.remove(delegate)
+    }
 
     @objc public func audioEngineDatabaseVerificationStatusHasBeenUpdated(_ notification: NSNotification) {
         self._audioEngineDatabaseHasBeenVerified = true
-        self.delegates.forEach { (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookLifecycleManagerDidUpdate(self)
         }
     }
@@ -61,23 +68,10 @@ public class AudiobookLifecycleManager: NSObject, AudiobookLifecycleManagment {
     @objc public func audioEngineDidRecieveError(_ notification: NSNotification) {
         guard let audiobookID = notification.userInfo?["audiobookID"] as? String else { return }
         guard let audiobookError = notification.userInfo?["audioEngineError"] as? NSError else { return }
-        self.delegates.forEach { (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookLifecycleManager(self,
                 DidRecieve: DefaultAudiobookError(error: audiobookError, audiobookID: audiobookID)
             )
-        }
-    }
-    
-    func registerDelegate(_ delegate: AudiobookLifecycleManagmentDelegate) {
-        self.delegates.append(delegate)
-    }
-
-    func removeDelegate(_ delegate: AudiobookLifecycleManagmentDelegate) {
-        let removalIndex = self.delegates.index(where: { (existingDelegates) -> Bool in
-            existingDelegates === delegate
-        })
-        if let index = removalIndex {
-            self.delegates.remove(at: index)
         }
     }
 }

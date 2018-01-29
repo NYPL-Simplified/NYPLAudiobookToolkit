@@ -22,7 +22,7 @@ public protocol AudiobookNetworkRequester: class {
     var error: AudiobookError? { get }
 }
 
-public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, DownloadTaskDelegate {
+public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester {
     public let manifest: AudiobookManifest
     public weak var delegate: AudiobookNetworkRequesterDelegate?
     
@@ -33,8 +33,9 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
     public var downloadProgress: Int {
         return self.downloadTask?.downloadProgress ?? 0
     }
-    
+
     private var downloadTask: DownloadTask?
+
     internal init(manifest: AudiobookManifest, downloadTask: DownloadTask?) {
         self.manifest = manifest
         self.downloadTask = downloadTask
@@ -45,6 +46,7 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
         switch manifest.spine {
         case .findaway(let spine):
              downloadTask = FindawayDownloadTask(spine: spine)
+        // TODO: Implement HTTP Fragments
         case .http(let _):
             print("Requires a different spine")
         }
@@ -55,7 +57,9 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
         self.downloadTask?.delegate = self
         self.downloadTask?.fetch()
     }
-    
+}
+
+extension AudiobookNetworkService: DownloadTaskDelegate {
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidUpdateProgress(self)
     }
@@ -63,7 +67,7 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester, Downl
     func downloadTaskDidError(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidError(self)
     }
-
+    
     func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask) {
         self.delegate?.audiobookNetworkServiceReadyForPlayback(self)
     }

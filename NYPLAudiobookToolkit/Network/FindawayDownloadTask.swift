@@ -63,6 +63,11 @@ class FindawayDownloadTask: DownloadTask {
         self.init(spine: spine, audiobookLifeCycleManager: AudiobookLifecycleManager.shared, downloadRequest: request)
     }
     
+    deinit {
+        self.timer?.invalidate()
+        self.timer = nil
+    }
+
     public func fetch() {
         guard self.databaseHasBeenVerified else {
             self.retryAfterVerification = true
