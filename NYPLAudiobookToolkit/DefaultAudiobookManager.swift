@@ -9,8 +9,26 @@
 import UIKit
 import AudioEngine
 
+/// If the AudiobookManager runs into an error while fetching
+/// values from the provided AudiobookManifest, it may use this
+/// protocol to request a new AudiobookManifest from the host app.
 @objc public protocol RefreshDelegate {
-    func updateManifest(completion: (AudiobookManifest) -> Void)
+    /**
+     Will be called when the manager determines it needs a new manifest.
+     
+     Example usage:
+     ```
+     func updateManifest(completion: (AudiobookManifest?) -> Void) {
+     let newManifest = self.getNewManifest()
+     completion(newManifest)
+     }
+     ```
+     
+     - Parameters:
+        - completion: The block to be called when new manifest has been obtained.
+        - manifest: The new AudiobookManifest, may be nil if fetch was unsuccessful
+     */
+    func updateManifest(completion: (_ manifest: AudiobookManifest?) -> Void)
 }
 
 @objc public protocol AudiobookManagerDelegate {
