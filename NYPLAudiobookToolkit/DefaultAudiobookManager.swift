@@ -13,6 +13,7 @@ import AudioEngine
 /// values from the provided AudiobookManifest, it may use this
 /// protocol to request a new AudiobookManifest from the host app.
 @objc public protocol RefreshDelegate {
+
     /**
      Will be called when the manager determines it needs a new manifest.
      
@@ -37,6 +38,10 @@ import AudioEngine
     func audiobookManager(_ audiobookManager: AudiobookManager, didRecieve error: AudiobookError)
 }
 
+
+/// AudiobookManager is the main class for bringing Audiobook Playback to clients.
+/// It is intended to be used by the host app to initiate downloads, control playback,
+/// and manager the filesystem.
 @objc public protocol AudiobookManager {
     weak var refreshDelegate: RefreshDelegate? { get set }
     weak var delegate: AudiobookManagerDelegate? { get set }
@@ -48,6 +53,8 @@ import AudioEngine
     func pause()
 }
 
+/// Implementation of the AudiobookManager intended for use by clients. Also intended
+/// to be used by the AudibookDetailViewController to respond to UI events.
 public class DefaultAudiobookManager: AudiobookManager {
     
     public var delegate: AudiobookManagerDelegate?

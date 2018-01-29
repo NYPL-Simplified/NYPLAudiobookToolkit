@@ -9,11 +9,25 @@
 import UIKit
 import AudioEngine
 
+
+/// Delegate to be notified when the state of the lifecycle manager has changed
 @objc protocol AudiobookLifecycleManagerDelegate: class {
+
+    /**
+     General notifications about the state of the manager.
+    */
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager)
+    
+    /**
+     Notifications specific to errors. The lifeCycleManager does not retain errors, simply listens for them and passes them forward.
+     The reason for this is multiple clients can be fetching books at once, but may be only one AudiobookLifeCycleManager, 
+     */
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError)
 }
 
+/// Implementers of this protocol should hook into Lifecycle events in AppDelegate.swift.
+/// They should also listen to notifications found in AudioEngine in order to update their internal state.
+/// This is a wrapper around the stateful aspects of AudioEngine and avoids objects listening to NSNotifications directly.
 @objc protocol AudiobookLifeCycleManager: class {
     var audioEngineDatabaseHasBeenVerified: Bool { get }
     func didFinishLaunching()
@@ -23,7 +37,16 @@ import AudioEngine
     func removeDelegate(_ delegate: AudiobookLifecycleManagerDelegate)
 }
 
+
+/// Hooks into life cycle events for AppDelegate.swift. Listens to notifcations from
+/// AudioEngine to ensure other objects know when it is safe to perform operations on
+/// their SDK.
 public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManager {
+    /**
+     The shared instance of the lifecycle manager intended for usage throughout the framework.
+     
+     - Returns: the shared instance of the lifecycle manager
+     */
     public static let shared = DefaultAudiobookLifecycleManager()
     private var delegates: NSHashTable<AudiobookLifecycleManagerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     public var audioEngineDatabaseHasBeenVerified: Bool {
