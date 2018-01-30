@@ -9,6 +9,8 @@
 import UIKit
 import AudioEngine
 
+
+/// Handle network interactions with the AudioEngine SDK.
 class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
@@ -70,6 +72,11 @@ class FindawayDownloadTask: DownloadTask {
         self.timer = nil
     }
 
+    /**
+     This implementation of fetch() will wait until FAEAudioEngine has verified it's database
+     before attempting a download. If this object never sees a verified database from updated AudiobookLifeCycleManager
+     events, then it will never even hit the network.
+     */
     public func fetch() {
         guard self.databaseHasBeenVerified else {
             self.retryAfterVerification = true

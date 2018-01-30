@@ -19,7 +19,7 @@ import UIKit
     func fetch()
     var downloadProgress: Float { get }
     var manifest: AudiobookManifest { get }
-    var delegate: AudiobookNetworkRequesterDelegate? { get set }
+    weak var delegate: AudiobookNetworkRequesterDelegate? { get set }
     var error: AudiobookError? { get }
 }
 

@@ -6,12 +6,22 @@
 //  Copyright © 2018 Dean Silfen. All rights reserved.
 //
 
+
+/// Notifications about the status of the download.
 protocol DownloadTaskDelegate: class {
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
     func downloadTaskDidError(_ downloadTask: DownloadTask)
 }
 
+/// Protocol to handle hitting the network to download an audiobook.
+/// Implementers of this protocol should handle the download with one source.
+/// There should be multiple objects that implement DownloadTask, each working
+/// with a different Network API.
+/// For example, one for AudioEngine networking, one for URLSession, etc.
+///
+/// If a DownloadTask is attempting to download a file that is already available
+/// locally, it should notify it's delegates as if it were a successful download.
 protocol DownloadTask {
     func fetch()
     var downloadProgress: Float { get }

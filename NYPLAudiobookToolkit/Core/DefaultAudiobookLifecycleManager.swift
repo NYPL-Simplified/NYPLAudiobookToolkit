@@ -20,7 +20,7 @@ import AudioEngine
     
     /**
      Notifications specific to errors. The lifeCycleManager does not retain errors, simply listens for them and passes them forward.
-     The reason for this is multiple clients can be fetching books at once, but may be only one AudiobookLifeCycleManager, 
+     The reason for this is multiple clients can be fetching books at once, but there should be only one AudiobookLifeCycleManager.
      */
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError)
 }
@@ -44,8 +44,6 @@ import AudioEngine
 public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManager {
     /**
      The shared instance of the lifecycle manager intended for usage throughout the framework.
-     
-     - Returns: the shared instance of the lifecycle manager
      */
     public static let shared = DefaultAudiobookLifecycleManager()
     private var delegates: NSHashTable<AudiobookLifecycleManagerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
