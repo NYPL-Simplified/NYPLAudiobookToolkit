@@ -29,7 +29,7 @@ import AudioEngine
         - completion: The block to be called when new manifest has been obtained.
         - manifest: The new AudiobookManifest, may be nil if fetch was unsuccessful
      */
-    func updateManifest(completion: (_ manifest: AudiobookManifest?) -> Void)
+    func updateManifest(completion: (_ manifest: Manifest?) -> Void)
 }
 
 @objc public protocol AudiobookManagerDelegate {
@@ -46,7 +46,7 @@ import AudioEngine
     weak var refreshDelegate: RefreshDelegate? { get set }
     weak var delegate: AudiobookManagerDelegate? { get set }
     var metadata: AudiobookMetadata { get }
-    var manifest: AudiobookManifest { get }
+    var manifest: Manifest { get }
     var isPlaying: Bool { get }
     func fetch()
     func play() // needs to take some sort of offset/indication of where to start playing
@@ -60,20 +60,20 @@ public class DefaultAudiobookManager: AudiobookManager {
     public var delegate: AudiobookManagerDelegate?
     
     public let metadata: AudiobookMetadata
-    public let manifest: AudiobookManifest
+    public let manifest: Manifest
     public var isPlaying: Bool {
         return true
     }
 
     let requester: AudiobookNetworkRequester
 
-    public init (metadata: AudiobookMetadata, manifest: AudiobookManifest, requester: AudiobookNetworkRequester) {
+    public init (metadata: AudiobookMetadata, manifest: Manifest, requester: AudiobookNetworkRequester) {
         self.metadata = metadata
         self.manifest = manifest
         self.requester = requester
     }
     
-    public convenience init (metadata: AudiobookMetadata, manifest: AudiobookManifest) {
+    public convenience init (metadata: AudiobookMetadata, manifest: Manifest) {
         let requester = AudiobookNetworkService(manifest: manifest)
         self.init(metadata: metadata, manifest: manifest, requester: requester)
         requester.delegate = self

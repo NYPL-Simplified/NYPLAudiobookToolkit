@@ -8,7 +8,7 @@
 
 
 /// Notifications about the status of the download.
-protocol DownloadTaskDelegate: class {
+@objc public protocol DownloadTaskDelegate: class {
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
     func downloadTaskDidError(_ downloadTask: DownloadTask)
@@ -22,9 +22,9 @@ protocol DownloadTaskDelegate: class {
 ///
 /// If a DownloadTask is attempting to download a file that is already available
 /// locally, it should notify it's delegates as if it were a successful download.
-protocol DownloadTask {
+@objc public protocol DownloadTask: class {
     func fetch()
     var downloadProgress: Float { get }
     var error: AudiobookError? { get }
-    var delegate: DownloadTaskDelegate? { get set }
+    weak var delegate: DownloadTaskDelegate? { get set }
 }

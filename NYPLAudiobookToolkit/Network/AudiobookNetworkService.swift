@@ -5,7 +5,6 @@
 //  Created by Dean Silfen on 1/23/18.
 //  Copyright © 2018 Dean Silfen. All rights reserved.
 //
-
 import UIKit
 
 /// Notifications about the status of the download.
@@ -21,13 +20,14 @@ import UIKit
 @objc public protocol AudiobookNetworkRequester: class {
     func fetch()
     var downloadProgress: Float { get }
-    var manifest: AudiobookManifest { get }
+    var manifest: Manifest { get }
     weak var delegate: AudiobookNetworkRequesterDelegate? { get set }
     var error: AudiobookError? { get }
 }
 
+
 public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester {
-    public let manifest: AudiobookManifest
+    public let manifest: Manifest
     public weak var delegate: AudiobookNetworkRequesterDelegate?
     
     public var error: AudiobookError? {
@@ -40,21 +40,13 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester {
 
     private var downloadTask: DownloadTask?
 
-    internal init(manifest: AudiobookManifest, downloadTask: DownloadTask?) {
+    internal init(manifest: Manifest, downloadTask: DownloadTask?) {
         self.manifest = manifest
         self.downloadTask = downloadTask
     }
-    
-    convenience init(manifest: AudiobookManifest) {
-        var downloadTask: DownloadTask? = nil
-        switch manifest.spine {
-        case .findaway(let spine):
-             downloadTask = FindawayDownloadTask(spine: spine)
-        // TODO: Implement HTTP Fragments
-        case .http(let _):
-            print("Requires a different spine")
-        }
-        self.init(manifest: manifest, downloadTask: downloadTask)
+
+    convenience init(manifest: Manifest) {
+        self.init(manifest: manifest, downloadTask: manifest.downloadTask)
     }
 
     public func fetch() {
@@ -64,15 +56,15 @@ public class AudiobookNetworkService: NSObject, AudiobookNetworkRequester {
 }
 
 extension AudiobookNetworkService: DownloadTaskDelegate {
-    func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
+    public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidUpdateProgress(self)
     }
     
-    func downloadTaskDidError(_ downloadTask: DownloadTask) {
+    public func downloadTaskDidError(_ downloadTask: DownloadTask) {
         self.delegate?.audiobookNetworkServiceDidError(self)
     }
     
-    func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask) {
+    public func downloadTaskReadyForPlayback(_ readyForPlayback: DownloadTask) {
         self.delegate?.audiobookNetworkServiceReadyForPlayback(self)
     }
 }
