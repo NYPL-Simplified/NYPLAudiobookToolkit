@@ -61,7 +61,7 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDidRecieveError(_:)),
+            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDidReceiveError(_:)),
             name: NSNotification.Name.FAEDownloadRequestFailed,
             object: nil
         )
@@ -86,7 +86,7 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
         }
     }
     
-    @objc public func audioEngineDidRecieveError(_ notification: NSNotification) {
+    @objc public func audioEngineDidReceiveError(_ notification: NSNotification) {
         guard let audiobookID = notification.userInfo?["audiobookID"] as? String else { return }
         guard let audiobookError = notification.userInfo?["audioEngineError"] as? NSError else { return }
         self.delegates.allObjects.forEach { (delegate) in
