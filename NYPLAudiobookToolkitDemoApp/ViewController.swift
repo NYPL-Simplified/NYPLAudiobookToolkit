@@ -10,28 +10,28 @@ import UIKit
 import NYPLAudiobookToolkit
 
 class ViewController: UIViewController {
-
     override func viewDidAppear(_ animated: Bool) {
-        let metadata = AudiobookMetadata(
-            title: "Les Trois Mousquetaires",
-            authors: ["Alexandre Dumas"],
-            narrators: ["John Hodgeman"],
-            publishers: ["LibriVox"],
-            published: Date(),
-            modified: Date(),
-            language: "en"
-        )
-
-        let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
-        guard let json = possibleJson else { return }
-        guard let manifest = AudiobookManifest(JSON: json) else { return }
-        let vc = AudiobookDetailViewController(
-            audiobookManager: DefaultAudiobookManager(
-                metadata: metadata,
-                manifest: manifest
+        self.loadManifest { (data) in
+            let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
+            guard let json = possibleJson else { return }
+            let metadata = AudiobookMetadata(
+                title: "Les Trois Mousquetaires",
+                authors: ["Alexandre Dumas"],
+                narrators: ["John Hodgeman"],
+                publishers: ["LibriVox"],
+                published: Date(),
+                modified: Date(),
+                language: "en"
             )
-        )
-        self.navigationController?.pushViewController(vc, animated: true)
+            guard let manifest = AudiobookManifest(JSON: json) else { return }
+            let vc = AudiobookDetailViewController(
+                audiobookManager: DefaultAudiobookManager(
+                    metadata: metadata,
+                    manifest: manifest
+                )
+            )
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
     }
 
     override func viewDidLoad() {
@@ -44,6 +44,28 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-
+    func loadManifest(completion: @escaping (_ data: Data) -> Void) {
+        let sessionConfig = URLSessionConfiguration.default
+        let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
+        guard var URL = URL(string: "http://0.0.0.0:8000/henry+findaway.manifest.json") else {return}
+        var request = URLRequest(url: URL)
+        request.httpMethod = "GET"
+        
+        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+            if (error == nil) {
+                // Success
+                let statusCode = (response as! HTTPURLResponse).statusCode
+                print("URL Session Task Succeeded: HTTP \(statusCode)")
+                guard let data = data else { return }
+                DispatchQueue.main.async {
+                    completion(data)
+                }
+            }
+            else {
+                print("URL Session Task Failed: %@", error!.localizedDescription);
+            }
+        })
+        task.resume()
+        session.finishTasksAndInvalidate()
+    }
 }
-
