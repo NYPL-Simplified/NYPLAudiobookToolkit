@@ -35,7 +35,7 @@ import AudioEngine
 @objc public protocol AudiobookManagerDelegate {
     func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float)
     func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didRecieve error: AudiobookError)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError)
 }
 
 
@@ -101,7 +101,7 @@ extension DefaultAudiobookManager: AudiobookNetworkRequesterDelegate {
     
     public func audiobookNetworkServiceDidError(_ audiobookNetworkService: AudiobookNetworkService) {
         if let error = audiobookNetworkService.error {
-            self.delegate?.audiobookManager(self, didRecieve: error)
+            self.delegate?.audiobookManager(self, didReceive: error)
         }
     }
     

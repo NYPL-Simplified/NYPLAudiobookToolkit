@@ -101,7 +101,7 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 }
 
 extension AudiobookDetailViewController: AudiobookManagerDelegate {
-    public func audiobookManagerReadyForPlayback(_ AudiobookManagment: AudiobookManager) {
+    public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
         self.navigationItem.title = "Title Downloaded!"
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
             self.navigationItem.title = self.audiobookManager.metadata.title
@@ -109,12 +109,12 @@ extension AudiobookDetailViewController: AudiobookManagerDelegate {
     }
     
     // TODO: have more defined relationships for how errors come in and will be handled
-    public func audiobookManager(_ AudiobookManagment: AudiobookManager, didRecieve error: AudiobookError) {
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError) {
         let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
         self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
     }
     
-    public func audiobookManager(_ AudiobookManagment: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
         self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
     }
 }
