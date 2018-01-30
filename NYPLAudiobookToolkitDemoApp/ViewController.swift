@@ -10,8 +10,9 @@ import UIKit
 import NYPLAudiobookToolkit
 
 class ViewController: UIViewController {
+
     override func viewDidAppear(_ animated: Bool) {
-        self.loadManifest { (data) in
+        self.loadManifest { [weak self](data) in
             let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
             guard let json = possibleJson else { return }
             let metadata = AudiobookMetadata(
@@ -30,7 +31,7 @@ class ViewController: UIViewController {
                     manifest: manifest
                 )
             )
-            self.navigationController?.pushViewController(vc, animated: true)
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
     }
 
