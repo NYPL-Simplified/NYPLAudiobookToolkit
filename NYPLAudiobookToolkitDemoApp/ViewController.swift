@@ -48,7 +48,7 @@ class ViewController: UIViewController {
     func loadManifest(completion: @escaping (_ data: Data) -> Void) {
         let sessionConfig = URLSessionConfiguration.default
         let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
-        guard var URL = URL(string: "http://0.0.0.0:8000/henry+findaway.manifest.json") else {return}
+        guard let URL = URL(string: "http://0.0.0.0:8000/henry+findaway.manifest.json") else {return}
         var request = URLRequest(url: URL)
         request.httpMethod = "GET"
         
