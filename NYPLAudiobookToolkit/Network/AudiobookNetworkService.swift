@@ -8,13 +8,16 @@
 
 import UIKit
 
-
+/// Notifications about the status of the download.
 @objc public protocol AudiobookNetworkRequesterDelegate: class {
     func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService)
     func audiobookNetworkServiceReadyForPlayback(_ audiobookNetworkService: AudiobookNetworkService)
     func audiobookNetworkServiceDidError(_ audiobookNetworkService: AudiobookNetworkService)
 }
 
+/// Implementers of this protocol should be able to perform network operations
+/// for a given AudiobookManifest. Implementers of this protocol would best
+/// be served by delegating work to implementers of the DownloadTask protocol.
 @objc public protocol AudiobookNetworkRequester: class {
     func fetch()
     var downloadProgress: Float { get }
