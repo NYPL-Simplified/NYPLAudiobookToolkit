@@ -26,25 +26,33 @@ private func findawayKey(_ key: String) -> String {
         return self.manifest.downloadTask
     }
     private let manifest: Manifest
+    private static let manifestConstructorsByContentType: [String: Manifest.Type] = [
+        "http://www.librarysimplified.org/terms/drm/scheme/FAE" : FindawayManifest.self,
+    ]
+
     public required init?(JSON: Any?) {
-        // Instead of doing this wonkyness - we are going to try and have a
-        // `content-type` field in the manifest which dictates how the client should
-        // attempt to aquire the files. These content types will map to Manifest classes
-        // that the DefaultManifest will instantiate. If no content type is provided,
-        // then OpenAccessManifest will be attempted.
-        let possibleManifest = [ FindawayManifest.self, OpenAccessManifest.self].flatMap { (manifestClass: Manifest.Type) -> Manifest? in
-            manifestClass.init(JSON: JSON)
-        }.first
-        guard let realManifest = possibleManifest else { return nil }
+        guard let JSON = JSON as? [String: Any] else { return nil }
+        let drm = JSON["drm:type"] as? [String: Any]
+        let scheme = drm?["drm:scheme"] as? String
+        let manifestConstructor = DefaultManifest.constructorForContentType(scheme)
+        guard let realManifest = manifestConstructor.init(JSON: JSON) else { return nil }
         self.manifest = realManifest
         super.init()
-        
+    }
+
+    static func constructorForContentType(_ contentType: String?) -> Manifest.Type {
+        var constructor: Manifest.Type = OpenAccessManifest.self
+        guard let contentType = contentType else { return constructor }
+        if let specifiedConstructor = self.manifestConstructorsByContentType[contentType] {
+            constructor = specifiedConstructor
+        }
+        return constructor
     }
 }
 
 private class FindawayManifest: Manifest {
     let downloadTask: DownloadTask
-    
+
     private let spine: [FindawayFragment]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
