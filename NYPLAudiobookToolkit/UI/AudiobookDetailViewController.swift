@@ -7,19 +7,16 @@
 //
 
 import UIKit
+import Foundation
 import PureLayout
 
-struct AudiobookDetailViewState {
-    
-}
-
-public class AudiobookDetailViewController: UIViewController, PlaybackControlViewDelegate {
-
-    let audiobookManager: AudiobookManager
+public class AudiobookDetailViewController: UIViewController {
+    private let audiobookManager: AudiobookManager
 
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
+        self.audiobookManager.delegate = self
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -32,19 +29,10 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.isUserInteractionEnabled = true
         imageView.accessibilityIdentifier = "cover_art"
         return imageView
     }()
-
-    public let audiobookMetadata = AudiobookMetadata(
-        title: "Les Trois Mousquetaires",
-        authors: ["Alexandre Dumas"],
-        narrators: ["John Hodgeman"],
-        publishers: ["LibriVox"],
-        published: Date(),
-        modified: Date(),
-        language: "en"
-    )
 
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -55,7 +43,7 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
         self.navigationItem.rightBarButtonItem = bbi
-        self.navigationItem.title = self.audiobookMetadata.title
+        self.navigationItem.title = self.audiobookManager.metadata.title
         self.view.backgroundColor = UIColor.white
         
         self.view.addSubview(self.coverView)
@@ -68,6 +56,7 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
 
+        
         self.view.addSubview(self.playbackControlView)
         self.playbackControlView.delegate = self
         self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: self.padding)
@@ -75,7 +64,8 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.seekBar.play()
+        
+        self.coverView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))))
     }
     
     override public func viewDidAppear(_ animated: Bool) {
@@ -93,8 +83,39 @@ public class AudiobookDetailViewController: UIViewController, PlaybackControlVie
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
 
+    @objc func coverArtWasPressed(_ sender: Any) {
+        self.audiobookManager.fetch()
+    }
+}
+
+extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
-        self.seekBar.toggle()
+        if self.audiobookManager.isPlaying {
+            self.audiobookManager.pause()
+            self.seekBar.pause()
+        } else {
+            self.audiobookManager.play()
+            self.seekBar.play()
+        }
+    }
+}
+
+extension AudiobookDetailViewController: AudiobookManagerDelegate {
+    public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
+        self.navigationItem.title = "Title Downloaded!"
+        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
+            self.navigationItem.title = self.audiobookManager.metadata.title
+        }
+    }
+    
+    // TODO: have more defined relationships for how errors come in and will be handled
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError) {
+        let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
+        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
+    }
+    
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
+        self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
     }
 }
 

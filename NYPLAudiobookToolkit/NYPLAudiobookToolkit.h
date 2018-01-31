@@ -14,6 +14,3 @@ FOUNDATION_EXPORT double NYPLAudiobookToolkitVersionNumber;
 //! Project version string for NYPLAudiobookToolkit.
 FOUNDATION_EXPORT const unsigned char NYPLAudiobookToolkitVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <NYPLAudiobookToolkit/PublicHeader.h>
-
-
