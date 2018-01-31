@@ -8,6 +8,21 @@
 
 import UIKit
 
-class OpenAccessPlayer: NSObject {
+class OpenAccessPlayer: NSObject, Player {
+    var isPlaying: Bool {
+        return false
+    }
 
+    func play() {
+        
+    }
+    
+    func pause() {
+        
+    }
+    
+    private let spine: [OpenAccessFragment]
+    public init(spine: [OpenAccessFragment]) {
+        self.spine = spine
+    }
 }

@@ -15,6 +15,7 @@ private func findawayKey(_ key: String) -> String {
 
 @objc public protocol Manifest: class {
     var downloadTask: DownloadTask { get }
+    var player: Player { get }
     init?(JSON: Any?)
 }
 
@@ -22,6 +23,10 @@ private func findawayKey(_ key: String) -> String {
 /// This manifest should then be able to construct utility classes
 /// using data in the spine of that JSON.
 @objc public class DefaultManifest: NSObject, Manifest {
+    public var player: Player {
+        return self.manifest.player
+    }
+    
     public var downloadTask: DownloadTask {
         return self.manifest.downloadTask
     }
@@ -52,7 +57,7 @@ private func findawayKey(_ key: String) -> String {
 
 private class FindawayManifest: Manifest {
     let downloadTask: DownloadTask
-
+    let player: Player
     private let spine: [FindawayFragment]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -71,13 +76,14 @@ private class FindawayManifest: Manifest {
         }
         guard !self.spine.isEmpty else { return nil }
         self.downloadTask = FindawayDownloadTask(spine: self.spine)
+        self.player = FindawayPlayer(spine: self.spine)
     }
 }
 
 
 private class OpenAccessManifest: Manifest {
     let downloadTask: DownloadTask
-    
+    let player: Player
     private let spine: [OpenAccessFragment]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -89,6 +95,7 @@ private class OpenAccessManifest: Manifest {
         }
         guard !self.spine.isEmpty else { return nil }
         self.downloadTask = OpenAccessDownloadTask(spine: self.spine)
+        self.player = OpenAccessPlayer(spine: self.spine)
     }
 }
 

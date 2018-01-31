@@ -62,17 +62,23 @@ public class DefaultAudiobookManager: AudiobookManager {
     public let metadata: AudiobookMetadata
     public let manifest: Manifest
     public var isPlaying: Bool {
-        return true
+        return self.player.isPlaying
     }
 
     let downloadTask: DownloadTask
+    let player: Player
 
-    public init (metadata: AudiobookMetadata, manifest: Manifest) {
+    public init (metadata: AudiobookMetadata, manifest: Manifest, downloadTask: DownloadTask, player: Player) {
         self.metadata = metadata
         self.manifest = manifest
-        self.downloadTask = manifest.downloadTask
+        self.downloadTask = downloadTask
+        self.player = player
     }
 
+    public convenience init (metadata: AudiobookMetadata, manifest: Manifest) {
+        self.init(metadata: metadata, manifest: manifest, downloadTask: manifest.downloadTask, player: manifest.player)
+    }
+    
     weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
@@ -81,11 +87,11 @@ public class DefaultAudiobookManager: AudiobookManager {
     }
 
     public func play() {
-        
+        self.player.play()
     }
     
     public func pause() {
-        
+        self.player.pause()
     }
 }
 extension DefaultAudiobookManager: DownloadTaskDelegate {

@@ -7,3 +7,12 @@
 //
 
 import Foundation
+
+/// Objects that impelment Player should wrap a PlaybackEngine.
+/// This does not specifically refer to AVPlayer, but could also be
+/// FAEPlaybackEngine, or another engine that handles DRM content.
+@objc public protocol Player {
+    func play()
+    func pause()
+    var isPlaying: Bool { get }
+}
