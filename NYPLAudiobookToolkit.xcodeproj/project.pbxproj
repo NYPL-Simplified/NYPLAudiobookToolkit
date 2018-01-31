@@ -41,7 +41,6 @@
 		7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BC20163B71004CE65F /* PlaybackControlView.swift */; };
 		7BD759BF20168995004CE65F /* AudiobookTableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */; };
 		7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C220169084004CE65F /* FindawayDownloadTask.swift */; };
-		7BD759C82017A8E4004CE65F /* AudiobookNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C72017A8E4004CE65F /* AudiobookNetworkService.swift */; };
 		7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C92017CEA3004CE65F /* DownloadTask.swift */; };
 /* End PBXBuildFile section */
 
@@ -140,7 +139,6 @@
 		7BD759BC20163B71004CE65F /* PlaybackControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControlView.swift; sourceTree = "<group>"; };
 		7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTableOfContents.swift; sourceTree = "<group>"; };
 		7BD759C220169084004CE65F /* FindawayDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadTask.swift; sourceTree = "<group>"; };
-		7BD759C72017A8E4004CE65F /* AudiobookNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookNetworkService.swift; sourceTree = "<group>"; };
 		7BD759C92017CEA3004CE65F /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
 		7BD759CB20191980004CE65F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -308,7 +306,6 @@
 			isa = PBXGroup;
 			children = (
 				7BD759C220169084004CE65F /* FindawayDownloadTask.swift */,
-				7BD759C72017A8E4004CE65F /* AudiobookNetworkService.swift */,
 				7BD759C92017CEA3004CE65F /* DownloadTask.swift */,
 				7B7B370720211CE100030A1E /* OpenAccessDownloadTask.swift */,
 			);
@@ -528,7 +525,6 @@
 				7B5441E4200EA82C0047B6C6 /* AudiobookDetailViewController.swift in Sources */,
 				7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */,
 				7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */,
-				7BD759C82017A8E4004CE65F /* AudiobookNetworkService.swift in Sources */,
 				7B5441E3200EA82C0047B6C6 /* DefaultManifest.swift in Sources */,
 				7B987FDC201B892000A94B12 /* AudibookError.swift in Sources */,
 				7B5441E6200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift in Sources */,

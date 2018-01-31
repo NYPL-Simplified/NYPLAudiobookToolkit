@@ -65,24 +65,19 @@ public class DefaultAudiobookManager: AudiobookManager {
         return true
     }
 
-    let requester: AudiobookNetworkRequester
+    let downloadTask: DownloadTask
 
-    public init (metadata: AudiobookMetadata, manifest: Manifest, requester: AudiobookNetworkRequester) {
+    public init (metadata: AudiobookMetadata, manifest: Manifest) {
         self.metadata = metadata
         self.manifest = manifest
-        self.requester = requester
-    }
-    
-    public convenience init (metadata: AudiobookMetadata, manifest: Manifest) {
-        let requester = AudiobookNetworkService(manifest: manifest)
-        self.init(metadata: metadata, manifest: manifest, requester: requester)
-        requester.delegate = self
+        self.downloadTask = manifest.downloadTask
     }
 
     weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
-        self.requester.fetch()
+        self.downloadTask.delegate = self
+        self.downloadTask.fetch()
     }
 
     public func play() {
@@ -93,19 +88,18 @@ public class DefaultAudiobookManager: AudiobookManager {
         
     }
 }
-
-extension DefaultAudiobookManager: AudiobookNetworkRequesterDelegate {
-    public func audiobookNetworkServiceDidUpdateProgress(_ audiobookNetworkService: AudiobookNetworkService) {
-        self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.requester.downloadProgress)
+extension DefaultAudiobookManager: DownloadTaskDelegate {
+    public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
+        self.delegate?.audiobookManagerReadyForPlayback(self)
     }
     
-    public func audiobookNetworkServiceDidError(_ audiobookNetworkService: AudiobookNetworkService) {
-        if let error = audiobookNetworkService.error {
+    public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
+        self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.downloadTask.downloadProgress )
+    }
+    
+    public func downloadTaskDidError(_ downloadTask: DownloadTask) {
+        if let error = downloadTask.error {
             self.delegate?.audiobookManager(self, didReceive: error)
         }
-    }
-    
-    public func audiobookNetworkServiceReadyForPlayback(_ audiobookNetworkService: AudiobookNetworkService) {
-        self.delegate?.audiobookManagerReadyForPlayback(self)
     }
 }
