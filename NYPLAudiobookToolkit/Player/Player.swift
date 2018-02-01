@@ -19,5 +19,3 @@ import Foundation
     var isPlaying: Bool { get }
 }
 
-@objc public protocol PlayableMedia {
-}

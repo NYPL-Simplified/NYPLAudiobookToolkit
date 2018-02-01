@@ -14,7 +14,6 @@ class FindawayPlayer: NSObject, Player {
         return FAEAudioEngine.shared()?.playbackEngine?.playerStatus == FAEPlayerStatus.playing
     }
 
-    private var chapterDescription: FAEChapterDescription?
     private var currentFindawayChapter: FAEChapterDescription? {
         return FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
     }
@@ -24,13 +23,20 @@ class FindawayPlayer: NSObject, Player {
         return loadedAudiobookID == manifestAudiobookID
     }
 
-    func skipForward() {
-        FAEAudioEngine.shared()?.playbackEngine?.currentOffset =         (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
+    private let spine: [FindawayFragment]
+    public init(spine: [FindawayFragment]) {
+        self.spine = spine
     }
-
+    
+    func skipForward() {
+        let someTimeFromNow = (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
+        FAEAudioEngine.shared()?.playbackEngine?.currentOffset = someTimeFromNow
+    }
+    
     func skipBack() {
         let possibleOffset = (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
-        FAEAudioEngine.shared()?.playbackEngine?.currentOffset = possibleOffset > 0 ? possibleOffset : 0
+        let someTimeBeforeNow = possibleOffset > 0 ? possibleOffset : 0
+        FAEAudioEngine.shared()?.playbackEngine?.currentOffset = someTimeBeforeNow
     }
     
     func play() {
@@ -51,12 +57,6 @@ class FindawayPlayer: NSObject, Player {
     }
     
     func pause() {
-        self.chapterDescription = FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
         FAEAudioEngine.shared()?.playbackEngine?.pause()
-    }
-    
-    private let spine: [FindawayFragment]
-    public init(spine: [FindawayFragment]) {
-        self.spine = spine
     }
 }
