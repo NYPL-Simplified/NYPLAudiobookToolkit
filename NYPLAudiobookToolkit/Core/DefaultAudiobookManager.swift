@@ -38,7 +38,6 @@ import AudioEngine
     func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError)
 }
 
-
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
 /// It is intended to be used by the host app to initiate downloads, control playback,
 /// and manager the filesystem.
@@ -49,6 +48,8 @@ import AudioEngine
     var manifest: Manifest { get }
     var isPlaying: Bool { get }
     func fetch()
+    func skipForward()
+    func skipBack()
     func play() // needs to take some sort of offset/indication of where to start playing
     func pause()
 }
@@ -56,7 +57,6 @@ import AudioEngine
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
 /// to be used by the AudibookDetailViewController to respond to UI events.
 public class DefaultAudiobookManager: AudiobookManager {
-    
     public var delegate: AudiobookManagerDelegate?
     
     public let metadata: AudiobookMetadata
@@ -92,6 +92,14 @@ public class DefaultAudiobookManager: AudiobookManager {
     
     public func pause() {
         self.player.pause()
+    }
+
+    public func skipForward() {
+        self.player.skipForward()
+    }
+    
+    public func skipBack() {
+        self.player.skipBack()
     }
 }
 extension DefaultAudiobookManager: DownloadTaskDelegate {

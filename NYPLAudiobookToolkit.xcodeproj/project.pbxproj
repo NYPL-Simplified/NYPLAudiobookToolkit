@@ -238,7 +238,6 @@
 				7BD759C120168FF5004CE65F /* Network */,
 				7B987FDA201B88FF00A94B12 /* Core */,
 				7B3BD9C62011737B002C5416 /* UI */,
-				7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */,
 				7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */,
 				7B544190200EA7C20047B6C6 /* Info.plist */,
 				7B5441F3200FB3EE0047B6C6 /* Media.xcassets */,
@@ -311,6 +310,7 @@
 		7B987FDA201B88FF00A94B12 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */,
 				7B5441E0200EA82C0047B6C6 /* DefaultAudiobookManager.swift */,
 				7B5441DC200EA82C0047B6C6 /* DefaultManifest.swift */,
 				7B5441DF200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift */,

@@ -9,6 +9,12 @@
 import UIKit
 
 class OpenAccessPlayer: NSObject, Player {
+    func skipForward() {
+    }
+    
+    func skipBack() {
+    }
+    
     var isPlaying: Bool {
         return false
     }

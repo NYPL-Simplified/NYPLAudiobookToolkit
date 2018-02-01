@@ -14,5 +14,10 @@ import Foundation
 @objc public protocol Player {
     func play()
     func pause()
+    func skipForward()
+    func skipBack()
     var isPlaying: Bool { get }
+}
+
+@objc public protocol PlayableMedia {
 }

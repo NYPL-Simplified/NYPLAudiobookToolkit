@@ -89,6 +89,14 @@ public class AudiobookDetailViewController: UIViewController {
 }
 
 extension AudiobookDetailViewController: PlaybackControlViewDelegate {
+    func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.audiobookManager.skipBack()
+    }
+    
+    func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.audiobookManager.skipForward()
+    }
+    
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.isPlaying {
             self.audiobookManager.pause()

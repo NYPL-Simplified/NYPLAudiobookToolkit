@@ -10,25 +10,48 @@ import UIKit
 import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
-    
     var isPlaying: Bool {
         return FAEAudioEngine.shared()?.playbackEngine?.playerStatus == FAEPlayerStatus.playing
     }
 
+    private var chapterDescription: FAEChapterDescription?
+    private var currentFindawayChapter: FAEChapterDescription? {
+        return FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
+    }
+    private var bookIsLoaded: Bool {
+        guard let loadedAudiobookID = self.currentFindawayChapter?.audiobookID else { return false }
+        guard let manifestAudiobookID = self.spine.first?.audiobookID else { return false }
+        return loadedAudiobookID == manifestAudiobookID
+    }
+
+    func skipForward() {
+        FAEAudioEngine.shared()?.playbackEngine?.currentOffset =         (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
+    }
+
+    func skipBack() {
+        let possibleOffset = (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
+        FAEAudioEngine.shared()?.playbackEngine?.currentOffset = possibleOffset > 0 ? possibleOffset : 0
+    }
+    
     func play() {
         let possibleFragment = self.spine.first
         guard let fragment = possibleFragment else { return }
-        FAEAudioEngine.shared()?.playbackEngine?.play(
-            forAudiobookID: fragment.audiobookID,
-            partNumber: fragment.partNumber,
-            chapterNumber: fragment.chapterNumber,
-            offset: 0,
-            sessionKey: fragment.sessionKey,
-            licenseID: fragment.licenseID
-        )
+        if self.bookIsLoaded {
+            FAEAudioEngine.shared()?.playbackEngine?.resume()
+        } else {
+            FAEAudioEngine.shared()?.playbackEngine?.play(
+                forAudiobookID: fragment.audiobookID,
+                partNumber: fragment.partNumber,
+                chapterNumber: fragment.chapterNumber,
+                offset: 0,
+                sessionKey: fragment.sessionKey,
+                licenseID: fragment.licenseID
+            )
+        }
     }
     
     func pause() {
+        self.chapterDescription = FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
         FAEAudioEngine.shared()?.playbackEngine?.pause()
     }
     
