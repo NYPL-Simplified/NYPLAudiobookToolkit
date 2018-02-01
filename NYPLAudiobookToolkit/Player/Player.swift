@@ -19,3 +19,13 @@ import Foundation
     var isPlaying: Bool { get }
 }
 
+@objc public protocol PlayerState {
+    /**
+     Chapter duration in seconds.
+    */
+    var chapterDuration: UInt { get }
+    /**
+     Current playhead position in seconds.
+    */
+    var currentOffset: UInt { get }
+}
