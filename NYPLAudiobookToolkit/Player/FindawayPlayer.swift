@@ -10,6 +10,27 @@ import UIKit
 import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
+    weak var delegate: PlayerDelegate?
+
+    /// We ought to crash if this does not exist
+    private var sessionKey: String {
+        return (self.spine.first?.audiobookID)!
+    }
+
+    /// We ought to crash if this does not exist
+    private var licenseID: String {
+        return (self.spine.first?.licenseID)!
+    }
+
+    /// We ought to crash if this does not exist
+    private var audiobookID: String {
+        return (self.spine.first?.licenseID)!
+    }
+    
+    private var currentOffset: UInt {
+        return FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0
+    }
+
     var isPlaying: Bool {
         return FAEAudioEngine.shared()?.playbackEngine?.playerStatus == FAEPlayerStatus.playing
     }
@@ -19,8 +40,7 @@ class FindawayPlayer: NSObject, Player {
     }
     private var bookIsLoaded: Bool {
         guard let loadedAudiobookID = self.currentFindawayChapter?.audiobookID else { return false }
-        guard let manifestAudiobookID = self.spine.first?.audiobookID else { return false }
-        return loadedAudiobookID == manifestAudiobookID
+        return loadedAudiobookID == self.sessionKey
     }
 
     private let spine: [FindawayFragment]
@@ -29,34 +49,65 @@ class FindawayPlayer: NSObject, Player {
     }
     
     func skipForward() {
-        let someTimeFromNow = (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
-        FAEAudioEngine.shared()?.playbackEngine?.currentOffset = someTimeFromNow
+        let someTimeFromNow = self.currentOffset + 15
+        self.updatePlaybackWith(self.commandAtOffset(someTimeFromNow))
     }
     
     func skipBack() {
-        let possibleOffset = (FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0) + 15
+        let possibleOffset = self.currentOffset + 15
         let someTimeBeforeNow = possibleOffset > 0 ? possibleOffset : 0
-        FAEAudioEngine.shared()?.playbackEngine?.currentOffset = someTimeBeforeNow
+        self.updatePlaybackWith(self.commandAtOffset(someTimeBeforeNow))
     }
     
     func play() {
-        let possibleFragment = self.spine.first
-        guard let fragment = possibleFragment else { return }
-        if self.bookIsLoaded {
-            FAEAudioEngine.shared()?.playbackEngine?.resume()
-        } else {
-            FAEAudioEngine.shared()?.playbackEngine?.play(
-                forAudiobookID: fragment.audiobookID,
-                partNumber: fragment.partNumber,
-                chapterNumber: fragment.chapterNumber,
-                offset: 0,
-                sessionKey: fragment.sessionKey,
-                licenseID: fragment.licenseID
-            )
-        }
+        self.updatePlaybackWith(self.commandAtOffset(0))
     }
+    
     
     func pause() {
         FAEAudioEngine.shared()?.playbackEngine?.pause()
+    }
+    
+    func updatePlaybackWith(_ playerCommand: PlayerCommand) {
+        if self.isPlaying {
+            if self.chapterIsCurrentlyPlaying(playerCommand.chapter) {
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = playerCommand.offset
+            } else {
+                self.playWithCommand(playerCommand)
+            }
+        } else {
+            self.playWithCommand(playerCommand)
+        }
+    }
+    
+    func playWithCommand(_ command: PlayerCommand) {
+        FAEAudioEngine.shared()?.playbackEngine?.play(
+            forAudiobookID: self.audiobookID,
+            partNumber: playerCommand.chapter.part,
+            chapterNumber: playerCommand.chapter.number,
+            offset: playerCommand.offset,
+            sessionKey: self.sessionKey,
+            licenseID: self.licenseID
+        )
+    }
+    
+    func chapterIsCurrentlyPlaying(_ chapter: ChapterDescription) -> Bool {
+        guard let findawayChapter = self.currentFindawayChapter else { return false }
+        return findawayChapter.partNumber == chapter.part &&
+            findawayChapter.chapterNumber == chapter.number
+        
+    }
+    
+    func commandAtOffset(_ offset: UInt) -> PlayerCommand {
+        let fragment = self.spine.first!
+        let findaway = self.currentFindawayChapter
+        let command = DefaultPlayerCommand(
+            offset: 0,
+            chapter: DefaultChapterDescription(
+                number: findaway?.chapterNumber ?? fragment.chapterNumber,
+                part: findaway?.partNumber ?? fragment.partNumber
+            )
+        )
+        return command
     }
 }
