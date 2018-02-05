@@ -9,10 +9,18 @@
 import UIKit
 
 class OpenAccessPlayer: NSObject, Player {
+    var delegate: PlayerDelegate?
+    
+    func updatePlaybackWith(_ playerCommand: PlayerCommand) {
+
+    }
+    
     func skipForward() {
+
     }
     
     func skipBack() {
+
     }
     
     var isPlaying: Bool {

@@ -32,10 +32,15 @@ import AudioEngine
     func updateManifest(completion: (_ manifest: Manifest?) -> Void)
 }
 
-@objc public protocol AudiobookManagerDelegate {
+@objc public protocol AudiobookManagerDownloadDelegate {
     func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float)
     func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager)
     func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError)
+}
+
+@objc public protocol AudiobookManagerPlaybackDelegate {
+    func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterDescription)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterDescription)
 }
 
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
@@ -43,7 +48,8 @@ import AudioEngine
 /// and manager the filesystem.
 @objc public protocol AudiobookManager {
     weak var refreshDelegate: RefreshDelegate? { get set }
-    weak var delegate: AudiobookManagerDelegate? { get set }
+    weak var downloadDelegate: AudiobookManagerDownloadDelegate? { get set }
+    weak var playbackDelegate: AudiobookManagerPlaybackDelegate? { get set }
     var metadata: AudiobookMetadata { get }
     var manifest: Manifest { get }
     var isPlaying: Bool { get }
@@ -57,8 +63,8 @@ import AudioEngine
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
 /// to be used by the AudibookDetailViewController to respond to UI events.
 public class DefaultAudiobookManager: AudiobookManager {
-    public var delegate: AudiobookManagerDelegate?
-    
+    public weak var downloadDelegate: AudiobookManagerDownloadDelegate?
+    public weak var playbackDelegate: AudiobookManagerPlaybackDelegate?
     public let metadata: AudiobookMetadata
     public let manifest: Manifest
     public var isPlaying: Bool {
@@ -73,6 +79,9 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.manifest = manifest
         self.downloadTask = downloadTask
         self.player = player
+
+        self.downloadTask.delegate = self
+        self.player.delegate = self
     }
 
     public convenience init (metadata: AudiobookMetadata, manifest: Manifest) {
@@ -82,7 +91,6 @@ public class DefaultAudiobookManager: AudiobookManager {
     weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
-        self.downloadTask.delegate = self
         self.downloadTask.fetch()
     }
 
@@ -102,18 +110,29 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.player.skipBack()
     }
 }
+
 extension DefaultAudiobookManager: DownloadTaskDelegate {
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
-        self.delegate?.audiobookManagerReadyForPlayback(self)
+        self.downloadDelegate?.audiobookManagerReadyForPlayback(self)
     }
     
     public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
-        self.delegate?.audiobookManager(self, didUpdateDownloadPercentage: self.downloadTask.downloadProgress )
+        self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentage: self.downloadTask.downloadProgress )
     }
     
     public func downloadTaskDidError(_ downloadTask: DownloadTask) {
         if let error = downloadTask.error {
-            self.delegate?.audiobookManager(self, didReceive: error)
+            self.downloadDelegate?.audiobookManager(self, didReceive: error)
         }
+    }
+}
+
+extension DefaultAudiobookManager: PlayerDelegate {
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterDescription) {
+        self.playbackDelegate?.audiobookManager(self, didBeginPlaybackOf: chapter)
+    }
+
+    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterDescription) {
+        self.playbackDelegate?.audiobookManager(self, didStopPlaybackOf: chapter)
     }
 }

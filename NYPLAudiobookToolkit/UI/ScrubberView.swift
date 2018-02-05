@@ -11,6 +11,7 @@ import PureLayout
 
 protocol ScrubberViewDelegate: class {
 func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo completionPercentage: Int)
+func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView)
 }
 
 struct ScrubberUIState: Equatable {

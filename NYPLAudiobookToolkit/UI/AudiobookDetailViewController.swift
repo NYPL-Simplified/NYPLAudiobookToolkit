@@ -16,7 +16,7 @@ public class AudiobookDetailViewController: UIViewController {
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
-        self.audiobookManager.delegate = self
+        self.audiobookManager.downloadDelegate = self
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -52,6 +52,7 @@ public class AudiobookDetailViewController: UIViewController {
         self.coverView.autoSetDimensions(to: CGSize(width: 266, height: 266))
         
         self.view.addSubview(self.seekBar)
+        self.seekBar.delegate = self;
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
@@ -108,7 +109,7 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     }
 }
 
-extension AudiobookDetailViewController: AudiobookManagerDelegate {
+extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
         self.navigationItem.title = "Title Downloaded!"
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
@@ -124,6 +125,16 @@ extension AudiobookDetailViewController: AudiobookManagerDelegate {
     
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
         self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
+    }
+}
+
+extension AudiobookDetailViewController: ScrubberViewDelegate {
+    func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo completionPercentage: Int) {
+        
+    }
+    
+    func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView) {
+        self.audiobookManager.pause()
     }
 }
 
