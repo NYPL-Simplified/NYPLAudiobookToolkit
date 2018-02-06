@@ -71,11 +71,18 @@ class FindawayPlayer: NSObject, Player {
     }
 
     private let spine: [FindawayFragment]
-    public init(spine: [FindawayFragment]) {
+    private let eventHandler: FindawayPlaybackNotificationHandler
+    public init(spine: [FindawayFragment], eventHandler: FindawayPlaybackNotificationHandler) {
         self.spine = spine
+        self.eventHandler = eventHandler
         super.init()
+        self.eventHandler.delegate = self
     }
     
+    convenience init(spine: [FindawayFragment]) {
+        self.init(spine: spine, eventHandler: DefaultFindawayPlaybackNotificationHandler())
+    }
+
     func skipForward() {
         let someTimeFromNow = self.currentOffset + 15
         self.updatePlaybackWith(self.commandAtOffset(someTimeFromNow))
@@ -161,5 +168,10 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
         
+    }
+}
+
+extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
+    func playbackNotification() {
     }
 }

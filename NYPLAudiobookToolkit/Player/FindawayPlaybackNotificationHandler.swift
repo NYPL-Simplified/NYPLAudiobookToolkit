@@ -12,8 +12,12 @@ protocol FindawayPlaybackNotificationHandlerDelegate: class {
     func playbackNotification()
 }
 
+protocol FindawayPlaybackNotificationHandler {
+    weak var delegate: FindawayPlaybackNotificationHandlerDelegate? { get set }
+}
+
 /// TODO: Make a protocol to interact with this
-class FindawayPlaybackNotificationHandler: NSObject {
+class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNotificationHandler {
     weak var delegate: FindawayPlaybackNotificationHandlerDelegate?
     public override init() {
         super.init()
@@ -21,7 +25,7 @@ class FindawayPlaybackNotificationHandler: NSObject {
         // Streaming notifications
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineStreamingBegan(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineStreamingBegan(_:)),
             name: NSNotification.Name.FAEPlaybackStreamingRequestStarted,
             object: nil
         )
@@ -29,37 +33,37 @@ class FindawayPlaybackNotificationHandler: NSObject {
         // Chapter Playback
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterLoaded,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterStarted,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterFailed,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterComplete,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterPaused,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(FindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterPausedFailed,
             object: nil
         )
