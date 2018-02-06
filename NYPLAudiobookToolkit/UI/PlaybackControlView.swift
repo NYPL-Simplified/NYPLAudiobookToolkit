@@ -88,7 +88,7 @@ class PlaybackControlView: UIView {
         self.skipBackView.addGestureRecognizer(
             UITapGestureRecognizer(
                 target: self,
-                action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:))
+                action: #selector(PlaybackControlView.skipBackButtonWasTapped(_:))
             )
         )
 
