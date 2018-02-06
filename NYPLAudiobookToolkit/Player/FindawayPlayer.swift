@@ -179,6 +179,41 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
 }
 
 extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
+    func audioEngineChapterPlaybackStarted() {
+        if let chapter = self.currentFindawayChapter {
+            let chapterDescription = DefaultChapterDescription(
+                number: chapter.chapterNumber,
+                part: chapter.partNumber,
+                duration: TimeInterval(self.currentDuration),
+                offset: TimeInterval(self.currentOffset)
+            )
+
+            DispatchQueue.main.async { [weak self] in
+                if let strongSelf = self {
+                    strongSelf.delegate?.player(strongSelf, didBeginPlaybackOf: chapterDescription)
+                }
+            }
+        }
+    }
+    
+    func audioEngineChapterPlaybackPaused() {
+        if let chapter = self.currentFindawayChapter {
+            let chapterDescription = DefaultChapterDescription(
+                number: chapter.chapterNumber,
+                part: chapter.partNumber,
+                duration: TimeInterval(self.currentDuration),
+                offset: TimeInterval(self.currentOffset)
+            )
+            DispatchQueue.main.async { [weak self] in
+                if let strongSelf = self {
+                    strongSelf.delegate?.player(strongSelf, didStopPlaybackOf: chapterDescription)
+                }
+            }
+        }
+    }
+    
     func playbackNotification() {
     }
+    
+    
 }
