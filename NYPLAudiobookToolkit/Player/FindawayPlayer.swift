@@ -11,16 +11,18 @@ import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
     weak var delegate: PlayerDelegate?
-
-    private var queuedCommands: [PlayerCommand] = []
+    private var resumePlaybackCommand: PlayerCommand?
+    // Only queue the last issued command if they are issued before Findaway has been verified
+    private var queuedCommand: PlayerCommand?
     private var readyForPlayback = false {
         didSet {
-            if let command = self.queuedCommands.last {
+            if let command = self.queuedCommand {
                 self.playWithCommand(command)
-                self.queuedCommands.removeAll()
+                self.queuedCommand = nil
             }
         }
     }
+
     /// We ought to crash if this does not exist
     private var sessionKey: String {
         return (self.spine.first?.sessionKey)!
@@ -36,12 +38,18 @@ class FindawayPlayer: NSObject, Player {
         return (self.spine.first?.audiobookID)!
     }
 
+    /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
     private var currentOffset: UInt {
         return FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0
     }
 
-    var isPlaying: Bool {
-        return FAEAudioEngine.shared()?.playbackEngine?.playerStatus == FAEPlayerStatus.playing
+    /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
+    private var currentDuration: UInt {
+        return FAEAudioEngine.shared()?.playbackEngine?.currentDuration ?? 0
+    }
+
+    var currentBookIsPlaying: Bool {
+        return self.isPlaying && self.bookIsLoaded
     }
 
     private var currentFindawayChapter: FAEChapterDescription? {
@@ -53,45 +61,60 @@ class FindawayPlayer: NSObject, Player {
         return chapter
     }
 
+    var isPlaying: Bool {
+        return FAEAudioEngine.shared()?.playbackEngine?.playerStatus == FAEPlayerStatus.playing
+    }
+
     private var bookIsLoaded: Bool {
         guard let loadedAudiobookID = self.currentFindawayChapter?.audiobookID else { return false }
-        return loadedAudiobookID == self.sessionKey
+        return loadedAudiobookID == self.audiobookID
     }
 
     private let spine: [FindawayFragment]
     public init(spine: [FindawayFragment]) {
         self.spine = spine
+        super.init()
     }
     
     func skipForward() {
         let someTimeFromNow = self.currentOffset + 15
         self.updatePlaybackWith(self.commandAtOffset(someTimeFromNow))
     }
-    
+
     func skipBack() {
-        let possibleOffset = self.currentOffset + 15
-        let someTimeBeforeNow = possibleOffset > 0 ? possibleOffset : 0
-        self.updatePlaybackWith(self.commandAtOffset(someTimeBeforeNow))
+        let someTimeAgo = Int(self.currentOffset) - 15
+        let timeToGoBackTo = UInt(someTimeAgo < 0 ? 0 : someTimeAgo)
+        self.updatePlaybackWith(self.commandAtOffset(timeToGoBackTo))
     }
-    
+
     func play() {
-        self.updatePlaybackWith(self.commandAtOffset(0))
+        if let resumeCommand = self.resumePlaybackCommand {
+            self.updatePlaybackWith(resumeCommand)
+        } else {
+            self.updatePlaybackWith(self.commandAtOffset(0))
+        }
     }
-    
+
     
     func pause() {
+        if let chapter = self.currentFindawayChapter {
+            self.resumePlaybackCommand = DefaultPlayerCommand(
+                offset: TimeInterval(self.currentOffset),
+                chapter: DefaultChapterDescription(number: chapter.chapterNumber, part: chapter.partNumber)
+            )
+        }
         FAEAudioEngine.shared()?.playbackEngine?.pause()
     }
     
     func updatePlaybackWith(_ playerCommand: PlayerCommand) {
         guard !self.readyForPlayback else {
-            self.queuedCommands.append(playerCommand)
+            self.queuedCommand = playerCommand
             return
         }
 
-        if self.isPlaying {
+        if self.bookIsLoaded && self.isPlaying {
             if self.chapterIsCurrentlyPlaying(playerCommand.chapter) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = playerCommand.offset
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(playerCommand.offset)
             } else {
                 self.playWithCommand(playerCommand)
             }
@@ -105,7 +128,7 @@ class FindawayPlayer: NSObject, Player {
             forAudiobookID: self.audiobookID,
             partNumber: command.chapter.part,
             chapterNumber: command.chapter.number,
-            offset: command.offset,
+            offset: UInt(command.offset),
             sessionKey: self.sessionKey,
             licenseID: self.licenseID
         )
@@ -121,14 +144,13 @@ class FindawayPlayer: NSObject, Player {
     func commandAtOffset(_ offset: UInt) -> PlayerCommand {
         let fragment = self.spine.first!
         let findaway = self.currentFindawayChapter
-        let command = DefaultPlayerCommand(
-            offset: offset,
+        return DefaultPlayerCommand(
+            offset: TimeInterval(offset),
             chapter: DefaultChapterDescription(
                 number: findaway?.chapterNumber ?? fragment.chapterNumber,
                 part: findaway?.partNumber ?? fragment.partNumber
             )
         )
-        return command
     }
 }
 
@@ -140,6 +162,4 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
         
     }
-    
-    
 }

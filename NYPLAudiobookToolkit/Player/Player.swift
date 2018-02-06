@@ -70,14 +70,14 @@ class DefaultChapterDescription: ChapterDescription {
     /**
      Playhead position in seconds from 0.
     */
-    var offset: UInt { get }
+    var offset: TimeInterval { get }
     var chapter: ChapterDescription { get }
 }
 
 class DefaultPlayerCommand: PlayerCommand {
-    let offset: UInt
+    let offset: TimeInterval
     let chapter: ChapterDescription
-    init(offset: UInt, chapter: ChapterDescription) {
+    init(offset: TimeInterval, chapter: ChapterDescription) {
         self.offset = offset
         self.chapter = chapter
     }
