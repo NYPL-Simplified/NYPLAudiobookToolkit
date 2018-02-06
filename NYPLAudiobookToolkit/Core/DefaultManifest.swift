@@ -125,6 +125,7 @@ class FindawayFragment: NSObject {
     let sessionKey: String
     let audiobookID: String
     let licenseID: String
+    let duration: TimeInterval?
 
     public init?(JSON: Any?, sessionKey: String, audiobookID: String, licenseID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -135,5 +136,6 @@ class FindawayFragment: NSObject {
         self.partNumber = partNumber
         self.sessionKey = sessionKey
         self.audiobookID = audiobookID
+        self.duration = payload["duration"] as? TimeInterval
     }
 }

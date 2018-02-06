@@ -9,9 +9,12 @@
 import UIKit
 
 class OpenAccessPlayer: NSObject, Player {
+    func seekTo(_ offsetInChapter: Float) {
+    }
+    
     var delegate: PlayerDelegate?
     
-    func updatePlaybackWith(_ playerCommand: PlayerCommand) {
+    func updatePlaybackWith(_ chapter: ChapterDescription) {
 
     }
     

@@ -25,7 +25,8 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
-    func updatePlaybackWith(_ playerCommand: PlayerCommand)
+    func updatePlaybackWith(_ chapter: ChapterDescription)
+    func seekTo(_ offsetInChapter: Float)
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
@@ -42,15 +43,21 @@ import Foundation
 @objc public protocol ChapterDescription {
     var number: UInt { get }
     var part: UInt { get }
+    var duration: TimeInterval { get }
+    var offset: TimeInterval { get }
 }
 
 class DefaultChapterDescription: ChapterDescription {
-    var number: UInt
-    var part: UInt
+    let number: UInt
+    let part: UInt
+    let duration: TimeInterval
+    let offset: TimeInterval
 
-    init(number: UInt, part: UInt) {
+    init(number: UInt, part: UInt, duration: TimeInterval, offset: TimeInterval) {
         self.number = number
         self.part = part
+        self.duration = duration
+        self.offset = offset
     }
 }
 
