@@ -12,7 +12,7 @@ import PureLayout
 
 public class AudiobookDetailViewController: UIViewController {
     private let audiobookManager: AudiobookManager
-
+    private var currentChapter: ChapterDescription?
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
@@ -134,11 +134,13 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
 
 extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     public func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterDescription) {
+        self.currentChapter = chapter
         self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
         self.seekBar.play()
     }
 
     public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterDescription) {
+        self.currentChapter = chapter
         self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
         self.seekBar.pause()
     }
@@ -146,7 +148,10 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
 
 extension AudiobookDetailViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
-        
+        scrubberView.pause()
+        if let chapter = self.currentChapter?.chapterWith(offset) {
+            self.audiobookManager.updatePlaybackWith(chapter)
+        }
     }
 
     func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView) {

@@ -10,10 +10,17 @@ import UIKit
 import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
-    func seekTo(_ offsetInChapter: Float) {
-        
+    private var currentChapterDescription: ChapterDescription {
+        let fragment = self.spine.first!
+        let findaway = self.currentFindawayChapter
+        let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (fragment.duration ?? 0)
+        return DefaultChapterDescription(
+            number: findaway?.chapterNumber ?? fragment.chapterNumber,
+            part: findaway?.partNumber ?? fragment.partNumber,
+            duration: duration,
+            offset: TimeInterval(self.currentOffset)
+        )
     }
-    
     weak var delegate: PlayerDelegate?
     private var resumePlaybackCommand: ChapterDescription?
     // Only queue the last issued command if they are issued before Findaway has been verified
@@ -90,13 +97,15 @@ class FindawayPlayer: NSObject, Player {
 
     func skipForward() {
         let someTimeFromNow = self.currentOffset + 15
-        self.updatePlaybackWith(self.chapterAtOffset(someTimeFromNow))
+        let offsetDescription = self.currentChapterDescription.chapterWith(TimeInterval(someTimeFromNow))
+        self.updatePlaybackWith(offsetDescription)
     }
 
     func skipBack() {
         let someTimeAgo = Int(self.currentOffset) - 15
         let timeToGoBackTo = UInt(someTimeAgo < 0 ? 0 : someTimeAgo)
-        self.updatePlaybackWith(self.chapterAtOffset(timeToGoBackTo))
+        let offsetDescription = self.currentChapterDescription.chapterWith(TimeInterval(timeToGoBackTo))
+        self.updatePlaybackWith(offsetDescription)
     }
 
     func play() {

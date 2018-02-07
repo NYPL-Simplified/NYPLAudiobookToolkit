@@ -26,7 +26,6 @@ import Foundation
     func skipBack()
     var isPlaying: Bool { get }
     func updatePlaybackWith(_ chapter: ChapterDescription)
-    func seekTo(_ offsetInChapter: Float)
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
@@ -45,6 +44,7 @@ import Foundation
     var part: UInt { get }
     var duration: TimeInterval { get }
     var offset: TimeInterval { get }
+    func chapterWith(_ offset: TimeInterval) -> ChapterDescription
 }
 
 class DefaultChapterDescription: ChapterDescription {
@@ -58,6 +58,15 @@ class DefaultChapterDescription: ChapterDescription {
         self.part = part
         self.duration = duration
         self.offset = offset
+    }
+
+    func chapterWith(_ offset: TimeInterval) -> ChapterDescription {
+        return DefaultChapterDescription(
+            number: self.number,
+            part: self.part,
+            duration: self.duration,
+            offset: offset
+        )
     }
 }
 
