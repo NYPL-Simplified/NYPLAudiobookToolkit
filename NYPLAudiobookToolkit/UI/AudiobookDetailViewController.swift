@@ -124,6 +124,16 @@ public class AudiobookDetailViewController: UIViewController {
     @objc func coverArtWasPressed(_ sender: Any) {
         self.audiobookManager.fetch()
     }
+    
+    func updateControlsForPlaybackStart() {
+        self.seekBar.play()
+        self.playbackControlView.showPauseButton()
+    }
+
+    func updateControlsForPlaybackStop() {
+        self.seekBar.pause()
+        self.playbackControlView.showPlayButton()
+    }
 }
 
 extension AudiobookDetailViewController: PlaybackControlViewDelegate {
@@ -139,7 +149,7 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.isPlaying {
             self.audiobookManager.pause()
-            self.seekBar.pause()
+            self.updateControlsForPlaybackStop()
         } else {
             self.audiobookManager.play()
         }
@@ -148,7 +158,7 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
-        self.navigationItem.title = "Title Downloaded!"
+        self.chapterTitleLabel.text = "Title Downloaded!"
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
             self.navigationItem.title = nil
             self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
@@ -162,7 +172,7 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     }
     
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
-        self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
+        self.chapterTitleLabel.text = "Downloading \(Int(percentage * 100))%"
     }
 }
 
@@ -180,9 +190,9 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
         self.chapterTitleLabel.text = "Chapter \(chapter.number)"
         self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
         if scrubbing {
-            self.seekBar.play()
+            self.updateControlsForPlaybackStart()
         } else {
-            self.seekBar.pause()
+            self.updateControlsForPlaybackStop()
         }
     }
 }

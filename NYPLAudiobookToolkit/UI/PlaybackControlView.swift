@@ -20,6 +20,14 @@ protocol PlaybackControlViewDelegate: class {
 
 class PlaybackControlView: UIView {
     weak var delegate: PlaybackControlViewDelegate?
+    
+    public func showPlayButton () {
+        self.playButton.image = self.playImage
+    }
+    
+    public func showPauseButton () {
+        self.playButton.image = self.pauseImage
+    }
 
     private let padding = CGFloat(8)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
@@ -38,9 +46,19 @@ class PlaybackControlView: UIView {
         return view
     }()
     
+    private let playImage = UIImage(
+        named: "play",
+        in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+        compatibleWith: nil
+    )
+
+    private let pauseImage = UIImage(
+        named: "pause",
+        in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+        compatibleWith: nil
+    )
     private let playButton: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "play", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.accessibilityIdentifier = "play_button"
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
@@ -81,6 +99,7 @@ class PlaybackControlView: UIView {
     
     func setup() {
         self.addSubview(self.playButton)
+        self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
         self.playButton.autoPinEdge(.top, to: .top, of: self)
         self.playButton.addGestureRecognizer(
