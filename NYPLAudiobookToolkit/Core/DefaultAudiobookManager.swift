@@ -118,16 +118,29 @@ public class DefaultAudiobookManager: AudiobookManager {
 
 extension DefaultAudiobookManager: DownloadTaskDelegate {
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
-        self.downloadDelegate?.audiobookManagerReadyForPlayback(self)
+        DispatchQueue.main.async { [weak self] in
+            if let strongSelf = self {
+                strongSelf.downloadDelegate?.audiobookManagerReadyForPlayback(strongSelf)
+            }
+        }
     }
     
     public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
-        self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentage: self.downloadTask.downloadProgress )
+        DispatchQueue.main.async { [weak self] in
+            if let strongSelf = self {
+                strongSelf.downloadDelegate?.audiobookManager(strongSelf, didUpdateDownloadPercentage: strongSelf.downloadTask.downloadProgress)
+            }
+        }
     }
     
     public func downloadTaskDidError(_ downloadTask: DownloadTask) {
-        if let error = downloadTask.error {
-            self.downloadDelegate?.audiobookManager(self, didReceive: error)
+
+        DispatchQueue.main.async { [weak self] in
+            if let strongSelf = self {
+                if let error = downloadTask.error {
+                    strongSelf.downloadDelegate?.audiobookManager(strongSelf, didReceive: error)
+                }
+            }
         }
     }
 }
