@@ -27,7 +27,8 @@ struct ScrubberProgress: Equatable {
     }
     
     var succ: ScrubberProgress {
-        return ScrubberProgress(offset: self.offset + 1, duration: self.duration)
+        let newOffset = self.offset < self.duration ? self.offset + 1 : self.duration
+        return ScrubberProgress(offset: newOffset, duration: self.duration)
     }
     
     func progressFromPrecentage(_ percentage: Float) -> ScrubberProgress {

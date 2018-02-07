@@ -56,6 +56,7 @@ public class AudiobookDetailViewController: UIViewController {
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.backIndicatorImage = UIImage()
         self.navigationController?.navigationBar.barTintColor = GrayBackgroundColor
+        self.navigationController?.navigationBar.isTranslucent = false
         self.view.backgroundColor = GrayBackgroundColor
         self.playbackControlView.backgroundColor = GrayBackgroundColor
         self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
@@ -162,8 +163,12 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
             self.navigationItem.title = nil
             self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
-            if self.chapterTitleLabel.text == "Title Downloaded!" {
-               self.chapterTitleLabel.text = ""
+            if self.chapterTitleLabel.text == "Title Downloaded!"  {
+                if let chapter = self.currentChapter {
+                    self.chapterTitleLabel.text = "Chapter \(chapter.number)"
+                } else {
+                    self.chapterTitleLabel.text = ""
+                }
             }
         }
     }
