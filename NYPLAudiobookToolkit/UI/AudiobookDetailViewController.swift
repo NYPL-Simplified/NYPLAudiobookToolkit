@@ -11,12 +11,15 @@ import Foundation
 import PureLayout
 
 public class AudiobookDetailViewController: UIViewController {
+    
     private let audiobookManager: AudiobookManager
+    private var currentChapter: ChapterDescription?
 
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
-        self.audiobookManager.delegate = self
+        self.audiobookManager.downloadDelegate = self
+        self.audiobookManager.playbackDelegate = self
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -52,6 +55,7 @@ public class AudiobookDetailViewController: UIViewController {
         self.coverView.autoSetDimensions(to: CGSize(width: 266, height: 266))
         
         self.view.addSubview(self.seekBar)
+        self.seekBar.delegate = self;
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
@@ -65,7 +69,12 @@ public class AudiobookDetailViewController: UIViewController {
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
         
-        self.coverView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))))
+        self.coverView.addGestureRecognizer(
+            UITapGestureRecognizer(
+                target: self,
+                action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))
+            )
+        )
     }
     
     override public func viewDidAppear(_ animated: Bool) {
@@ -89,18 +98,26 @@ public class AudiobookDetailViewController: UIViewController {
 }
 
 extension AudiobookDetailViewController: PlaybackControlViewDelegate {
+    func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.audiobookManager.skipBack()
+    }
+    
+    func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.audiobookManager.skipForward()
+    }
+    
+    // Pausing happens almost instantly so we ask the manager to pause and pause the seek bar at the same time. However playback can take time to start up and we need to wait to move the seek bar until we here playback has began from the manager. This is because playing could require downloading the track.
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.isPlaying {
             self.audiobookManager.pause()
             self.seekBar.pause()
         } else {
             self.audiobookManager.play()
-            self.seekBar.play()
         }
     }
 }
 
-extension AudiobookDetailViewController: AudiobookManagerDelegate {
+extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
         self.navigationItem.title = "Title Downloaded!"
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
@@ -116,6 +133,33 @@ extension AudiobookDetailViewController: AudiobookManagerDelegate {
     
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
         self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
+    }
+}
+
+extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterDescription) {
+        self.currentChapter = chapter
+        self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
+        self.seekBar.play()
+    }
+
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterDescription) {
+        self.currentChapter = chapter
+        self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
+        self.seekBar.pause()
+    }
+}
+
+extension AudiobookDetailViewController: ScrubberViewDelegate {
+    func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
+        scrubberView.pause()
+        if let chapter = self.currentChapter?.chapterWith(offset) {
+            self.audiobookManager.updatePlaybackWith(chapter)
+        }
+    }
+
+    func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView) {
+        self.audiobookManager.pause()
     }
 }
 

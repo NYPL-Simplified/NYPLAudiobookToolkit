@@ -13,6 +13,8 @@ import MediaPlayer
 
 protocol PlaybackControlViewDelegate: class {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView)
+    func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView)
+    func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView)
 }
 
 class PlaybackControlView: UIView {
@@ -83,13 +85,24 @@ class PlaybackControlView: UIView {
         self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.padding)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self, withOffset: 0)
         self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
-        
+        self.skipBackView.addGestureRecognizer(
+            UITapGestureRecognizer(
+                target: self,
+                action: #selector(PlaybackControlView.skipBackButtonWasTapped(_:))
+            )
+        )
+
         self.addSubview(self.skipForwardView)
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
         self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.padding)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self, withOffset: 0)
         self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
-        
+        self.skipForwardView.addGestureRecognizer(
+            UITapGestureRecognizer(
+                target: self,
+                action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:))
+            )
+        )
         
         self.addSubview(self.audioRouteButton)
         self.audioRouteButton.autoSetDimensions(to: CGSize(width: 30, height: 30))
@@ -102,4 +115,11 @@ class PlaybackControlView: UIView {
         self.delegate?.playbackControlViewPlayButtonWasTapped(self)
     }
 
+    @objc public func skipBackButtonWasTapped(_ sender: Any) {
+        self.delegate?.playbackControlViewSkipBackButtonWasTapped(self)
+    }
+
+    @objc public func skipForwardButtonWasTapped(_ sender: Any) {
+        self.delegate?.playbackControlViewSkipForwardButtonWasTapped(self)
+    }
 }
