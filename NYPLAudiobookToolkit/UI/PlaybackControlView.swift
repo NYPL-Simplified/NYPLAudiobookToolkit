@@ -60,6 +60,12 @@ class PlaybackControlView: UIView {
         self.setup()
     }
     
+    override var backgroundColor: UIColor? {
+        didSet {
+            self.audioRouteButton.backgroundColor = self.backgroundColor
+        }
+    }
+
     public init() {
         super.init(frame: .zero)
         self.setup()

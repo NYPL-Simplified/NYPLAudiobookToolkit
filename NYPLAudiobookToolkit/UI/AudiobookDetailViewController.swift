@@ -10,6 +10,8 @@ import UIKit
 import Foundation
 import PureLayout
 
+public let GrayBackgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1)
+
 public class AudiobookDetailViewController: UIViewController {
     
     private let audiobookManager: AudiobookManager
@@ -34,21 +36,26 @@ public class AudiobookDetailViewController: UIViewController {
         imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.isUserInteractionEnabled = true
         imageView.accessibilityIdentifier = "cover_art"
+        imageView.layer.cornerRadius = 10
+        imageView.layer.masksToBounds = true
         return imageView
     }()
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.backBarButtonItem?.title = nil
+        self.navigationController?.navigationBar.shadowImage = UIImage()
+        self.navigationController?.navigationBar.backIndicatorImage = UIImage()
+        self.navigationController?.navigationBar.barTintColor = GrayBackgroundColor
+        self.view.backgroundColor = GrayBackgroundColor
+        self.playbackControlView.backgroundColor = GrayBackgroundColor
+        self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
         let bbi = UIBarButtonItem(
             barButtonSystemItem: .bookmarks,
             target: self,
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
         self.navigationItem.rightBarButtonItem = bbi
-        self.navigationItem.title = self.audiobookManager.metadata.title
-        self.view.backgroundColor = UIColor.white
-        
+    
         self.view.addSubview(self.coverView)
         self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
@@ -121,7 +128,7 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
         self.navigationItem.title = "Title Downloaded!"
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
-            self.navigationItem.title = self.audiobookManager.metadata.title
+            self.navigationItem.title = nil
         }
     }
     
