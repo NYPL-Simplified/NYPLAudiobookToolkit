@@ -38,6 +38,7 @@ public class AudiobookDetailViewController: UIViewController {
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
+        imageView.contentMode = UIViewContentMode.scaleAspectFill
         return imageView
     }()
 
