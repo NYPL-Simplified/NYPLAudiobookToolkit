@@ -104,9 +104,11 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
         self.audiobookManager.skipForward()
     }
     
+    // Pausing happens almost instantly so we ask the manager to pause and pause the seek bar at the same time. However playback can take time to start up and we need to wait to move the seek bar until we here playback has began from the manager. This is because playing could require downloading the track.
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.isPlaying {
             self.audiobookManager.pause()
+            self.seekBar.pause()
         } else {
             self.audiobookManager.play()
         }
