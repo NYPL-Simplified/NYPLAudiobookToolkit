@@ -69,6 +69,12 @@ struct ScrubberUIState: Equatable {
         if self.progress.duration > 0 {
             progressLocation = CGFloat(self.progress.offset / self.progress.duration) * (width - CGFloat(self.gripperRadius))
         }
+        
+        // Somehow out offset is greater than our duration, and our location is greater than the width of the actual playing content
+        if progressLocation > width {
+            progressLocation = width
+
+        }
         return progressLocation
     }
 
