@@ -129,6 +129,7 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
         self.navigationItem.title = "Title Downloaded!"
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
             self.navigationItem.title = nil
+            self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
         }
     }
     
