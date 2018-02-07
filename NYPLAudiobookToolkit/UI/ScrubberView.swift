@@ -91,7 +91,6 @@ class ScrubberView: UIView {
     let rightLabel = UILabel()
     var barWidthConstraint: NSLayoutConstraint?
     var gripperSizeConstraints: [NSLayoutConstraint]?
-    private var states: [ScrubberUIState] = []
     var state: ScrubberUIState = ScrubberUIState(
         gripperRadius: 4,
         progressColor: UIColor.gray,
@@ -99,15 +98,7 @@ class ScrubberView: UIView {
         progress: ScrubberProgress(offset: 0, duration: 0)
     ) {
         didSet {
-            if let currentState = self.states.first {
-                if currentState != self.state {
-                    self.states.append(self.state)
-                    self.updateUIWith(self.state)
-                }
-            } else {
-                self.states.append(self.state)
-                self.updateUIWith(self.state)
-            }
+            self.updateUIWith(self.state)
         }
     }
     

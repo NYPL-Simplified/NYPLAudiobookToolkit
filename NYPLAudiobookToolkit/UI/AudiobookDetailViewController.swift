@@ -11,8 +11,10 @@ import Foundation
 import PureLayout
 
 public class AudiobookDetailViewController: UIViewController {
+    
     private let audiobookManager: AudiobookManager
     private var currentChapter: ChapterDescription?
+
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
