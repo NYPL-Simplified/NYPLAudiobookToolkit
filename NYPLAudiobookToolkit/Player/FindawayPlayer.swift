@@ -50,7 +50,6 @@ class FindawayPlayer: NSObject, Player {
     }
 
     /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
-    
     private var currentOffset: UInt {
         return FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0
     }
@@ -163,7 +162,6 @@ class FindawayPlayer: NSObject, Player {
         guard let findawayChapter = self.currentFindawayChapter else { return false }
         return findawayChapter.partNumber == chapter.part &&
             findawayChapter.chapterNumber == chapter.number
-        
     }
 }
 

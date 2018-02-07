@@ -56,7 +56,7 @@ import AudioEngine
     func fetch()
     func skipForward()
     func skipBack()
-    func play() // needs to take some sort of offset/indication of where to start playing
+    func play()
     func pause()
     func updatePlaybackWith(_ chapter: ChapterDescription)
 }

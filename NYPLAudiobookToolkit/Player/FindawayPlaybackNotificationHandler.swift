@@ -18,7 +18,7 @@ protocol FindawayPlaybackNotificationHandler {
     weak var delegate: FindawayPlaybackNotificationHandlerDelegate? { get set }
 }
 
-/// TODO: Make a protocol to interact with this
+/// This class wraps notifications from AudioEngine and notifies its delegate. It has no behavior on its own and should only be used to get updates on playback/streaming status from AudioEngine.
 class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNotificationHandler {
     weak var delegate: FindawayPlaybackNotificationHandlerDelegate?
     public override init() {
