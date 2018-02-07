@@ -29,6 +29,10 @@ import Foundation
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
+/// This protocol is supposed to represent how to issue complex commands to the player.
+/// IE: stop and seek to 3:00
+/// IE: stop and skip to Chapter 3
+///
 /// This protocol is supposed to represent metadata associated with a chapter.
 /// It is intended to be used as a way to seek through the track.
 ///
@@ -67,34 +71,5 @@ class DefaultChapterDescription: ChapterDescription {
             duration: self.duration,
             offset: offset
         )
-    }
-}
-
-/// *EXPERIMENTAL AND LIKELY TO CHANGE*
-/// This protocol is supposed to represent how to issue complex commands to the player.
-/// IE: stop and seek to 3:00
-/// IE: stop and skip to Chapter 3
-///
-/// The reason this is still experimental is that it likely to duplicate
-/// functionality needed by the table of contents. This object will
-/// likely need information about seeking between chapters and skipping to
-/// new chapters as well.
-///
-/// This is also likely to change as the interface for doing this with
-/// AVPlayer & FAEPlaybackEngine are quite different.
-@objc public protocol PlayerCommand {
-    /**
-     Playhead position in seconds from 0.
-    */
-    var offset: TimeInterval { get }
-    var chapter: ChapterDescription { get }
-}
-
-class DefaultPlayerCommand: PlayerCommand {
-    let offset: TimeInterval
-    let chapter: ChapterDescription
-    init(offset: TimeInterval, chapter: ChapterDescription) {
-        self.offset = offset
-        self.chapter = chapter
     }
 }

@@ -112,7 +112,9 @@ class FindawayPlayer: NSObject, Player {
         if let resumeCommand = self.resumePlaybackCommand {
             self.updatePlaybackWith(resumeCommand)
         } else {
-            self.updatePlaybackWith(self.chapterAtOffset(0))
+            self.updatePlaybackWith(
+                self.currentChapterDescription.chapterWith(0)
+            )
         }
     }
 
@@ -163,18 +165,6 @@ class FindawayPlayer: NSObject, Player {
             findawayChapter.chapterNumber == chapter.number
         
     }
-    
-    func chapterAtOffset(_ offset: UInt) -> ChapterDescription {
-        let fragment = self.spine.first!
-        let findaway = self.currentFindawayChapter
-        let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (fragment.duration ?? 0)
-        return DefaultChapterDescription(
-            number: findaway?.chapterNumber ?? fragment.chapterNumber,
-            part: findaway?.partNumber ?? fragment.partNumber,
-            duration: duration,
-            offset: TimeInterval(offset)
-        )
-    }
 }
 
 extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
@@ -183,7 +173,6 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     }
     
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
-        
     }
 }
 
@@ -223,6 +212,4 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     
     func playbackNotification() {
     }
-    
-    
 }
