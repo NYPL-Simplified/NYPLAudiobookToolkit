@@ -8,6 +8,7 @@
 
 import UIKit
 import PureLayout
+import AVKit
 import MediaPlayer
 
 
@@ -46,13 +47,16 @@ class PlaybackControlView: UIView {
         return imageView
     }()
     
-    private let audioRouteButton: MPVolumeView = { () -> MPVolumeView in
-        let view = MPVolumeView(forAutoLayout: ())
-        view.showsVolumeSlider = false
-        view.showsRouteButton = true
-        view.backgroundColor = UIColor.white
-        view.sizeToFit()
-        return view
+    private let audioRouteButton: UIView = { () -> UIView in
+//        Commented out because current deploy target it iOS 11
+//        but this should be uncommented and wrapped in @available for deploy targets >11
+//
+//        let view = MPVolumeView(forAutoLayout: ())
+//        view.showsVolumeSlider = false
+//        view.showsRouteButton = true
+//        view.sizeToFit()
+//        return view
+        return AVRoutePickerView()
     }()
 
     override public init(frame: CGRect) {
