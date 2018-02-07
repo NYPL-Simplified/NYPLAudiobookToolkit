@@ -33,7 +33,7 @@ public class AudiobookDetailViewController: UIViewController {
     private let playbackControlView = PlaybackControlView()
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.isUserInteractionEnabled = true
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
@@ -59,8 +59,14 @@ public class AudiobookDetailViewController: UIViewController {
         self.view.backgroundColor = GrayBackgroundColor
         self.playbackControlView.backgroundColor = GrayBackgroundColor
         self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
+        let tocImage = UIImage(
+            named: "table_of_contents",
+            in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+            compatibleWith: nil
+        )
         let bbi = UIBarButtonItem(
-            barButtonSystemItem: .bookmarks,
+            image: tocImage,
+            style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
