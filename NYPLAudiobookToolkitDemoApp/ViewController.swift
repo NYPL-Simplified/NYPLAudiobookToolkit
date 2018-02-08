@@ -9,30 +9,47 @@
 import UIKit
 import NYPLAudiobookToolkit
 
+
 class ViewController: UIViewController {
 
+    var manager: AudiobookManager?
+    var detailVC: AudiobookDetailViewController?
     override func viewDidAppear(_ animated: Bool) {
-        self.loadAudiobook { [weak self](data) in
-            let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
-            guard let json = possibleJson else { return }
-            let metadata = AudiobookMetadata(
-                title: "Les Trois Mousquetaires",
-                authors: ["Alexandre Dumas"],
-                narrators: ["John Hodgeman"],
-                publishers: ["LibriVox"],
-                published: Date(),
-                modified: Date(),
-                language: "en"
+//        self.loadAudiobook { (data) in
+//
+//        }
+//        guard let json = possibleJson else { return }
+        
+        guard let data = json.data(using: String.Encoding.utf8) else { return }
+        let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
+        guard let unwrappedJSON = possibleJson else { return }
+        let metadata = AudiobookMetadata(
+            title: "The Heart of Henry Quantum",
+            authors: ["Alexandre Dumas"],
+            narrators: ["John Hodgeman"],
+            publishers: ["Findaway"],
+            published: Date(),
+            modified: Date(),
+            language: "en"
+        )
+        
+        self.navigationItem.title = "The Heart of Henry Quantum"
+        guard let audiobook = AudiobookFactory.audiobook(unwrappedJSON) else { return }
+        if (self.manager == nil) {
+            self.manager = DefaultAudiobookManager(
+                metadata: metadata,
+                audiobook: audiobook
             )
-            guard let audiobook = AudiobookFactory.audiobook(json) else { return }
-            let vc = AudiobookDetailViewController(
-                audiobookManager: DefaultAudiobookManager(
-                    metadata: metadata,
-                    audiobook: audiobook
-                )
-            )
-            self?.navigationController?.pushViewController(vc, animated: true)
         }
+        guard let theManager = self.manager else { return }
+        if (self.detailVC == nil) {
+            self.detailVC = AudiobookDetailViewController(
+                audiobookManager: theManager
+            )
+        }
+        guard let vc = self.detailVC else { return }
+        
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {
