@@ -166,11 +166,10 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
-        self.chapterTitleLabel.text = "Title Downloaded!"
+        let downloadCompleteText = "Title Downloaded!"
+        self.chapterTitleLabel.text = downloadCompleteText
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
-            self.navigationItem.title = nil
-            self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
-            if self.chapterTitleLabel.text == "Title Downloaded!"  {
+            if self.chapterTitleLabel.text == downloadCompleteText  {
                 if let chapter = self.currentChapter {
                     self.chapterTitleLabel.text = "Chapter \(chapter.number)"
                 } else {
