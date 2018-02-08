@@ -12,6 +12,7 @@ import PureLayout
 
 public class AudiobookDetailViewController: UIViewController {
     
+    /// Light gray
     public var backgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1) {
         didSet {
             self.view.backgroundColor = self.backgroundColor
@@ -52,7 +53,6 @@ public class AudiobookDetailViewController: UIViewController {
         theLabel.numberOfLines = 1
         theLabel.textAlignment = NSTextAlignment.center
         theLabel.font = UIFont.systemFont(ofSize: 18)
-        theLabel.text = ""
         theLabel.accessibilityIdentifier = "chapter_label"
         return theLabel
     }()
