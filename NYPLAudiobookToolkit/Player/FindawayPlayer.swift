@@ -182,12 +182,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 duration: TimeInterval(self.currentDuration),
                 offset: TimeInterval(self.currentOffset)
             )
-
-            DispatchQueue.main.async { [weak self] in
-                if let strongSelf = self {
-                    strongSelf.delegate?.player(strongSelf, didBeginPlaybackOf: chapterDescription)
-                }
-            }
+            self.delegate?.player(self, didBeginPlaybackOf: chapterDescription)
         }
     }
     
@@ -199,11 +194,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 duration: TimeInterval(self.currentDuration),
                 offset: TimeInterval(self.currentOffset)
             )
-            DispatchQueue.main.async { [weak self] in
-                if let strongSelf = self {
-                    strongSelf.delegate?.player(strongSelf, didStopPlaybackOf: chapterDescription)
-                }
-            }
+            self.delegate?.player(self, didStopPlaybackOf: chapterDescription)
         }
     }
 }

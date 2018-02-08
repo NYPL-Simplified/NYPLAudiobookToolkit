@@ -139,7 +139,7 @@ extension DefaultAudiobookManager: DownloadTaskDelegate {
     }
     
     public func downloadTaskDidError(_ downloadTask: DownloadTask) {
-
+        guard downloadTask.error != nil else { return }
         DispatchQueue.main.async { [weak self] in
             if let strongSelf = self {
                 if let error = downloadTask.error {
@@ -152,10 +152,18 @@ extension DefaultAudiobookManager: DownloadTaskDelegate {
 
 extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterDescription) {
-        self.playbackDelegate?.audiobookManager(self, didBeginPlaybackOf: chapter)
+        DispatchQueue.main.async { [weak self] in
+            if let strongSelf = self {
+                strongSelf.playbackDelegate?.audiobookManager(strongSelf, didBeginPlaybackOf: chapter)
+            }
+        }
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterDescription) {
-        self.playbackDelegate?.audiobookManager(self, didStopPlaybackOf: chapter)
+        DispatchQueue.main.async { [weak self] in
+            if let strongSelf = self {
+                strongSelf.playbackDelegate?.audiobookManager(strongSelf, didStopPlaybackOf: chapter)
+            }
+        }
     }
 }
