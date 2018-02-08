@@ -106,13 +106,6 @@ public class AudiobookDetailViewController: UIViewController {
                 action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))
             )
         )
-        
-        self.coverView.addGestureRecognizer(
-            UILongPressGestureRecognizer(
-                target: self,
-                action: #selector(AudiobookDetailViewController.coverArtWasLongPressed(_:))
-            )
-        )
     }
     
     override public func viewDidAppear(_ animated: Bool) {
@@ -132,18 +125,6 @@ public class AudiobookDetailViewController: UIViewController {
 
     @objc func coverArtWasPressed(_ sender: Any) {
         self.audiobookManager.fetch()
-    }
-
-    /// DELETE THIS coverArtWasLongPressed OR UPDATE IT TO USE MANAGER
-    @objc public func coverArtWasLongPressed(_ sender: Any) {
-        let alertController = UIAlertController(title: "Delete", message: "Delete cached audiobook.", preferredStyle: .alert)
-        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { (action) in
-            FAEAudioEngine.shared()?.downloadEngine?.deleteAll()
-        }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        alertController.addAction(deleteAction)
-        alertController.addAction(cancelAction)
-        self.present(alertController, animated: true, completion: nil)
     }
     
     func updateControlsForPlaybackStart() {
