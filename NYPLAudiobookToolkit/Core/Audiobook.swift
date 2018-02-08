@@ -46,7 +46,7 @@ private func findawayKey(_ key: String) -> String {
 private class FindawayAudiobook: Audiobook {
     let downloadTask: DownloadTask
     let player: Player
-    private let spine: [FindawayFragment]
+    private let spine: [FindawaySpineElement]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
@@ -54,17 +54,17 @@ private class FindawayAudiobook: Audiobook {
         guard let sessionKey = metadata[findawayKey("sessionKey")] as? String else { return nil }
         guard let audiobookID = metadata[findawayKey("fulfillmentId")] as? String else { return nil }
         guard let licenseID = metadata[findawayKey("licenseId")] as? String else { return nil }
-        self.spine = spine.flatMap { (possibleLink) -> FindawayFragment? in
-            FindawayFragment(
+        self.spine = spine.flatMap { (possibleLink) -> FindawaySpineElement? in
+            FindawaySpineElement(
                 JSON: possibleLink,
                 sessionKey: sessionKey,
                 audiobookID: audiobookID,
                 licenseID: licenseID
             )
         }
-        guard let firstFragment = self.spine.first else { return nil }
-        self.downloadTask = FindawayDownloadTask(spine: self.spine)
-        self.player = FindawayPlayer(spine: self.spine, fragment: firstFragment)
+        guard let firstSpineElement = self.spine.first else { return nil }
+        self.downloadTask = FindawayDownloadTask(spine: self.spine, spineElement: firstSpineElement)
+        self.player = FindawayPlayer(spine: self.spine, spineElement: firstSpineElement)
     }
 }
 
@@ -72,12 +72,12 @@ private class FindawayAudiobook: Audiobook {
 private class OpenAccessAudiobook: Audiobook {
     let downloadTask: DownloadTask
     let player: Player
-    private let spine: [OpenAccessFragment]
+    private let spine: [OpenAccessSpineElement]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
-        self.spine = spine.flatMap { (possibleLink) -> OpenAccessFragment? in
-            OpenAccessFragment(
+        self.spine = spine.flatMap { (possibleLink) -> OpenAccessSpineElement? in
+            OpenAccessSpineElement(
                 JSON: possibleLink
             )
         }
@@ -87,7 +87,7 @@ private class OpenAccessAudiobook: Audiobook {
     }
 }
 
-class OpenAccessFragment: NSObject {
+class OpenAccessSpineElement: NSObject {
     let url: URL
     let mediaType: String
     let duration: Int
@@ -107,7 +107,7 @@ class OpenAccessFragment: NSObject {
     }
 }
 
-class FindawayFragment: NSObject {
+class FindawaySpineElement: NSObject {
     let chapterNumber: UInt
     let partNumber: UInt
     let sessionKey: String

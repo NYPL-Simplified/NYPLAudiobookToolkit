@@ -38,8 +38,8 @@ class OpenAccessPlayer: NSObject, Player {
         
     }
     
-    private let spine: [OpenAccessFragment]
-    public init(spine: [OpenAccessFragment]) {
+    private let spine: [OpenAccessSpineElement]
+    public init(spine: [OpenAccessSpineElement]) {
         self.spine = spine
     }
 }
