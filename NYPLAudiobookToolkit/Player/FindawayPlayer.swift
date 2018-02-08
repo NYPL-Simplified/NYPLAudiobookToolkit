@@ -11,12 +11,11 @@ import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
     private var currentChapterDescription: ChapterDescription {
-        let fragment = self.spine.first!
         let findaway = self.currentFindawayChapter
-        let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (fragment.duration ?? 0)
+        let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (self.firstFragment.duration ?? 0)
         return DefaultChapterDescription(
-            number: findaway?.chapterNumber ?? fragment.chapterNumber,
-            part: findaway?.partNumber ?? fragment.partNumber,
+            number: findaway?.chapterNumber ?? self.firstFragment.chapterNumber,
+            part: findaway?.partNumber ?? self.firstFragment.partNumber,
             duration: duration,
             offset: TimeInterval(self.currentOffset)
         )
@@ -34,19 +33,16 @@ class FindawayPlayer: NSObject, Player {
         }
     }
 
-    /// We ought to crash if this does not exist
     private var sessionKey: String {
-        return (self.spine.first?.sessionKey)!
+        return self.firstFragment.sessionKey
     }
 
-    /// We ought to crash if this does not exist
     private var licenseID: String {
-        return (self.spine.first?.licenseID)!
+        return self.firstFragment.licenseID
     }
 
-    /// We ought to crash if this does not exist
     private var audiobookID: String {
-        return (self.spine.first?.audiobookID)!
+        return self.firstFragment.audiobookID
     }
 
     /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
@@ -81,17 +77,19 @@ class FindawayPlayer: NSObject, Player {
         return loadedAudiobookID == self.audiobookID
     }
 
+    private let firstFragment: FindawayFragment
     private let spine: [FindawayFragment]
     private var eventHandler: FindawayPlaybackNotificationHandler
-    public init(spine: [FindawayFragment], eventHandler: FindawayPlaybackNotificationHandler) {
+    public init(spine: [FindawayFragment], fragment: FindawayFragment, eventHandler: FindawayPlaybackNotificationHandler) {
         self.spine = spine
         self.eventHandler = eventHandler
+        self.firstFragment = fragment
         super.init()
         self.eventHandler.delegate = self
     }
     
-    convenience init(spine: [FindawayFragment]) {
-        self.init(spine: spine, eventHandler: DefaultFindawayPlaybackNotificationHandler())
+    convenience init(spine: [FindawayFragment], fragment: FindawayFragment) {
+        self.init(spine: spine, fragment: fragment, eventHandler: DefaultFindawayPlaybackNotificationHandler())
     }
 
     func skipForward() {

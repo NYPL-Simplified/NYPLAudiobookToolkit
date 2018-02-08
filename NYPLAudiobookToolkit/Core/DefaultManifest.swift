@@ -74,9 +74,9 @@ private class FindawayManifest: Manifest {
                 licenseID: licenseID
             )
         }
-        guard !self.spine.isEmpty else { return nil }
+        guard let firstFragment = self.spine.first else { return nil }
         self.downloadTask = FindawayDownloadTask(spine: self.spine)
-        self.player = FindawayPlayer(spine: self.spine)
+        self.player = FindawayPlayer(spine: self.spine, fragment: firstFragment)
     }
 }
 
