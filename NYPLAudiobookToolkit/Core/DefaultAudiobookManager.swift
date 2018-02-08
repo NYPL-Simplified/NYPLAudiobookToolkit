@@ -10,26 +10,26 @@ import UIKit
 import AudioEngine
 
 /// If the AudiobookManager runs into an error while fetching
-/// values from the provided AudiobookManifest, it may use this
-/// protocol to request a new AudiobookManifest from the host app.
+/// values from the provided Audiobook, it may use this
+/// protocol to request a new Audiobook from the host app.
 @objc public protocol RefreshDelegate {
 
     /**
-     Will be called when the manager determines it needs a new manifest.
+     Will be called when the manager determines it needs a new audiobook.
      
      Example usage:
      ```
-     func updateManifest(completion: (AudiobookManifest?) -> Void) {
-     let newManifest = self.getNewManifest()
-     completion(newManifest)
+     func updateAudiobook(completion: (Audiobook?) -> Void) {
+     let audiobook = self.getAudiobook()
+     completion(audiobook)
      }
      ```
      
      - Parameters:
-        - completion: The block to be called when new manifest has been obtained.
-        - manifest: The new AudiobookManifest, may be nil if fetch was unsuccessful
+        - completion: The block to be called when new audiobook has been obtained.
+        - audiobook: The new Audiobook, may be nil if fetch was unsuccessful
      */
-    func updateManifest(completion: (_ manifest: Manifest?) -> Void)
+    func updateAudiobook(completion: (_ audiobook: Audiobook?) -> Void)
 }
 
 @objc public protocol AudiobookManagerDownloadDelegate {
@@ -45,13 +45,13 @@ import AudioEngine
 
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
 /// It is intended to be used by the host app to initiate downloads, control playback,
-/// and manager the filesystem.
+/// and manage the filesystem.
 @objc public protocol AudiobookManager {
     weak var refreshDelegate: RefreshDelegate? { get set }
     weak var downloadDelegate: AudiobookManagerDownloadDelegate? { get set }
     weak var playbackDelegate: AudiobookManagerPlaybackDelegate? { get set }
     var metadata: AudiobookMetadata { get }
-    var manifest: Manifest { get }
+    var audiobook: Audiobook { get }
     var isPlaying: Bool { get }
     func fetch()
     func skipForward()
@@ -67,7 +67,7 @@ public class DefaultAudiobookManager: AudiobookManager {
     public weak var downloadDelegate: AudiobookManagerDownloadDelegate?
     public weak var playbackDelegate: AudiobookManagerPlaybackDelegate?
     public let metadata: AudiobookMetadata
-    public let manifest: Manifest
+    public let audiobook: Audiobook
     public var isPlaying: Bool {
         return self.player.isPlaying
     }
@@ -75,9 +75,9 @@ public class DefaultAudiobookManager: AudiobookManager {
     let downloadTask: DownloadTask
     let player: Player
 
-    public init (metadata: AudiobookMetadata, manifest: Manifest, downloadTask: DownloadTask, player: Player) {
+    public init (metadata: AudiobookMetadata, audiobook: Audiobook, downloadTask: DownloadTask, player: Player) {
         self.metadata = metadata
-        self.manifest = manifest
+        self.audiobook = audiobook
         self.downloadTask = downloadTask
         self.player = player
 
@@ -85,8 +85,13 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.player.delegate = self
     }
 
-    public convenience init (metadata: AudiobookMetadata, manifest: Manifest) {
-        self.init(metadata: metadata, manifest: manifest, downloadTask: manifest.downloadTask, player: manifest.player)
+    public convenience init (metadata: AudiobookMetadata, audiobook: Audiobook) {
+        self.init(
+            metadata: metadata,
+            audiobook: audiobook,
+            downloadTask: audiobook.downloadTask,
+            player: audiobook.player
+        )
     }
     
     weak public var refreshDelegate: RefreshDelegate?

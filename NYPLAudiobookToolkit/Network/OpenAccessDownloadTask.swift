@@ -17,7 +17,7 @@ class OpenAccessDownloadTask: DownloadTask {
     
     weak var delegate: DownloadTaskDelegate?
     
-    public init(spine: [OpenAccessFragment] ){
+    public init(spine: [OpenAccessSpineElement] ){
 
     }
 

@@ -12,7 +12,7 @@ import NYPLAudiobookToolkit
 class ViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
-        self.loadManifest { [weak self](data) in
+        self.loadAudiobook { [weak self](data) in
             let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
             guard let json = possibleJson else { return }
             let metadata = AudiobookMetadata(
@@ -24,11 +24,11 @@ class ViewController: UIViewController {
                 modified: Date(),
                 language: "en"
             )
-            guard let manifest = ManifestFactory.manifest(json) else { return }
+            guard let audiobook = AudiobookFactory.audiobook(json) else { return }
             let vc = AudiobookDetailViewController(
                 audiobookManager: DefaultAudiobookManager(
                     metadata: metadata,
-                    manifest: manifest
+                    audiobook: audiobook
                 )
             )
             self?.navigationController?.pushViewController(vc, animated: true)
@@ -45,7 +45,7 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    func loadManifest(completion: @escaping (_ data: Data) -> Void) {
+    func loadAudiobook(completion: @escaping (_ data: Data) -> Void) {
         let sessionConfig = URLSessionConfiguration.default
         let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
         guard let URL = URL(string: "http://0.0.0.0:8000/tales.audiobook-manifest.json") else {return}

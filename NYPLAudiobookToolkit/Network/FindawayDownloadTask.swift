@@ -14,17 +14,14 @@ import AudioEngine
 class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
-    let spine: [FindawayFragment]
+    let spine: [FindawaySpineElement]
     var downloadProgress: Float {
-        var progress: Float = 0
-        if let fragment = self.spine.first {
-            progress = findawayProgressToNYPLToolkit(
-                FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: fragment.audiobookID)
-            )
-        }
-        return progress
+        return findawayProgressToNYPLToolkit(
+            FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: self.firstSpineElement.audiobookID)
+        )
     }
     
+    private let firstSpineElement: FindawaySpineElement
     private var timer: Timer?
     private var retryAfterVerification = false
     private var databaseHasBeenVerified: Bool
@@ -37,8 +34,9 @@ class FindawayDownloadTask: DownloadTask {
         return status
     }
 
-    public init(spine: [FindawayFragment], audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest?) {
+    public init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement, audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest?) {
         self.spine = spine
+        self.firstSpineElement = spineElement
         self.databaseHasBeenVerified = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
         if !self.databaseHasBeenVerified {
             audiobookLifeCycleManager.registerDelegate(self)
@@ -46,25 +44,22 @@ class FindawayDownloadTask: DownloadTask {
         self.downloadRequest = downloadRequest
     }
 
-    convenience init(spine: [FindawayFragment]) {
-        var request: FAEDownloadRequest?
-        if let fragment =  spine.first {
-            request = FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().first(where: { (existingRequest) -> Bool in
-                existingRequest.audiobookID == fragment.audiobookID
-            })
-            if request == nil {
-                request = FAEDownloadRequest(
-                    audiobookID: fragment.audiobookID,
-                    partNumber: fragment.partNumber,
-                    chapterNumber: fragment.chapterNumber,
-                    downloadType: .fullWrap,
-                    sessionKey: fragment.sessionKey,
-                    licenseID: fragment.licenseID,
-                    restrictToWiFi: false
-                )
-            }
+    convenience init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement) {
+        var request = FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().first(where: { (existingRequest) -> Bool in
+            existingRequest.audiobookID == spineElement.audiobookID
+        })
+        if request == nil {
+            request = FAEDownloadRequest(
+                audiobookID: spineElement.audiobookID,
+                partNumber: spineElement.partNumber,
+                chapterNumber: spineElement.chapterNumber,
+                downloadType: .fullWrap,
+                sessionKey: spineElement.sessionKey,
+                licenseID: spineElement.licenseID,
+                restrictToWiFi: false
+            )
         }
-        self.init(spine: spine, audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request)
+        self.init(spine: spine, spineElement: spineElement, audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request)
     }
     
     deinit {
