@@ -8,13 +8,18 @@
 
 import UIKit
 import Foundation
-import AudioEngine
 import PureLayout
-
-public let GrayBackgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1)
 
 public class AudiobookDetailViewController: UIViewController {
     
+    public var backgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1) {
+        didSet {
+            self.view.backgroundColor = self.backgroundColor
+            self.navigationController?.navigationBar.barTintColor = self.backgroundColor
+            self.playbackControlView.backgroundColor = self.backgroundColor
+        }
+    }
+
     private let audiobookManager: AudiobookManager
     private var currentChapter: ChapterDescription?
 
@@ -56,11 +61,12 @@ public class AudiobookDetailViewController: UIViewController {
         super.viewDidLoad()
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.backIndicatorImage = UIImage()
-        self.navigationController?.navigationBar.barTintColor = GrayBackgroundColor
         self.navigationController?.navigationBar.isTranslucent = false
-        self.view.backgroundColor = GrayBackgroundColor
-        self.playbackControlView.backgroundColor = GrayBackgroundColor
+        self.navigationController?.navigationBar.barTintColor = self.backgroundColor
         self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
+        self.playbackControlView.backgroundColor = self.backgroundColor
+        self.view.backgroundColor = self.backgroundColor
+
         let tocImage = UIImage(
             named: "table_of_contents",
             in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
