@@ -74,8 +74,8 @@ struct ScrubberUIState: Equatable {
         // Somehow out offset is greater than our duration, and our location is greater than the width of the actual playing content
         if progressLocation > width {
             progressLocation = width
-
         }
+
         return progressLocation
     }
 
