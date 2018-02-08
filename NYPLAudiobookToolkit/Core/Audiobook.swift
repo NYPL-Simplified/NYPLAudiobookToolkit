@@ -1,5 +1,5 @@
 //
-//  AudiobookManifest.swift
+//  Audiobook.swift
 //  NYPLAudibookKit
 //
 //  Created by Dean Silfen on 1/12/18.
@@ -13,40 +13,40 @@ private func findawayKey(_ key: String) -> String {
     return "findaway:\(key)"
 }
 
-@objc public protocol Manifest: class {
+@objc public protocol Audiobook: class {
     var downloadTask: DownloadTask { get }
     var player: Player { get }
     init?(JSON: Any?)
 }
 
-/// Host app should instantiate a manifest object with JSON.
-/// This manifest should then be able to construct utility classes
+/// Host app should instantiate a audiobook object with JSON.
+/// This audiobook should then be able to construct utility classes
 /// using data in the spine of that JSON.
 
-@objc public class ManifestFactory: NSObject {
-    public static func manifest(_ JSON: Any?) -> Manifest? {
+@objc public class AudiobookFactory: NSObject {
+    public static func audiobook(_ JSON: Any?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }
         let drm = JSON["drm:type"] as? [String: Any]
         let  possibleScheme = drm?["drm:scheme"] as? String
         guard let scheme = possibleScheme else {
-            return OpenAccessManifest(JSON: JSON)
+            return OpenAccessAudiobook(JSON: JSON)
         }
 
-        var manifest: Manifest?
+        var audiobook: Audiobook?
         switch scheme {
         case "http://www.librarysimplified.org/terms/drm/scheme/FAE":
-            manifest = FindawayManifest(JSON: JSON)
+            audiobook = FindawayAudiobook(JSON: JSON)
         default:
-            manifest = OpenAccessManifest(JSON: JSON)
+            audiobook = OpenAccessAudiobook(JSON: JSON)
         }
-        return manifest
+        return audiobook
     }
 }
 
-private class FindawayManifest: Manifest {
+private class FindawayAudiobook: Audiobook {
     let downloadTask: DownloadTask
     let player: Player
-    private let spine: [FindawayFragment]
+    private let spine: [FindawaySpineElement]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
@@ -54,30 +54,30 @@ private class FindawayManifest: Manifest {
         guard let sessionKey = metadata[findawayKey("sessionKey")] as? String else { return nil }
         guard let audiobookID = metadata[findawayKey("fulfillmentId")] as? String else { return nil }
         guard let licenseID = metadata[findawayKey("licenseId")] as? String else { return nil }
-        self.spine = spine.flatMap { (possibleLink) -> FindawayFragment? in
-            FindawayFragment(
+        self.spine = spine.flatMap { (possibleLink) -> FindawaySpineElement? in
+            FindawaySpineElement(
                 JSON: possibleLink,
                 sessionKey: sessionKey,
                 audiobookID: audiobookID,
                 licenseID: licenseID
             )
         }
-        guard let firstFragment = self.spine.first else { return nil }
-        self.downloadTask = FindawayDownloadTask(spine: self.spine)
-        self.player = FindawayPlayer(spine: self.spine, fragment: firstFragment)
+        guard let firstSpineElement = self.spine.first else { return nil }
+        self.downloadTask = FindawayDownloadTask(spine: self.spine, spineElement: firstSpineElement)
+        self.player = FindawayPlayer(spine: self.spine, spineElement: firstSpineElement)
     }
 }
 
 
-private class OpenAccessManifest: Manifest {
+private class OpenAccessAudiobook: Audiobook {
     let downloadTask: DownloadTask
     let player: Player
-    private let spine: [OpenAccessFragment]
+    private let spine: [OpenAccessSpineElement]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
-        self.spine = spine.flatMap { (possibleLink) -> OpenAccessFragment? in
-            OpenAccessFragment(
+        self.spine = spine.flatMap { (possibleLink) -> OpenAccessSpineElement? in
+            OpenAccessSpineElement(
                 JSON: possibleLink
             )
         }
@@ -87,7 +87,7 @@ private class OpenAccessManifest: Manifest {
     }
 }
 
-class OpenAccessFragment: NSObject {
+class OpenAccessSpineElement: NSObject {
     let url: URL
     let mediaType: String
     let duration: Int
@@ -107,7 +107,7 @@ class OpenAccessFragment: NSObject {
     }
 }
 
-class FindawayFragment: NSObject {
+class FindawaySpineElement: NSObject {
     let chapterNumber: UInt
     let partNumber: UInt
     let sessionKey: String
