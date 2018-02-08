@@ -24,7 +24,7 @@ class ViewController: UIViewController {
                 modified: Date(),
                 language: "en"
             )
-            guard let manifest = DefaultManifest(JSON: json) else { return }
+            guard let manifest = ManifestFactory.manifest(json) else { return }
             let vc = AudiobookDetailViewController(
                 audiobookManager: DefaultAudiobookManager(
                     metadata: metadata,

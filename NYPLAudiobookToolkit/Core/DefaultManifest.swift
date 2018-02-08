@@ -22,36 +22,24 @@ private func findawayKey(_ key: String) -> String {
 /// Host app should instantiate a manifest object with JSON.
 /// This manifest should then be able to construct utility classes
 /// using data in the spine of that JSON.
-@objc public class DefaultManifest: NSObject, Manifest {
-    public var player: Player {
-        return self.manifest.player
-    }
-    
-    public var downloadTask: DownloadTask {
-        return self.manifest.downloadTask
-    }
-    private let manifest: Manifest
-    private static let manifestConstructorsByContentType: [String: Manifest.Type] = [
-        "http://www.librarysimplified.org/terms/drm/scheme/FAE" : FindawayManifest.self,
-    ]
 
-    public required init?(JSON: Any?) {
+@objc public class ManifestFactory: NSObject {
+    public static func manifest(_ JSON: Any?) -> Manifest? {
         guard let JSON = JSON as? [String: Any] else { return nil }
         let drm = JSON["drm:type"] as? [String: Any]
-        let scheme = drm?["drm:scheme"] as? String
-        let manifestConstructor = DefaultManifest.constructorForContentType(scheme)
-        guard let realManifest = manifestConstructor.init(JSON: JSON) else { return nil }
-        self.manifest = realManifest
-        super.init()
-    }
-
-    static func constructorForContentType(_ contentType: String?) -> Manifest.Type {
-        var constructor: Manifest.Type = OpenAccessManifest.self
-        guard let contentType = contentType else { return constructor }
-        if let specifiedConstructor = self.manifestConstructorsByContentType[contentType] {
-            constructor = specifiedConstructor
+        let  possibleScheme = drm?["drm:scheme"] as? String
+        guard let scheme = possibleScheme else {
+            return OpenAccessManifest(JSON: JSON)
         }
-        return constructor
+
+        var manifest: Manifest?
+        switch scheme {
+        case "http://www.librarysimplified.org/terms/drm/scheme/FAE":
+            manifest = FindawayManifest(JSON: JSON)
+        default:
+            manifest = OpenAccessManifest(JSON: JSON)
+        }
+        return manifest
     }
 }
 
