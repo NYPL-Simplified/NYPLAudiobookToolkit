@@ -205,7 +205,4 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
             }
         }
     }
-    
-    func playbackNotification() {
-    }
 }
