@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Player.swift
 //  NYPLAudiobookToolkit
 //
 //  Created by Dean Silfen on 1/31/18.
@@ -25,7 +25,7 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
-    func updatePlaybackWith(_ chapter: ChapterDescription)
+    func jumpToChapter(_ description: ChapterDescription)
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
