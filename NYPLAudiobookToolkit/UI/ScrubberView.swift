@@ -10,33 +10,79 @@ import UIKit
 import PureLayout
 
 protocol ScrubberViewDelegate: class {
-func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo completionPercentage: Int)
+    func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
+    func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView)
+}
+
+struct ScrubberProgress: Equatable {
+    let offset: TimeInterval
+    let duration: TimeInterval
+    
+    var durationText: String {
+        return self.timeIntervalToString(self.duration)
+    }
+    
+    var offsetText: String {
+        return self.timeIntervalToString(self.offset)
+    }
+    
+    var succ: ScrubberProgress {
+        return ScrubberProgress(offset: self.offset + 1, duration: self.duration)
+    }
+    
+    func progressFromPrecentage(_ percentage: Float) -> ScrubberProgress {
+        return ScrubberProgress(
+            offset: TimeInterval(Float(self.duration) * percentage),
+            duration: self.duration
+        )
+    }
+
+    func timeIntervalToString(_ interval: TimeInterval) -> String {
+        let interval = Int(interval)
+        let seconds = interval % 60
+        let minutes = (interval / 60) % 60
+        let hours = (interval / 3600)
+        var timeString = String(format: "%02d:%02d", minutes, seconds)
+        if hours > 0 {
+            timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        }
+        return timeString
+    }
+
+    static func ==(lhs: ScrubberProgress, rhs: ScrubberProgress) -> Bool {
+        return lhs.offset == rhs.offset &&
+            lhs.duration == rhs.duration
+    }
 }
 
 struct ScrubberUIState: Equatable {
-    let progressXPosition: Int
-    let gripperRadius: Int
-    let leftText: String
-    let rightText: String
+    let gripperRadius: CGFloat
     let progressColor: UIColor
     let isScrubbing: Bool
-    var gripperDiameter: Int {
+    let progress: ScrubberProgress
+    var gripperDiameter: CGFloat {
         return gripperRadius * 2
     }
-    
+
+    public func progressLocationFor(_ width: CGFloat) -> CGFloat {
+        var progressLocation = self.gripperRadius
+        if self.progress.duration > 0 {
+            progressLocation = CGFloat(self.progress.offset / self.progress.duration) * (width - CGFloat(self.gripperRadius))
+        }
+        return progressLocation
+    }
+
     static func ==(lhs: ScrubberUIState, rhs: ScrubberUIState) -> Bool {
-        return lhs.progressXPosition == rhs.progressXPosition &&
-            lhs.gripperRadius == rhs.gripperRadius &&
-            lhs.leftText == rhs.leftText &&
-            lhs.rightText == rhs.rightText &&
+        return lhs.gripperRadius == rhs.gripperRadius &&
             lhs.progressColor == rhs.progressColor &&
+            lhs.progress == rhs.progress &&
             lhs.isScrubbing == rhs.isScrubbing
     }
 }
 
 class ScrubberView: UIView {
     var delegate: ScrubberViewDelegate?
-    
+
     let barHeight = 4
     var progressBar = UIView()
     let progressBackground = UIView()
@@ -45,49 +91,42 @@ class ScrubberView: UIView {
     let rightLabel = UILabel()
     var barWidthConstraint: NSLayoutConstraint?
     var gripperSizeConstraints: [NSLayoutConstraint]?
-    private var states: [ScrubberUIState] = []
     var state: ScrubberUIState = ScrubberUIState(
-        progressXPosition: 0,
         gripperRadius: 4,
-        leftText: "0:00",
-        rightText: "5:00",
         progressColor: UIColor.gray,
-        isScrubbing: false
-        ) {
+        isScrubbing: false,
+        progress: ScrubberProgress(offset: 0, duration: 0)
+    ) {
         didSet {
-            if let currentState = self.states.first {
-                if currentState != self.state {
-                    self.states.append(self.state)
-                    self.updateUIWith(self.state)
-                }
-            } else {
-                self.states.append(self.state)
-                self.updateUIWith(self.state)
-            }
+            self.updateUIWith(self.state)
         }
     }
-
+    
+    public func setOffset(_ offset: TimeInterval, duration: TimeInterval) {
+        self.state = ScrubberUIState(
+            gripperRadius: self.state.gripperRadius,
+            progressColor: self.state.progressColor,
+            isScrubbing: self.state.isScrubbing,
+            progress: ScrubberProgress(offset: offset, duration: duration)
+        )
+    }
     var timer: Timer?
 
     public func play() {
         self.state = ScrubberUIState(
-            progressXPosition: self.state.gripperRadius,
             gripperRadius: self.state.gripperRadius,
-            leftText: self.state.leftText,
-            rightText: self.state.rightText,
             progressColor: self.state.progressColor,
-            isScrubbing: true
+            isScrubbing: true,
+            progress: self.state.progress
         )
     }
 
     public func pause() {
         self.state = ScrubberUIState(
-            progressXPosition: self.state.gripperRadius,
             gripperRadius: self.state.gripperRadius,
-            leftText: self.state.leftText,
-            rightText: self.state.rightText,
             progressColor: self.state.progressColor,
-            isScrubbing: false
+            isScrubbing: false,
+            progress: self.state.progress
         )
     }
 
@@ -149,27 +188,27 @@ class ScrubberView: UIView {
         self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
         self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.leftLabel.accessibilityIdentifier = "progress_leftLabel"
-        self.leftLabel.text = self.state.leftText
+        self.leftLabel.text = self.state.progress.offsetText
         
         self.addSubview(self.rightLabel)
         self.rightLabel.autoPinEdge(.right, to: .right, of: self)
         self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.gripper)
         self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
-        self.rightLabel.text = self.state.rightText
+        self.rightLabel.text = self.state.progress.durationText
     }
     
     override func updateConstraints() {
         super.updateConstraints()
         UIView.beginAnimations("layout", context: nil)
-        self.barWidthConstraint?.constant = CGFloat(self.state.progressXPosition)
+        self.barWidthConstraint?.constant = self.state.progressLocationFor(self.frame.size.width)
         self.gripper.layer.cornerRadius = CGFloat(self.state.gripperRadius)
         self.gripperSizeConstraints?.forEach{ (constraint) in
             constraint.constant = CGFloat(self.state.gripperDiameter)
         }
 
-        self.leftLabel.text = self.state.leftText
-        self.rightLabel.text = self.state.rightText
+        self.leftLabel.text = self.state.progress.offsetText
+        self.rightLabel.text = self.state.progress.durationText
         self.progressBar.backgroundColor = self.state.progressColor
         self.gripper.backgroundColor = self.state.progressColor
         UIView.commitAnimations()
@@ -188,18 +227,17 @@ class ScrubberView: UIView {
         }
     }
     
-    @objc func updateProgress(_ sender: Any) {
-        var newWidth = self.state.gripperRadius
-        if (self.barWidthConstraint?.constant ?? CGFloat(0)) <= (self.frame.size.width - CGFloat(self.state.gripperRadius)) {
-            newWidth = self.state.progressXPosition + 3
+    @objc func updateProgress(_ timer: Timer) {
+        if self.state.progress.duration == 0 {
+            timer.invalidate()
+            return
         }
+
         self.state = ScrubberUIState(
-            progressXPosition: newWidth,
             gripperRadius: 4,
-            leftText: self.state.leftText,
-            rightText: self.state.rightText,
             progressColor: UIColor.gray,
-            isScrubbing: self.state.isScrubbing
+            isScrubbing: self.state.isScrubbing,
+            progress: self.state.progress.succ
         )
     }
     
@@ -209,15 +247,14 @@ class ScrubberView: UIView {
     
     func scrub(touch: UITouch?) {
         if let touch = touch {
-            let postion = touch.location(in: self)
-            if postion.x > 0 && postion.x < self.bounds.size.width {
+            let position = touch.location(in: self)
+            if position.x > 0 && position.x < self.bounds.size.width {
+                let percentage = Float(position.x / self.bounds.size.width)
                 self.state = ScrubberUIState(
-                    progressXPosition: Int(postion.x),
                     gripperRadius: 9,
-                    leftText: self.state.leftText,
-                    rightText: self.state.rightText,
                     progressColor: self.tintColor,
-                    isScrubbing: false
+                    isScrubbing: false,
+                    progress: self.state.progress.progressFromPrecentage(percentage)
                 )
 
             }
@@ -226,20 +263,22 @@ class ScrubberView: UIView {
     
     func stopScrub(touch: UITouch?) {
         if let touch = touch {
-            let postion = touch.location(in: self)
-            self.state = ScrubberUIState(
-                progressXPosition: Int(postion.x),
-                gripperRadius: 4,
-                leftText: self.state.leftText,
-                rightText: self.state.rightText,
-                progressColor: UIColor.gray,
-                isScrubbing: true
-            )
+            let position = touch.location(in: self)
+            if position.x > 0 && position.x < self.bounds.size.width {
+                let percentage = Float(position.x / self.bounds.size.width)
+                self.state = ScrubberUIState(
+                    gripperRadius: 4,
+                    progressColor: UIColor.gray,
+                    isScrubbing: true,
+                    progress: self.state.progress.progressFromPrecentage(percentage)
+                )
+            }
         }
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.scrub(touch: touches.first)
+        self.delegate?.scrubberViewDidBeginScrubbing(self)
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -248,10 +287,12 @@ class ScrubberView: UIView {
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.stopScrub(touch: touches.first)
+        self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.stopScrub(touch: touches.first)
+        self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
 }
 

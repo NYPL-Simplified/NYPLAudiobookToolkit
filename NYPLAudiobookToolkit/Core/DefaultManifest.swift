@@ -15,44 +15,37 @@ private func findawayKey(_ key: String) -> String {
 
 @objc public protocol Manifest: class {
     var downloadTask: DownloadTask { get }
+    var player: Player { get }
     init?(JSON: Any?)
 }
 
 /// Host app should instantiate a manifest object with JSON.
 /// This manifest should then be able to construct utility classes
 /// using data in the spine of that JSON.
-@objc public class DefaultManifest: NSObject, Manifest {
-    public var downloadTask: DownloadTask {
-        return self.manifest.downloadTask
-    }
-    private let manifest: Manifest
-    private static let manifestConstructorsByContentType: [String: Manifest.Type] = [
-        "http://www.librarysimplified.org/terms/drm/scheme/FAE" : FindawayManifest.self,
-    ]
 
-    public required init?(JSON: Any?) {
+@objc public class ManifestFactory: NSObject {
+    public static func manifest(_ JSON: Any?) -> Manifest? {
         guard let JSON = JSON as? [String: Any] else { return nil }
         let drm = JSON["drm:type"] as? [String: Any]
-        let scheme = drm?["drm:scheme"] as? String
-        let manifestConstructor = DefaultManifest.constructorForContentType(scheme)
-        guard let realManifest = manifestConstructor.init(JSON: JSON) else { return nil }
-        self.manifest = realManifest
-        super.init()
-    }
-
-    static func constructorForContentType(_ contentType: String?) -> Manifest.Type {
-        var constructor: Manifest.Type = OpenAccessManifest.self
-        guard let contentType = contentType else { return constructor }
-        if let specifiedConstructor = self.manifestConstructorsByContentType[contentType] {
-            constructor = specifiedConstructor
+        let  possibleScheme = drm?["drm:scheme"] as? String
+        guard let scheme = possibleScheme else {
+            return OpenAccessManifest(JSON: JSON)
         }
-        return constructor
+
+        var manifest: Manifest?
+        switch scheme {
+        case "http://www.librarysimplified.org/terms/drm/scheme/FAE":
+            manifest = FindawayManifest(JSON: JSON)
+        default:
+            manifest = OpenAccessManifest(JSON: JSON)
+        }
+        return manifest
     }
 }
 
 private class FindawayManifest: Manifest {
     let downloadTask: DownloadTask
-
+    let player: Player
     private let spine: [FindawayFragment]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -69,15 +62,16 @@ private class FindawayManifest: Manifest {
                 licenseID: licenseID
             )
         }
-        guard !self.spine.isEmpty else { return nil }
+        guard let firstFragment = self.spine.first else { return nil }
         self.downloadTask = FindawayDownloadTask(spine: self.spine)
+        self.player = FindawayPlayer(spine: self.spine, fragment: firstFragment)
     }
 }
 
 
 private class OpenAccessManifest: Manifest {
     let downloadTask: DownloadTask
-    
+    let player: Player
     private let spine: [OpenAccessFragment]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -89,6 +83,7 @@ private class OpenAccessManifest: Manifest {
         }
         guard !self.spine.isEmpty else { return nil }
         self.downloadTask = OpenAccessDownloadTask(spine: self.spine)
+        self.player = OpenAccessPlayer(spine: self.spine)
     }
 }
 
@@ -118,6 +113,7 @@ class FindawayFragment: NSObject {
     let sessionKey: String
     let audiobookID: String
     let licenseID: String
+    let duration: TimeInterval?
 
     public init?(JSON: Any?, sessionKey: String, audiobookID: String, licenseID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -128,5 +124,6 @@ class FindawayFragment: NSObject {
         self.partNumber = partNumber
         self.sessionKey = sessionKey
         self.audiobookID = audiobookID
+        self.duration = payload["duration"] as? TimeInterval
     }
 }
