@@ -14,7 +14,7 @@ class OpenAccessPlayer: NSObject, Player {
     
     var delegate: PlayerDelegate?
     
-    func updatePlaybackWith(_ chapter: ChapterDescription) {
+    func jumpToChapter(_ description: ChapterDescription) {
 
     }
     

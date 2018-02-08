@@ -112,7 +112,7 @@ public class DefaultAudiobookManager: AudiobookManager {
     }
     
     public func updatePlaybackWith(_ chapter: ChapterDescription) {
-        self.player.updatePlaybackWith(chapter)
+        self.player.jumpToChapter(chapter)
     }
 }
 

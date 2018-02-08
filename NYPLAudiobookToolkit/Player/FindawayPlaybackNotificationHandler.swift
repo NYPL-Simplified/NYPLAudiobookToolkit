@@ -9,9 +9,8 @@
 import UIKit
 
 protocol FindawayPlaybackNotificationHandlerDelegate: class {
-    func playbackNotification()
-    func audioEngineChapterPlaybackStarted()
-    func audioEngineChapterPlaybackPaused()
+    func audioEngineChapterPlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler)
+    func audioEngineChapterPlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler)
 }
 
 protocol FindawayPlaybackNotificationHandler {
@@ -76,20 +75,17 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     }
 
     @objc func audioEngineStreamingBegan(_ notification: NSNotification) {
-        print("DEANDEBUG streaming began \(notification.userInfo)")
     }
 
     @objc func audioEngineChapterUpdate(_ notification: NSNotification) {
-        print("DEANDEBUG chapter update \(notification.userInfo)")
     }
     
     @objc func audioEngineChapterPlaybackStarted(_ notification: NSNotification) {
-        print("DEANDEBUG chapter playback started \(notification.userInfo)")
-        self.delegate?.audioEngineChapterPlaybackStarted()
+        self.delegate?.audioEngineChapterPlaybackStarted(self)
     }
     
     @objc func audioEngineChapterPlaybackPaused(_ notification: NSNotification) {
         print("DEANDEBUG chapter playback started \(notification.userInfo)")
-        self.delegate?.audioEngineChapterPlaybackPaused()
+        self.delegate?.audioEngineChapterPlaybackPaused(self)
     }
 }
