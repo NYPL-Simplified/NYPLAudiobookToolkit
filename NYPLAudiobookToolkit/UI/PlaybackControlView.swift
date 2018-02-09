@@ -8,6 +8,7 @@
 
 import UIKit
 import PureLayout
+import AVKit
 import MediaPlayer
 
 
@@ -19,6 +20,14 @@ protocol PlaybackControlViewDelegate: class {
 
 class PlaybackControlView: UIView {
     weak var delegate: PlaybackControlViewDelegate?
+    
+    public func showPlayButton () {
+        self.playButton.image = self.playImage
+    }
+    
+    public func showPauseButton () {
+        self.playButton.image = self.pauseImage
+    }
 
     private let padding = CGFloat(8)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
@@ -37,22 +46,35 @@ class PlaybackControlView: UIView {
         return view
     }()
     
+    private let playImage = UIImage(
+        named: "play",
+        in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+        compatibleWith: nil
+    )
+
+    private let pauseImage = UIImage(
+        named: "pause",
+        in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+        compatibleWith: nil
+    )
     private let playButton: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "play", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.accessibilityIdentifier = "play_button"
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
         return imageView
     }()
     
-    private let audioRouteButton: MPVolumeView = { () -> MPVolumeView in
-        let view = MPVolumeView(forAutoLayout: ())
-        view.showsVolumeSlider = false
-        view.showsRouteButton = true
-        view.backgroundColor = UIColor.white
-        view.sizeToFit()
-        return view
+    private let audioRouteButton: UIView = { () -> UIView in
+//        Commented out because current deploy target it iOS 11
+//        but this should be uncommented and wrapped in @available for deploy targets >11
+//
+//        let view = MPVolumeView(forAutoLayout: ())
+//        view.showsVolumeSlider = false
+//        view.showsRouteButton = true
+//        view.sizeToFit()
+//        return view
+        return AVRoutePickerView()
     }()
 
     override public init(frame: CGRect) {
@@ -60,6 +82,12 @@ class PlaybackControlView: UIView {
         self.setup()
     }
     
+    override var backgroundColor: UIColor? {
+        didSet {
+            self.audioRouteButton.backgroundColor = self.backgroundColor
+        }
+    }
+
     public init() {
         super.init(frame: .zero)
         self.setup()
@@ -71,6 +99,7 @@ class PlaybackControlView: UIView {
     
     func setup() {
         self.addSubview(self.playButton)
+        self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
         self.playButton.autoPinEdge(.top, to: .top, of: self)
         self.playButton.addGestureRecognizer(

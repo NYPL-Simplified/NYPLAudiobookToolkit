@@ -12,6 +12,15 @@ import PureLayout
 
 public class AudiobookDetailViewController: UIViewController {
     
+    /// Light gray
+    public var backgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1) {
+        didSet {
+            self.view.backgroundColor = self.backgroundColor
+            self.navigationController?.navigationBar.barTintColor = self.backgroundColor
+            self.playbackControlView.backgroundColor = self.backgroundColor
+        }
+    }
+
     private let audiobookManager: AudiobookManager
     private var currentChapter: ChapterDescription?
 
@@ -31,24 +40,46 @@ public class AudiobookDetailViewController: UIViewController {
     private let playbackControlView = PlaybackControlView()
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "exampleCover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         imageView.isUserInteractionEnabled = true
         imageView.accessibilityIdentifier = "cover_art"
+        imageView.layer.cornerRadius = 10
+        imageView.layer.masksToBounds = true
+        imageView.contentMode = UIViewContentMode.scaleAspectFill
         return imageView
+    }()
+    private let chapterTitleLabel: UILabel = { () -> UILabel in
+        let theLabel = UILabel()
+        theLabel.numberOfLines = 1
+        theLabel.textAlignment = NSTextAlignment.center
+        theLabel.font = UIFont.systemFont(ofSize: 18)
+        theLabel.accessibilityIdentifier = "chapter_label"
+        return theLabel
     }()
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.backBarButtonItem?.title = nil
+        self.navigationController?.navigationBar.shadowImage = UIImage()
+        self.navigationController?.navigationBar.backIndicatorImage = UIImage()
+        self.navigationController?.navigationBar.isTranslucent = false
+        self.navigationController?.navigationBar.barTintColor = self.backgroundColor
+        self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
+        self.playbackControlView.backgroundColor = self.backgroundColor
+        self.view.backgroundColor = self.backgroundColor
+
+        let tocImage = UIImage(
+            named: "table_of_contents",
+            in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+            compatibleWith: nil
+        )
         let bbi = UIBarButtonItem(
-            barButtonSystemItem: .bookmarks,
+            image: tocImage,
+            style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
         self.navigationItem.rightBarButtonItem = bbi
-        self.navigationItem.title = self.audiobookManager.metadata.title
-        self.view.backgroundColor = UIColor.white
-        
+    
         self.view.addSubview(self.coverView)
         self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
@@ -57,18 +88,24 @@ public class AudiobookDetailViewController: UIViewController {
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
-        self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
-        self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
+        self.seekBar.autoPinEdge(.left, to: .left, of: self.coverView)
+        self.seekBar.autoPinEdge(.right, to: .right, of: self.coverView)
 
-        
+        self.view.addSubview(self.chapterTitleLabel)
+        NSLayoutConstraint.autoSetPriority(.defaultLow) {
+            self.chapterTitleLabel.autoSetDimension(.height, toSize: 0, relation: .equal)
+        }
+        self.chapterTitleLabel.autoPinEdge(.top, to: .bottom, of: seekBar, withOffset: self.padding)
+        self.chapterTitleLabel.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
+        self.chapterTitleLabel.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
+
         self.view.addSubview(self.playbackControlView)
         self.playbackControlView.delegate = self
+        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.chapterTitleLabel, withOffset: self.padding)
         self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: self.padding)
-        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding, relation: .lessThanOrEqual)
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        
         self.coverView.addGestureRecognizer(
             UITapGestureRecognizer(
                 target: self,
@@ -95,6 +132,16 @@ public class AudiobookDetailViewController: UIViewController {
     @objc func coverArtWasPressed(_ sender: Any) {
         self.audiobookManager.fetch()
     }
+    
+    func updateControlsForPlaybackStart() {
+        self.seekBar.play()
+        self.playbackControlView.showPauseButton()
+    }
+
+    func updateControlsForPlaybackStop() {
+        self.seekBar.pause()
+        self.playbackControlView.showPlayButton()
+    }
 }
 
 extension AudiobookDetailViewController: PlaybackControlViewDelegate {
@@ -110,7 +157,7 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.isPlaying {
             self.audiobookManager.pause()
-            self.seekBar.pause()
+            self.updateControlsForPlaybackStop()
         } else {
             self.audiobookManager.play()
         }
@@ -119,9 +166,16 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
-        self.navigationItem.title = "Title Downloaded!"
+        let downloadCompleteText = "Title Downloaded!"
+        self.chapterTitleLabel.text = downloadCompleteText
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
-            self.navigationItem.title = self.audiobookManager.metadata.title
+            if self.chapterTitleLabel.text == downloadCompleteText  {
+                if let chapter = self.currentChapter {
+                    self.chapterTitleLabel.text = "Chapter \(chapter.number)"
+                } else {
+                    self.chapterTitleLabel.text = ""
+                }
+            }
         }
     }
     
@@ -132,21 +186,28 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     }
     
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
-        self.navigationItem.title = "Downloading \(Int(percentage * 100))%"
+        self.chapterTitleLabel.text = "Downloading \(Int(percentage * 100))%"
     }
 }
 
 extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     public func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterDescription) {
-        self.currentChapter = chapter
-        self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
-        self.seekBar.play()
+        self.updateUIWithChapter(chapter, scrubbing: true)
     }
 
     public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterDescription) {
+        self.updateUIWithChapter(chapter, scrubbing: false)
+    }
+    
+    func updateUIWithChapter(_ chapter: ChapterDescription, scrubbing: Bool) {
         self.currentChapter = chapter
+        self.chapterTitleLabel.text = "Chapter \(chapter.number)"
         self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
-        self.seekBar.pause()
+        if scrubbing {
+            self.updateControlsForPlaybackStart()
+        } else {
+            self.updateControlsForPlaybackStop()
+        }
     }
 }
 

@@ -27,7 +27,8 @@ struct ScrubberProgress: Equatable {
     }
     
     var succ: ScrubberProgress {
-        return ScrubberProgress(offset: self.offset + 1, duration: self.duration)
+        let newOffset = self.offset < self.duration ? self.offset + 1 : self.duration
+        return ScrubberProgress(offset: newOffset, duration: self.duration)
     }
     
     func progressFromPrecentage(_ percentage: Float) -> ScrubberProgress {
@@ -69,6 +70,12 @@ struct ScrubberUIState: Equatable {
         if self.progress.duration > 0 {
             progressLocation = CGFloat(self.progress.offset / self.progress.duration) * (width - CGFloat(self.gripperRadius))
         }
+        
+        // Somehow out offset is greater than our duration, and our location is greater than the width of the actual playing content
+        if progressLocation > width {
+            progressLocation = width
+        }
+
         return progressLocation
     }
 

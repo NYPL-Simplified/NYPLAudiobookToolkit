@@ -9,13 +9,13 @@
 import UIKit
 
 public class AudiobookMetadata: NSObject {
-    let title: String
-    let authors: [String]
-    let narrators: [String]
-    let publishers: [String]
-    let published: Date
-    let modified: Date
-    let language: String
+    public let title: String
+    public let authors: [String]
+    public let narrators: [String]
+    public let publishers: [String]
+    public let published: Date
+    public let modified: Date
+    public let language: String
     
     public init(title: String, authors: [String], narrators: [String], publishers: [String], published: Date, modified: Date, language: String) {
         self.title = title
