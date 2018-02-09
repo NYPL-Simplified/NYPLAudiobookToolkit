@@ -85,12 +85,20 @@ class FindawayDownloadTask: DownloadTask {
 
         if let downloadRequest = self.downloadRequest {
             FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: downloadRequest)
-            self.timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true, block: { [weak self] (timer) in
-                self?.notifyDelegate()
-            })
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 0.5,
+                target: self,
+                selector: #selector(FindawayDownloadTask.pollForDownloadPercentage(_:)),
+                userInfo: nil,
+                repeats: true
+            )
         }
     }
     
+    @objc func pollForDownloadPercentage(_ timer: Timer) {
+        self.notifyDelegate()
+    }
+
     private func notifyDelegate() {
         self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
         if self.downloadStatus == .downloaded {
