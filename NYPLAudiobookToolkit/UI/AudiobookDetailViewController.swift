@@ -34,7 +34,7 @@ public class AudiobookDetailViewController: UIViewController {
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+    private let downloadCompleteText = "Title Downloaded!"
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
     private let playbackControlView = PlaybackControlView()
@@ -166,19 +166,25 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
-        let downloadCompleteText = "Title Downloaded!"
-        self.chapterTitleLabel.text = downloadCompleteText
-        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { (timer) in
-            if self.chapterTitleLabel.text == downloadCompleteText  {
-                if let chapter = self.currentChapter {
-                    self.chapterTitleLabel.text = "Chapter \(chapter.number)"
-                } else {
-                    self.chapterTitleLabel.text = ""
-                }
+        self.chapterTitleLabel.text = self.downloadCompleteText
+        Timer.scheduledTimer(
+            timeInterval: 3,
+            target: self,
+            selector: #selector(AudiobookDetailViewController.postPlaybackReadyTimerFired(_:)),
+            userInfo: nil,
+            repeats: false
+        )
+    }
+    
+    @objc func postPlaybackReadyTimerFired(_ timer: Timer) {
+        if self.chapterTitleLabel.text == self.downloadCompleteText  {
+            if let chapter = self.currentChapter {
+                self.chapterTitleLabel.text = "Chapter \(chapter.number)"
+            } else {
+                self.chapterTitleLabel.text = ""
             }
         }
     }
-    
     // TODO: have more defined relationships for how errors come in and will be handled
     public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError) {
         let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")

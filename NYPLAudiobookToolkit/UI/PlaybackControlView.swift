@@ -66,15 +66,17 @@ class PlaybackControlView: UIView {
     }()
     
     private let audioRouteButton: UIView = { () -> UIView in
-//        Commented out because current deploy target it iOS 11
-//        but this should be uncommented and wrapped in @available for deploy targets >11
-//
-//        let view = MPVolumeView(forAutoLayout: ())
-//        view.showsVolumeSlider = false
-//        view.showsRouteButton = true
-//        view.sizeToFit()
-//        return view
-        return AVRoutePickerView()
+        var view: UIView!
+        if #available(iOS 11.0, *) {
+            view = AVRoutePickerView()
+        } else {
+            let volumeView = MPVolumeView(forAutoLayout: ())
+            volumeView.showsVolumeSlider = false
+            volumeView.showsRouteButton = true
+            volumeView.sizeToFit()
+            view = volumeView
+        }
+        return view
     }()
 
     override public init(frame: CGRect) {
