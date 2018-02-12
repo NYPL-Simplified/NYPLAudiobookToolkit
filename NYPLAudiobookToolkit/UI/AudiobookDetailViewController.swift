@@ -34,6 +34,7 @@ public class AudiobookDetailViewController: UIViewController {
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     private let downloadCompleteText = "Title Downloaded!"
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
@@ -48,6 +49,7 @@ public class AudiobookDetailViewController: UIViewController {
         imageView.contentMode = UIViewContentMode.scaleAspectFill
         return imageView
     }()
+
     private let chapterTitleLabel: UILabel = { () -> UILabel in
         let theLabel = UILabel()
         theLabel.numberOfLines = 1
@@ -124,6 +126,7 @@ public class AudiobookDetailViewController: UIViewController {
 
     @objc public func tocWasPressed(_ sender: Any) {
         let tbvc = UITableViewController()
+        tbvc.tableView.delegate = self
         tbvc.tableView.dataSource = self
         tbvc.navigationItem.title = "Table Of Contents"
         self.navigationController?.pushViewController(tbvc, animated: true)
@@ -221,7 +224,7 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
         scrubberView.pause()
         if let chapter = self.currentChapter?.chapterWith(offset) {
-            self.audiobookManager.updatePlaybackWith(chapter)
+            self.audiobookManager.jumpToChapter(chapter)
         }
     }
 
@@ -233,12 +236,22 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
 extension AudiobookDetailViewController: UITableViewDataSource {
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return self.audiobookManager.tableOfContents.count
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
-        cell.textLabel?.text = "Chapter \(indexPath.row)"
+        let tocElement = self.audiobookManager.tableOfContents[indexPath.row]
+        cell.textLabel?.text = tocElement.title
         return cell
+    }
+}
+
+extension AudiobookDetailViewController: UITableViewDelegate {
+
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let tocElement = self.audiobookManager.tableOfContents[indexPath.row]
+        self.audiobookManager.jumpToChapter(tocElement.playbackDescription)
+        self.navigationController?.popToViewController(self, animated: true)
     }
 }
