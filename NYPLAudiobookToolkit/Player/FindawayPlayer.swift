@@ -21,14 +21,14 @@ class FindawayPlayer: NSObject, Player {
         )
     }
     weak var delegate: PlayerDelegate?
-    private var resumePlaybackCommand: ChapterDescription?
+    private var resumePlaybackDescription: ChapterDescription?
     // Only queue the last issued command if they are issued before Findaway has been verified
-    private var queuedCommand: ChapterDescription?
+    private var queuedDescription: ChapterDescription?
     private var readyForPlayback = false {
         didSet {
-            if let command = self.queuedCommand {
-                self.playWithCommand(command)
-                self.queuedCommand = nil
+            if let command = self.queuedDescription {
+                self.playWithDescription(command)
+                self.queuedDescription = nil
             }
         }
     }
@@ -106,7 +106,7 @@ class FindawayPlayer: NSObject, Player {
     }
 
     func play() {
-        if let resumeCommand = self.resumePlaybackCommand {
+        if let resumeCommand = self.resumePlaybackDescription {
             self.jumpToChapter(resumeCommand)
         } else {
             self.jumpToChapter(
@@ -118,7 +118,7 @@ class FindawayPlayer: NSObject, Player {
     
     func pause() {
         if let chapter = self.currentFindawayChapter {
-            self.resumePlaybackCommand = DefaultChapterDescription(
+            self.resumePlaybackDescription = DefaultChapterDescription(
                 number: chapter.chapterNumber,
                 part: chapter.partNumber,
                 duration: TimeInterval(self.currentDuration),
@@ -130,23 +130,25 @@ class FindawayPlayer: NSObject, Player {
     
     func jumpToChapter(_ description: ChapterDescription) {
         guard !self.readyForPlayback else {
-            self.queuedCommand = description
+            self.queuedDescription = description
             return
         }
 
-        if self.bookIsLoaded && self.isPlaying {
+        if self.currentBookIsPlaying {
             if self.chapterIsCurrentlyPlaying(description) {
                 FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(description.offset)
                 self.delegate?.player(self, didBeginPlaybackOf: description)
             } else {
-                self.playWithCommand(description)
+                self.playWithDescription(description)
             }
+        } else if self.isResumeDescription(description) {
+            FAEAudioEngine.shared()?.playbackEngine?.resume()
         } else {
-            self.playWithCommand(description)
+            self.playWithDescription(description)
         }
     }
     
-    func playWithCommand(_ chapter: ChapterDescription) {
+    func playWithDescription(_ chapter: ChapterDescription) {
         FAEAudioEngine.shared()?.playbackEngine?.play(
             forAudiobookID: self.audiobookID,
             partNumber: chapter.part,
@@ -161,6 +163,13 @@ class FindawayPlayer: NSObject, Player {
         guard let findawayChapter = self.currentFindawayChapter else { return false }
         return findawayChapter.partNumber == chapter.part &&
             findawayChapter.chapterNumber == chapter.number
+    }
+
+    func isResumeDescription(_ description: ChapterDescription) -> Bool {
+        guard let resumeDescription = self.resumePlaybackDescription else {
+            return false
+        }
+        return resumeDescription === description
     }
 }
 
