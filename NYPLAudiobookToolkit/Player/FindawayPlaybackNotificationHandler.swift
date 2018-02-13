@@ -85,7 +85,6 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     }
     
     @objc func audioEngineChapterPlaybackPaused(_ notification: NSNotification) {
-        print("DEANDEBUG chapter playback started \(notification.userInfo)")
         self.delegate?.audioEngineChapterPlaybackPaused(self)
     }
 }

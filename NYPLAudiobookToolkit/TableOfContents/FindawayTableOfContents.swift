@@ -7,10 +7,18 @@
 //
 
 import UIKit
+import AudioEngine
 
-class FindawayTableOfContents: TableOfContents {
-    var elements: [TOCElement]
-    init(spineJSON: [[String: Any]]) {
+
+class FindawayTableOfContents: TableOfContents, FindawayDownloadNotificationHandlerDelegate {
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didDetectDownload chapter: FAEChapterDescription) {
+
+    }
+    
+    let elements: [TOCElement]
+    weak var delegate: TableOfContentsDelegate?
+    private let eventHandler: FindawayDownloadNotificationHandler
+    init(spineJSON: [[String: Any]], eventHandler: FindawayDownloadNotificationHandler) {
         self.elements = spineJSON.flatMap { (possibleTOCElement) -> TOCElement? in
             guard let title = possibleTOCElement["title"] as? String else { return nil }
             guard let chapterNumber = possibleTOCElement["findaway:sequence"] as? UInt else { return nil }
@@ -24,9 +32,11 @@ class FindawayTableOfContents: TableOfContents {
             )
             return DefaultTOCElement(
                 title: title,
-                isAvailableForPlayback: false,
+                hasLocalFile: false,
                 playbackDescription: description
             )
         }
+        self.eventHandler = eventHandler
+        eventHandler.delegate = self
     }
 }
