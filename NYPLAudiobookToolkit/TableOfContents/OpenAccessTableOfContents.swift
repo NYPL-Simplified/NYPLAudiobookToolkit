@@ -10,7 +10,6 @@ import UIKit
 
 class OpenAccessTableOfContents: TableOfContents {
     var elements: [TOCElement]
-    weak var delegate: TableOfContentsDelegate?
     init(JSON: [String: Any]) {
         self.elements = []
     }

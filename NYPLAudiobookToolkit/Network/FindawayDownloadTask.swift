@@ -28,7 +28,7 @@ class FindawayDownloadTask: DownloadTask {
     private var downloadRequest: FAEDownloadRequest?
     private var downloadStatus: FAEDownloadStatus {
         var status = FAEDownloadStatus.notDownloaded
-        if let audiobookID = self.downloadRequest?.audiobookID {    
+        if let audiobookID = self.downloadRequest?.audiobookID {
             status = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: audiobookID) ?? .notDownloaded
         }
         return status

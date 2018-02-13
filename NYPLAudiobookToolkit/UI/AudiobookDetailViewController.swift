@@ -188,7 +188,6 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
             }
         }
     }
-
     // TODO: have more defined relationships for how errors come in and will be handled
     public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError) {
         let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")

@@ -13,14 +13,6 @@ private func findawayKey(_ key: String) -> String {
     return "findaway:\(key)"
 }
 
-@objc public protocol wAudiobook: class {
-    func download(spine_id: String) -> DownloadTask
-//    var downloadTask: DownloadTask { get }
-//    var player: Player { get }
-    var tableOfContents: TableOfContents { get }
-    init?(JSON: Any?)
-}
-
 @objc public protocol Audiobook: class {
     var downloadTask: DownloadTask { get }
     var player: Player { get }
@@ -31,6 +23,7 @@ private func findawayKey(_ key: String) -> String {
 /// Host app should instantiate a audiobook object with JSON.
 /// This audiobook should then be able to construct utility classes
 /// using data in the spine of that JSON.
+
 @objc public class AudiobookFactory: NSObject {
     public static func audiobook(_ JSON: Any?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }
@@ -74,7 +67,7 @@ private class FindawayAudiobook: Audiobook {
         guard let firstSpineElement = self.spine.first else { return nil }
         self.downloadTask = FindawayDownloadTask(spine: self.spine, spineElement: firstSpineElement)
         self.player = FindawayPlayer(spine: self.spine, spineElement: firstSpineElement)
-        self.tableOfContents = FindawayTableOfContents(spineJSON: spine, eventHandler: DefaultFindawayDownloadNotificationHandler())
+        self.tableOfContents = FindawayTableOfContents(spineJSON: spine)
     }
 }
 
