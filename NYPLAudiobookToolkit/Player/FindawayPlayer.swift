@@ -12,10 +12,10 @@ import AudioEngine
 class FindawayPlayer: NSObject, Player {
     private var currentChapterLocation: ChapterLocation {
         let findaway = self.currentFindawayChapter
-        let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (self.firstSpineElement.duration ?? 0)
+        let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (self.spineElement.duration ?? 0)
         return ChapterLocation(
-            number: findaway?.chapterNumber ?? self.firstSpineElement.chapterNumber,
-            part: findaway?.partNumber ?? self.firstSpineElement.partNumber,
+            number: findaway?.chapterNumber ?? self.spineElement.chapterNumber,
+            part: findaway?.partNumber ?? self.spineElement.partNumber,
             duration: duration,
             offset: TimeInterval(self.currentOffset)
         )
@@ -34,15 +34,15 @@ class FindawayPlayer: NSObject, Player {
     }
 
     private var sessionKey: String {
-        return self.firstSpineElement.sessionKey
+        return self.spineElement.sessionKey
     }
 
     private var licenseID: String {
-        return self.firstSpineElement.licenseID
+        return self.spineElement.licenseID
     }
 
     private var audiobookID: String {
-        return self.firstSpineElement.audiobookID
+        return self.spineElement.audiobookID
     }
 
     /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
@@ -77,19 +77,17 @@ class FindawayPlayer: NSObject, Player {
         return loadedAudiobookID == self.audiobookID
     }
 
-    private let firstSpineElement: FindawaySpineElement
-    private let spine: [FindawaySpineElement]
+    private let spineElement: FindawaySpineElement
     private var eventHandler: FindawayPlaybackNotificationHandler
-    public init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler) {
-        self.spine = spine
+    public init(spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler) {
         self.eventHandler = eventHandler
-        self.firstSpineElement = spineElement
+        self.spineElement = spineElement
         super.init()
         self.eventHandler.delegate = self
     }
     
-    convenience init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement) {
-        self.init(spine: spine, spineElement: spineElement, eventHandler: DefaultFindawayPlaybackNotificationHandler())
+    convenience init(spineElement: FindawaySpineElement) {
+        self.init(spineElement: spineElement, eventHandler: DefaultFindawayPlaybackNotificationHandler())
     }
 
     func skipForward() {
@@ -178,6 +176,7 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
         self.readyForPlayback = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
     }
     
+    // TODO: Update this to pass the chapter that the error happened to instead of audiobook id
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
     }
 }

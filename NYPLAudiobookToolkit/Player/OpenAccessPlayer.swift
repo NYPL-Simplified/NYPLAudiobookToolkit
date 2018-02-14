@@ -37,9 +37,4 @@ class OpenAccessPlayer: NSObject, Player {
     func pause() {
         
     }
-    
-    private let spine: [OpenAccessSpineElement]
-    public init(spine: [OpenAccessSpineElement]) {
-        self.spine = spine
-    }
 }
