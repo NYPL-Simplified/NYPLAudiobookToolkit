@@ -53,12 +53,13 @@ import AudioEngine
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
     var isPlaying: Bool { get }
+    var tableOfContents: [ TOCElement ] { get }
     func fetch()
     func skipForward()
     func skipBack()
     func play()
     func pause()
-    func updatePlaybackWith(_ chapter: ChapterDescription)
+    func jumpToChapter(_ chapter: ChapterDescription)
 }
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
@@ -71,15 +72,20 @@ public class DefaultAudiobookManager: AudiobookManager {
     public var isPlaying: Bool {
         return self.player.isPlaying
     }
+    
+    public var tableOfContents: [TOCElement] {
+        return self.toc.elements
+    }
 
     let downloadTask: DownloadTask
     let player: Player
-
-    public init (metadata: AudiobookMetadata, audiobook: Audiobook, downloadTask: DownloadTask, player: Player) {
+    let toc: TableOfContents
+    public init (metadata: AudiobookMetadata, audiobook: Audiobook, downloadTask: DownloadTask, player: Player, tableOfContents: TableOfContents) {
         self.metadata = metadata
         self.audiobook = audiobook
         self.downloadTask = downloadTask
         self.player = player
+        self.toc = tableOfContents
 
         self.downloadTask.delegate = self
         self.player.delegate = self
@@ -90,7 +96,8 @@ public class DefaultAudiobookManager: AudiobookManager {
             metadata: metadata,
             audiobook: audiobook,
             downloadTask: audiobook.downloadTask,
-            player: audiobook.player
+            player: audiobook.player,
+            tableOfContents: audiobook.tableOfContents
         )
     }
     
@@ -116,7 +123,7 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.player.skipBack()
     }
     
-    public func updatePlaybackWith(_ chapter: ChapterDescription) {
+    public func jumpToChapter(_ chapter: ChapterDescription) {
         self.player.jumpToChapter(chapter)
     }
 }

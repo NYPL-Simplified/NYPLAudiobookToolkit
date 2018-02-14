@@ -16,6 +16,7 @@ private func findawayKey(_ key: String) -> String {
 @objc public protocol Audiobook: class {
     var downloadTask: DownloadTask { get }
     var player: Player { get }
+    var tableOfContents: TableOfContents { get }
     init?(JSON: Any?)
 }
 
@@ -46,11 +47,12 @@ private func findawayKey(_ key: String) -> String {
 private class FindawayAudiobook: Audiobook {
     let downloadTask: DownloadTask
     let player: Player
+    let tableOfContents: TableOfContents
     private let spine: [FindawaySpineElement]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
-        guard let spine = payload["spine"] as? [Any] else { return nil }
+        guard let spine = payload["spine"] as? [[String: Any]] else { return nil }
         guard let sessionKey = metadata[findawayKey("sessionKey")] as? String else { return nil }
         guard let audiobookID = metadata[findawayKey("fulfillmentId")] as? String else { return nil }
         guard let licenseID = metadata[findawayKey("licenseId")] as? String else { return nil }
@@ -65,6 +67,7 @@ private class FindawayAudiobook: Audiobook {
         guard let firstSpineElement = self.spine.first else { return nil }
         self.downloadTask = FindawayDownloadTask(spine: self.spine, spineElement: firstSpineElement)
         self.player = FindawayPlayer(spine: self.spine, spineElement: firstSpineElement)
+        self.tableOfContents = FindawayTableOfContents(spineJSON: spine)
     }
 }
 
@@ -72,6 +75,7 @@ private class FindawayAudiobook: Audiobook {
 private class OpenAccessAudiobook: Audiobook {
     let downloadTask: DownloadTask
     let player: Player
+    let tableOfContents: TableOfContents
     private let spine: [OpenAccessSpineElement]
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
@@ -84,6 +88,7 @@ private class OpenAccessAudiobook: Audiobook {
         guard !self.spine.isEmpty else { return nil }
         self.downloadTask = OpenAccessDownloadTask(spine: self.spine)
         self.player = OpenAccessPlayer(spine: self.spine)
+        self.tableOfContents = OpenAccessTableOfContents(JSON: payload)
     }
 }
 
