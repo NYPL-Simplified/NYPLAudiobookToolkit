@@ -11,8 +11,8 @@ import Foundation
 
 /// Receive updates from player as events happen
 @objc public protocol PlayerDelegate: class {
-    func player(_ player: Player, didBeginPlaybackOf chapter: ChapterDescription)
-    func player(_ player: Player, didStopPlaybackOf chapter: ChapterDescription)
+    func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation)
+    func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation)
 }
 
 /// Objects that impelment Player should wrap a PlaybackEngine.
@@ -25,7 +25,7 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
-    func jumpToChapter(_ description: ChapterDescription)
+    func jumpToChapter(_ chapter: ChapterLocation)
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
@@ -43,15 +43,7 @@ import Foundation
 ///
 /// This is also likely to change as the interface for doing this with
 /// AVPlayer & FAEPlaybackEngine are quite different.
-@objc public protocol ChapterDescription {
-    var number: UInt { get }
-    var part: UInt { get }
-    var duration: TimeInterval { get }
-    var offset: TimeInterval { get }
-    func chapterWith(_ offset: TimeInterval) -> ChapterDescription
-}
-
-class DefaultChapterDescription: ChapterDescription {
+@objc public class ChapterLocation: NSObject {
     let number: UInt
     let part: UInt
     let duration: TimeInterval
@@ -64,8 +56,8 @@ class DefaultChapterDescription: ChapterDescription {
         self.offset = offset
     }
 
-    func chapterWith(_ offset: TimeInterval) -> ChapterDescription {
-        return DefaultChapterDescription(
+    func chapterWith(_ offset: TimeInterval) -> ChapterLocation {
+        return ChapterLocation(
             number: self.number,
             part: self.part,
             duration: self.duration,

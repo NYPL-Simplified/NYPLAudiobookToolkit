@@ -22,7 +22,7 @@ public class AudiobookDetailViewController: UIViewController {
     }
 
     private let audiobookManager: AudiobookManager
-    private var currentChapter: ChapterDescription?
+    private var currentChapter: ChapterLocation?
 
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
@@ -197,15 +197,15 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
 }
 
 extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterDescription) {
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterLocation) {
         self.updateUIWithChapter(chapter, scrubbing: true)
     }
 
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterDescription) {
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterLocation) {
         self.updateUIWithChapter(chapter, scrubbing: false)
     }
     
-    func updateUIWithChapter(_ chapter: ChapterDescription, scrubbing: Bool) {
+    func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
         self.currentChapter = chapter
         self.chapterTitleLabel.text = "Chapter \(chapter.number)"
         self.seekBar.setOffset(chapter.offset, duration: chapter.duration)

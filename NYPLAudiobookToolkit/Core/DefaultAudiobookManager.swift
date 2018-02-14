@@ -39,8 +39,8 @@ import AudioEngine
 }
 
 @objc public protocol AudiobookManagerPlaybackDelegate {
-    func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterDescription)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterDescription)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterLocation)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterLocation)
 }
 
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
@@ -58,7 +58,7 @@ import AudioEngine
     func skipBack()
     func play()
     func pause()
-    func updatePlaybackWith(_ chapter: ChapterDescription)
+    func updatePlaybackWith(_ chapter: ChapterLocation)
 }
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
@@ -116,7 +116,7 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.player.skipBack()
     }
     
-    public func updatePlaybackWith(_ chapter: ChapterDescription) {
+    public func updatePlaybackWith(_ chapter: ChapterLocation) {
         self.player.jumpToChapter(chapter)
     }
 }
@@ -151,7 +151,7 @@ extension DefaultAudiobookManager: DownloadTaskDelegate {
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {
-    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterDescription) {
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         DispatchQueue.main.async { [weak self] in
             if let strongSelf = self {
                 strongSelf.playbackDelegate?.audiobookManager(strongSelf, didBeginPlaybackOf: chapter)
@@ -159,7 +159,7 @@ extension DefaultAudiobookManager: PlayerDelegate {
         }
     }
 
-    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterDescription) {
+    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         DispatchQueue.main.async { [weak self] in
             if let strongSelf = self {
                 strongSelf.playbackDelegate?.audiobookManager(strongSelf, didStopPlaybackOf: chapter)
