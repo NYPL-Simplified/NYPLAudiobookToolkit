@@ -14,29 +14,27 @@ import AudioEngine
 class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
-    let spine: [FindawaySpineElement]
     var downloadProgress: Float {
         return findawayProgressToNYPLToolkit(
-            FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: self.firstSpineElement.audiobookID)
+            FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: self.spineElement.audiobookID, partNumber: self.spineElement.partNumber, chapterNumber: self.spineElement.chapterNumber)
         )
     }
-    
-    private let firstSpineElement: FindawaySpineElement
+
+    private let spineElement: FindawaySpineElement
     private var timer: Timer?
     private var retryAfterVerification = false
     private var databaseHasBeenVerified: Bool
     private var downloadRequest: FAEDownloadRequest?
     private var downloadStatus: FAEDownloadStatus {
         var status = FAEDownloadStatus.notDownloaded
-        if let audiobookID = self.downloadRequest?.audiobookID {
-            status = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: audiobookID) ?? .notDownloaded
+        if let storedStatus = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: self.spineElement.audiobookID, partNumber: self.spineElement.partNumber, chapterNumber: self.spineElement.chapterNumber) {
+            status = storedStatus
         }
         return status
     }
 
-    public init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement, audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest?) {
-        self.spine = spine
-        self.firstSpineElement = spineElement
+    public init(spineElement: FindawaySpineElement, audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest?) {
+        self.spineElement = spineElement
         self.databaseHasBeenVerified = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
         if !self.databaseHasBeenVerified {
             audiobookLifeCycleManager.registerDelegate(self)
@@ -44,7 +42,7 @@ class FindawayDownloadTask: DownloadTask {
         self.downloadRequest = downloadRequest
     }
 
-    convenience init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement) {
+    convenience init(spineElement: FindawaySpineElement) {
         var request = FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().first(where: { (existingRequest) -> Bool in
             existingRequest.audiobookID == spineElement.audiobookID
         })
@@ -53,13 +51,13 @@ class FindawayDownloadTask: DownloadTask {
                 audiobookID: spineElement.audiobookID,
                 partNumber: spineElement.partNumber,
                 chapterNumber: spineElement.chapterNumber,
-                downloadType: .fullWrap,
+                downloadType: .singleChapter,
                 sessionKey: spineElement.sessionKey,
                 licenseID: spineElement.licenseID,
                 restrictToWiFi: false
             )
         }
-        self.init(spine: spine, spineElement: spineElement, audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request)
+        self.init(spineElement: spineElement, audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request)
     }
     
     deinit {
@@ -109,9 +107,9 @@ class FindawayDownloadTask: DownloadTask {
 }
 
 extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
+    // TODO: Update this to pass the chapter that the error happened to instead of audiobook id
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
-        guard let audiobookID = self.spine.first?.audiobookID else { return }
-        if error.audiobookID == audiobookID {
+        if error.audiobookID == self.spineElement.audiobookID {
             self.error = error
             self.delegate?.downloadTaskDidError(self)
         }

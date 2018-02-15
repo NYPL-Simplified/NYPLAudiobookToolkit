@@ -72,16 +72,13 @@ public class DefaultAudiobookManager: AudiobookManager {
         return self.player.isPlaying
     }
 
-    let downloadTask: DownloadTask
     let player: Player
-
-    public init (metadata: AudiobookMetadata, audiobook: Audiobook, downloadTask: DownloadTask, player: Player) {
+    public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player) {
         self.metadata = metadata
         self.audiobook = audiobook
-        self.downloadTask = downloadTask
         self.player = player
 
-        self.downloadTask.delegate = self
+
         self.player.delegate = self
     }
 
@@ -89,7 +86,6 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.init(
             metadata: metadata,
             audiobook: audiobook,
-            downloadTask: audiobook.downloadTask,
             player: audiobook.player
         )
     }
@@ -97,7 +93,6 @@ public class DefaultAudiobookManager: AudiobookManager {
     weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
-        self.downloadTask.fetch()
     }
 
     public func play() {
@@ -123,30 +118,30 @@ public class DefaultAudiobookManager: AudiobookManager {
 
 extension DefaultAudiobookManager: DownloadTaskDelegate {
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
-        DispatchQueue.main.async { [weak self] in
-            if let strongSelf = self {
-                strongSelf.downloadDelegate?.audiobookManagerReadyForPlayback(strongSelf)
-            }
-        }
+//        DispatchQueue.main.async { [weak self] in
+//            if let strongSelf = self {
+//                strongSelf.downloadDelegate?.audiobookManagerReadyForPlayback(strongSelf)
+//            }
+//        }
     }
     
     public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
-        DispatchQueue.main.async { [weak self] in
-            if let strongSelf = self {
-                strongSelf.downloadDelegate?.audiobookManager(strongSelf, didUpdateDownloadPercentage: strongSelf.downloadTask.downloadProgress)
-            }
-        }
+//        DispatchQueue.main.async { [weak self] in
+//            if let strongSelf = self {
+//                strongSelf.downloadDelegate?.audiobookManager(strongSelf, didUpdateDownloadPercentage: strongSelf.downloadTask.downloadProgress)
+//            }
+//        }
     }
     
     public func downloadTaskDidError(_ downloadTask: DownloadTask) {
         guard downloadTask.error != nil else { return }
-        DispatchQueue.main.async { [weak self] in
-            if let strongSelf = self {
-                if let error = downloadTask.error {
-                    strongSelf.downloadDelegate?.audiobookManager(strongSelf, didReceive: error)
-                }
-            }
-        }
+//        DispatchQueue.main.async { [weak self] in
+//            if let strongSelf = self {
+//                if let error = downloadTask.error {
+//                    strongSelf.downloadDelegate?.audiobookManager(strongSelf, didReceive: error)
+//                }
+//            }
+//        }
     }
 }
 

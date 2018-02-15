@@ -16,10 +16,6 @@ class OpenAccessDownloadTask: DownloadTask {
     var error: AudiobookError?
     
     weak var delegate: DownloadTaskDelegate?
-    
-    public init(spine: [OpenAccessSpineElement] ){
-
-    }
 
     func fetch() {
     }
