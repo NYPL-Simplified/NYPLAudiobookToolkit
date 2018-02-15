@@ -51,11 +51,11 @@ import Foundation
     let playheadOffset: TimeInterval
 
     init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval) {
-        guard playheadOffset >= duration else {
+        guard playheadOffset <= duration else {
             return nil
         }
         
-        guard startOffset >= duration else {
+        guard startOffset <= duration else {
             return nil
         }
         
@@ -66,6 +66,13 @@ import Foundation
         self.playheadOffset = playheadOffset
     }
 
+    /// TODO: Make this return an enum for next/previous locations
+    ///
+    /// enum Location {
+    ///     case prev
+    ///     case next
+    ///     case offsetInCurrentChapter(chapter: ChapterLocation)
+    /// }
     func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,

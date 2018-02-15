@@ -11,9 +11,6 @@ import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
     private var currentChapterLocation: ChapterLocation? {
-        guard self.currentBookIsPlaying else {
-            return nil
-        }
         let findaway = self.currentFindawayChapter
         let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (self.spineElement.duration ?? 0)
         return ChapterLocation(
