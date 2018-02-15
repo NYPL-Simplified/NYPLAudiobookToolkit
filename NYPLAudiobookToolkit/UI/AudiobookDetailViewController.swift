@@ -208,7 +208,7 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
         self.currentChapter = chapter
         self.chapterTitleLabel.text = "Chapter \(chapter.number)"
-        self.seekBar.setOffset(chapter.offset, duration: chapter.duration)
+        self.seekBar.setOffset(chapter.playheadOffset, duration: chapter.duration)
         if scrubbing {
             self.updateControlsForPlaybackStart()
         } else {

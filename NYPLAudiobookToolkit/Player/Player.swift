@@ -47,21 +47,32 @@ import Foundation
     let number: UInt
     let part: UInt
     let duration: TimeInterval
-    let offset: TimeInterval
+    let startOffset: TimeInterval
+    let playheadOffset: TimeInterval
 
-    init(number: UInt, part: UInt, duration: TimeInterval, offset: TimeInterval) {
+    init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval) {
+        guard playheadOffset >= duration else {
+            return nil
+        }
+        
+        guard startOffset >= duration else {
+            return nil
+        }
+        
         self.number = number
         self.part = part
         self.duration = duration
-        self.offset = offset
+        self.startOffset = startOffset
+        self.playheadOffset = playheadOffset
     }
 
-    func chapterWith(_ offset: TimeInterval) -> ChapterLocation {
+    func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
             part: self.part,
             duration: self.duration,
-            offset: offset
+            startOffset: self.startOffset,
+            playheadOffset: offset
         )
     }
 }

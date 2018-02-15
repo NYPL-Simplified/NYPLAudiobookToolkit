@@ -10,14 +10,18 @@ import UIKit
 import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
-    private var currentChapterLocation: ChapterLocation {
+    private var currentChapterLocation: ChapterLocation? {
+        guard self.currentBookIsPlaying else {
+            return nil
+        }
         let findaway = self.currentFindawayChapter
         let duration = self.currentBookIsPlaying ? TimeInterval(self.currentDuration) : (self.firstSpineElement.duration ?? 0)
         return ChapterLocation(
             number: findaway?.chapterNumber ?? self.firstSpineElement.chapterNumber,
             part: findaway?.partNumber ?? self.firstSpineElement.partNumber,
             duration: duration,
-            offset: TimeInterval(self.currentOffset)
+            startOffset: 0,
+            playheadOffset: TimeInterval(self.currentOffset)
         )
     }
     weak var delegate: PlayerDelegate?
@@ -81,6 +85,7 @@ class FindawayPlayer: NSObject, Player {
     private let spine: [FindawaySpineElement]
     private var eventHandler: FindawayPlaybackNotificationHandler
     public init(spine: [FindawaySpineElement], spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler) {
+        
         self.spine = spine
         self.eventHandler = eventHandler
         self.firstSpineElement = spineElement
@@ -94,37 +99,34 @@ class FindawayPlayer: NSObject, Player {
 
     func skipForward() {
         let someTimeFromNow = self.currentOffset + 15
-        let offsetDescription = self.currentChapterLocation.chapterWith(TimeInterval(someTimeFromNow))
-        self.jumpToChapter(offsetDescription)
+        let offsetDescription = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeFromNow))
+        if let description = offsetDescription {
+            self.jumpToChapter(description)
+        }
     }
 
     func skipBack() {
         let someTimeAgo = Int(self.currentOffset) - 15
         let timeToGoBackTo = UInt(max(0, someTimeAgo))
-        let offsetDescription = self.currentChapterLocation.chapterWith(TimeInterval(timeToGoBackTo))
-        self.jumpToChapter(offsetDescription)
+        let offsetDescription = self.currentChapterLocation?.chapterWith(TimeInterval(timeToGoBackTo))
+        if let description = offsetDescription {
+            self.jumpToChapter(description)
+        }
     }
 
     func play() {
         if let resumeCommand = self.resumePlaybackDescription {
             self.jumpToChapter(resumeCommand)
         } else {
-            self.jumpToChapter(
-                self.currentChapterLocation.chapterWith(0)
-            )
+            if let description = self.currentChapterLocation?.chapterWith(0) {
+                self.jumpToChapter(description)
+            }
         }
     }
 
     
     func pause() {
-        if let chapter = self.currentFindawayChapter {
-            self.resumePlaybackDescription = ChapterLocation(
-                number: chapter.chapterNumber,
-                part: chapter.partNumber,
-                duration: TimeInterval(self.currentDuration),
-                offset: TimeInterval(self.currentOffset)
-            )
-        }
+        self.resumePlaybackDescription = self.currentChapterLocation
         FAEAudioEngine.shared()?.playbackEngine?.pause()
     }
     
@@ -136,7 +138,7 @@ class FindawayPlayer: NSObject, Player {
 
         if self.currentBookIsPlaying {
             if self.chapterIsCurrentlyPlaying(chapter) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(chapter.offset)
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(chapter.playheadOffset)
                 self.delegate?.player(self, didBeginPlaybackOf: chapter)
             } else {
                 self.playAtLocation(chapter)
@@ -153,7 +155,7 @@ class FindawayPlayer: NSObject, Player {
             forAudiobookID: self.audiobookID,
             partNumber: chapter.part,
             chapterNumber: chapter.number,
-            offset: UInt(chapter.offset),
+            offset: UInt(chapter.playheadOffset),
             sessionKey: self.sessionKey,
             licenseID: self.licenseID
         )
@@ -184,26 +186,14 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
 
 extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     func audioEngineChapterPlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler) {
-        if let chapter = self.currentFindawayChapter {
-            let chapterLocation = ChapterLocation(
-                number: chapter.chapterNumber,
-                part: chapter.partNumber,
-                duration: TimeInterval(self.currentDuration),
-                offset: TimeInterval(self.currentOffset)
-            )
-            self.delegate?.player(self, didBeginPlaybackOf: chapterLocation)
+        if let chapter = self.currentChapterLocation {
+            self.delegate?.player(self, didBeginPlaybackOf: chapter)
         }
     }
     
     func audioEngineChapterPlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler) {
-        if let chapter = self.currentFindawayChapter {
-            let chapterLocation = ChapterLocation(
-                number: chapter.chapterNumber,
-                part: chapter.partNumber,
-                duration: TimeInterval(self.currentDuration),
-                offset: TimeInterval(self.currentOffset)
-            )
-            self.delegate?.player(self, didStopPlaybackOf: chapterLocation)
+        if let chapter = self.currentChapterLocation {
+            self.delegate?.player(self, didStopPlaybackOf: chapter)
         }
     }
 }
