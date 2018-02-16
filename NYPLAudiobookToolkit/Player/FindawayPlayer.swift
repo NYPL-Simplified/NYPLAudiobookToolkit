@@ -144,6 +144,7 @@ class FindawayPlayer: NSObject, Player {
         }
         
         guard let destinationChapter = possibleDestinationChapter else { return }
+    
         if self.currentBookIsPlaying {
             if self.chapterIsCurrentlyPlaying(destinationChapter) {
                 FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationChapter.playheadOffset)
