@@ -28,12 +28,6 @@ import Foundation
     func jumpToLocation(_ location: ChapterLocation)
 }
 
-enum PlayerRequestType {
-    case nextSkipped15Seconds
-    case previousWith15SecondsLeft
-    case playAtChapter
-}
-
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
 /// This protocol is supposed to represent how to issue complex commands to the player.
 /// IE: stop and seek to 3:00
@@ -55,17 +49,23 @@ enum PlayerRequestType {
     let duration: TimeInterval
     let startOffset: TimeInterval
     let playheadOffset: TimeInterval
-    var playRequestType: PlayerRequestType {
+
+    var secondsBeforeStart: TimeInterval? {
+        var timeInterval: TimeInterval? = nil
         if self.playheadOffset < 0 {
-            return .previousWith15SecondsLeft
-        } else if self.playheadOffset > self.duration {
-            return .nextSkipped15Seconds
-        } else {
-            return .playAtChapter
+            timeInterval = abs(self.playheadOffset)
         }
+        return timeInterval
+    }
+    
+    var timeIntoNextChapter: TimeInterval? {
+        var timeInterval: TimeInterval? = nil
+        if self.playheadOffset > self.duration {
+            timeInterval = self.playheadOffset - self.duration
+        }
+        return timeInterval
     }
 
-    
     init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval) {
         guard startOffset <= duration else {
             return nil
@@ -78,7 +78,7 @@ enum PlayerRequestType {
         self.playheadOffset = playheadOffset
     }
     
-    /// TODO: Make this go to the proper offset, not just 16
+    /// TODO: Make this go to the proper offset, not just 15
     func with15SecondsLeft() -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
@@ -89,7 +89,7 @@ enum PlayerRequestType {
         )
     }
 
-    /// TODO: Make this go to the proper offset, not just 16
+    /// TODO: Make this go to the proper offset, not just 15
     func skipped15Seconds() -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,

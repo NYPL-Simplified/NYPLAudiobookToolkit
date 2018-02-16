@@ -127,21 +127,20 @@ class FindawayPlayer: NSObject, Player {
     }
     
     func jumpToLocation(_ location: ChapterLocation) {
-        var possibleDestinationChapter: ChapterLocation? = nil
+        var possibleDestinationChapter: ChapterLocation? = location
         guard !self.readyForPlayback else {
             self.queuedLocation = location
             return
         }
-        
-        switch location.playRequestType {
-        case .playAtChapter:
-            possibleDestinationChapter = location
-        case .nextSkipped15Seconds:
+
+        if let timeIntoNextChapter = location.timeIntoNextChapter {
             self.cursor = self.cursor?.next()
-            possibleDestinationChapter = self.cursor?.currentElement.chapter.skipped15Seconds()
-        case .previousWith15SecondsLeft:
+            possibleDestinationChapter = self.cursor?.currentElement.chapter.chapterWith(timeIntoNextChapter)
+        } else if let timeIntoPreviousChapter = location.secondsBeforeStart {
             self.cursor = self.cursor?.prev()
-            possibleDestinationChapter = self.cursor?.currentElement.chapter.with15SecondsLeft()
+            let durationOfChapter = (self.cursor?.currentElement.chapter.duration ?? 0)
+            let playheadOffset = durationOfChapter - timeIntoPreviousChapter
+            possibleDestinationChapter = self.cursor?.currentElement.chapter.chapterWith(max(0, playheadOffset))
         }
         
         guard let destinationChapter = possibleDestinationChapter else { return }
