@@ -24,7 +24,7 @@ class FindawayPlayer: NSObject, Player {
     weak var delegate: PlayerDelegate?
     private var resumePlaybackDescription: ChapterLocation?
     // Only queue the last issued command if they are issued before Findaway has been verified
-    private var queuedLocation: Location?
+    private var queuedLocation: ChapterLocation?
     private var readyForPlayback = false {
         didSet {
             if let location = self.queuedLocation {
@@ -97,26 +97,16 @@ class FindawayPlayer: NSObject, Player {
     func skipForward() {
         let someTimeFromNow = self.currentOffset + 15
         let location = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeFromNow))
-
+        if let location = location {
+            self.jumpToLocation(location)
+        }
     }
 
     func skipBack() {
         let someTimeAgo = Int(self.currentOffset) - 15
-        let timeToGoBackTo = UInt(max(0, someTimeAgo))
-        let location = self.currentChapterLocation?.chapterWith(TimeInterval(timeToGoBackTo))
+        let location = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeAgo))
         if let location = location {
-            switch location {
-            case .previous:
-                self.cursor = self.cursor?.prev()
-                let chapter = self.cursor?.currentElement.chapter.with15SecondsLeft()
-                if let chapter = chapter {
-                    self.jumpToLocation(chapter)
-                }
-            case .playAt(let chapter):
-                self.jumpToLocation(chapter)
-            default:
-                break
-            }
+            self.jumpToLocation(location)
         }
     }
 
@@ -125,12 +115,7 @@ class FindawayPlayer: NSObject, Player {
             self.jumpToLocation(resumeCommand)
         } else {
             if let location = self.currentChapterLocation?.chapterWith(0) {
-                switch location {
-                case .playAt(let chapter):
-                    self.jumpToLocation(chapter)
-                default:
-                    break
-                }
+                self.jumpToLocation(location)
             }
         }
     }
@@ -141,34 +126,36 @@ class FindawayPlayer: NSObject, Player {
         FAEAudioEngine.shared()?.playbackEngine?.pause()
     }
     
-    func jumpToLocation(_ location: Location) {
-        var chapter: ChapterLocation? = nil
+    func jumpToLocation(_ location: ChapterLocation) {
+        var possibleDestinationChapter: ChapterLocation? = nil
         guard !self.readyForPlayback else {
             self.queuedLocation = location
             return
         }
-        switch location {
-        case .next:
+        
+        switch location.playRequestType {
+        case .playAtChapter:
+            possibleDestinationChapter = location
+        case .nextSkipped15Seconds:
             self.cursor = self.cursor?.next()
-            let chapter = self.cursor?.currentElement.chapter.skipped15Seconds()
-            if let chapter = chapter {
-                self.jumpToLocation(chapter)
-            }
-        case .playAt(let chapter):
-            self.jumpToLocation(chapter)
-
+            possibleDestinationChapter = self.cursor?.currentElement.chapter.skipped15Seconds()
+        case .previousWith15SecondsLeft:
+            self.cursor = self.cursor?.prev()
+            possibleDestinationChapter = self.cursor?.currentElement.chapter.with15SecondsLeft()
         }
+        
+        guard let destinationChapter = possibleDestinationChapter else { return }
         if self.currentBookIsPlaying {
-            if self.chapterIsCurrentlyPlaying(chapter) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(chapter.playheadOffset)
-                self.delegate?.player(self, didBeginPlaybackOf: chapter)
+            if self.chapterIsCurrentlyPlaying(destinationChapter) {
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationChapter.playheadOffset)
+                self.delegate?.player(self, didBeginPlaybackOf: destinationChapter)
             } else {
-                self.playAtLocation(chapter)
+                self.playAtLocation(destinationChapter)
             }
-        } else if self.isResumeDescription(chapter) {
+        } else if self.isResumeDescription(destinationChapter) {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
         } else {
-            self.playAtLocation(chapter)
+            self.playAtLocation(destinationChapter)
         }
     }
     

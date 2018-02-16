@@ -25,13 +25,13 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
-    func jumpToLocation(_ location: Location)
+    func jumpToLocation(_ location: ChapterLocation)
 }
 
-enum Location {
+enum PlayerRequestType {
     case nextSkipped15Seconds
     case previousWith15SecondsLeft
-    case playAt(chapter: ChapterLocation)
+    case playAtChapter
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
@@ -55,12 +55,18 @@ enum Location {
     let duration: TimeInterval
     let startOffset: TimeInterval
     let playheadOffset: TimeInterval
-
-    init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval) {
-        guard playheadOffset <= duration else {
-            return nil
+    var playRequestType: PlayerRequestType {
+        if self.playheadOffset < 0 {
+            return .previousWith15SecondsLeft
+        } else if self.playheadOffset > self.duration {
+            return .nextSkipped15Seconds
+        } else {
+            return .playAtChapter
         }
-        
+    }
+
+    
+    init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval) {
         guard startOffset <= duration else {
             return nil
         }
@@ -72,6 +78,7 @@ enum Location {
         self.playheadOffset = playheadOffset
     }
     
+    /// TODO: Make this go to the proper offset, not just 16
     func with15SecondsLeft() -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
@@ -81,7 +88,8 @@ enum Location {
             playheadOffset: self.duration - 15
         )
     }
-    
+
+    /// TODO: Make this go to the proper offset, not just 16
     func skipped15Seconds() -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
@@ -92,28 +100,13 @@ enum Location {
         )
     }
 
-    /// TODO: Make this return an enum for next/previous locations
-    ///
-    /// enum Location {kekkeok
-    ///     case prev
-    ///     case next
-    ///     case offsetInCurrentChapter(chapter: ChapterLocation)
-    /// }
-    func chapterWith(_ offset: TimeInterval) -> Location {
-        if offset < 0 {
-            return .previousWith15SecondsLeft
-        }
-        if offset > self.duration {
-            return .nextSkipped15Seconds
-        }
-        
-        return .playAt(chapter: ChapterLocation(
-                number: self.number,
-                part: self.part,
-                duration: self.duration,
-                startOffset: self.startOffset,
-                playheadOffset: offset
-            )!
+    func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
+        return ChapterLocation(
+            number: self.number,
+            part: self.part,
+            duration: self.duration,
+            startOffset: self.startOffset,
+            playheadOffset: offset
         )
     }
 }
