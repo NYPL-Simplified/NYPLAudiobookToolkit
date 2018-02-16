@@ -58,7 +58,7 @@ import AudioEngine
     func skipBack()
     func play()
     func pause()
-    func updatePlaybackWith(_ chapter: ChapterLocation)
+    func updatePlaybackWith(_ chapter: Location)
 }
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
@@ -111,7 +111,7 @@ public class DefaultAudiobookManager: AudiobookManager {
         self.player.skipBack()
     }
     
-    public func updatePlaybackWith(_ chapter: ChapterLocation) {
+    public func updatePlaybackWith(_ chapter: Location) {
         self.player.jumpToChapter(chapter)
     }
 }

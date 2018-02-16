@@ -25,7 +25,13 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
-    func jumpToChapter(_ chapter: ChapterLocation)
+    func jumpToLocation(_ location: Location)
+}
+
+enum Location {
+    case nextSkipped15Seconds
+    case previousWith15SecondsLeft
+    case playAt(chapter: ChapterLocation)
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
@@ -65,21 +71,49 @@ import Foundation
         self.startOffset = startOffset
         self.playheadOffset = playheadOffset
     }
-
-    /// TODO: Make this return an enum for next/previous locations
-    ///
-    /// enum Location {
-    ///     case prev
-    ///     case next
-    ///     case offsetInCurrentChapter(chapter: ChapterLocation)
-    /// }
-    func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
+    
+    func with15SecondsLeft() -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
             part: self.part,
             duration: self.duration,
             startOffset: self.startOffset,
-            playheadOffset: offset
+            playheadOffset: self.duration - 15
+        )
+    }
+    
+    func skipped15Seconds() -> ChapterLocation? {
+        return ChapterLocation(
+            number: self.number,
+            part: self.part,
+            duration: self.duration,
+            startOffset: self.startOffset,
+            playheadOffset: 15
+        )
+    }
+
+    /// TODO: Make this return an enum for next/previous locations
+    ///
+    /// enum Location {kekkeok
+    ///     case prev
+    ///     case next
+    ///     case offsetInCurrentChapter(chapter: ChapterLocation)
+    /// }
+    func chapterWith(_ offset: TimeInterval) -> Location {
+        if offset < 0 {
+            return .previousWith15SecondsLeft
+        }
+        if offset > self.duration {
+            return .nextSkipped15Seconds
+        }
+        
+        return .playAt(chapter: ChapterLocation(
+                number: self.number,
+                part: self.part,
+                duration: self.duration,
+                startOffset: self.startOffset,
+                playheadOffset: offset
+            )!
         )
     }
 }

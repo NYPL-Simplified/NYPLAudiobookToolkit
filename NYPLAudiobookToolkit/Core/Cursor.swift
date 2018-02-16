@@ -20,6 +20,17 @@ class Cursor<T> {
     func next() -> Cursor<T>? {
         return Cursor(data: self.data, index: self.index + 1)
     }
+    
+    func cursor(at: (_ element: T) -> Bool) -> Cursor<T>? {
+        var cursor: Cursor<T>?
+        for (i, element) in self.data.enumerated() {
+            if at(element) {
+                cursor = Cursor(data: self.data, index: i)
+                break
+            }
+        }
+        return cursor
+    }
 
     let data: [T]
     let index: Int
