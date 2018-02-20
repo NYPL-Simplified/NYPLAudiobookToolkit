@@ -77,28 +77,6 @@ import Foundation
         self.startOffset = startOffset
         self.playheadOffset = playheadOffset
     }
-    
-    /// TODO: Make this go to the proper offset, not just 15
-    func with15SecondsLeft() -> ChapterLocation? {
-        return ChapterLocation(
-            number: self.number,
-            part: self.part,
-            duration: self.duration,
-            startOffset: self.startOffset,
-            playheadOffset: self.duration - 15
-        )
-    }
-
-    /// TODO: Make this go to the proper offset, not just 15
-    func skipped15Seconds() -> ChapterLocation? {
-        return ChapterLocation(
-            number: self.number,
-            part: self.part,
-            duration: self.duration,
-            startOffset: self.startOffset,
-            playheadOffset: 15
-        )
-    }
 
     func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
