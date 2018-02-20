@@ -87,4 +87,7 @@ import Foundation
             playheadOffset: offset
         )
     }
+    public override var description: String {
+        return "ChapterLocation P \(self.part) CN \(self.number); PH \(self.playheadOffset) D \(self.duration)"
+    }
 }
