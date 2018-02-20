@@ -11,13 +11,10 @@ import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
     private var currentChapterLocation: ChapterLocation? {
-        guard let chapterNumber = self.chapterAtCursor?.number else { return nil }
-        guard let partNumber = self.chapterAtCursor?.part else { return nil }
-        guard let duration = self.chapterAtCursor?.duration else { return nil }
         return ChapterLocation(
-            number: chapterNumber,
-            part: partNumber,
-            duration: duration,
+            number: self.chapterAtCursor.number,
+            part: self.chapterAtCursor.part,
+            duration: self.chapterAtCursor.duration,
             startOffset: 0,
             playheadOffset: TimeInterval(self.currentOffset)
         )
@@ -56,8 +53,8 @@ class FindawayPlayer: NSObject, Player {
         return self.isPlaying && self.bookIsLoaded
     }
     
-    private var chapterAtCursor: ChapterLocation? {
-        return self.cursor?.currentElement.chapter
+    private var chapterAtCursor: ChapterLocation {
+        return self.cursor.currentElement.chapter
     }
 
     private var currentFindawayChapter: FAEChapterDescription? {
@@ -78,20 +75,20 @@ class FindawayPlayer: NSObject, Player {
         return loadedAudiobookID == self.audiobookID
     }
 
-    private var cursor: Cursor<SpineElement>?
+    private var cursor: Cursor<SpineElement>
     private let spineElement: FindawaySpineElement
     private var eventHandler: FindawayPlaybackNotificationHandler
 
-    public init(spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler, spine: [SpineElement]) {
+    public init(spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler, cursor: Cursor<SpineElement>) {
         self.eventHandler = eventHandler
         self.spineElement = spineElement
-        self.cursor = Cursor(data: spine, index: 0)
+        self.cursor = cursor
         super.init()
         self.eventHandler.delegate = self
     }
     
-    convenience init(spineElement: FindawaySpineElement, spine: [SpineElement]) {
-        self.init(spineElement: spineElement, eventHandler: DefaultFindawayPlaybackNotificationHandler(), spine: spine)
+    convenience init(spineElement: FindawaySpineElement, cursor: Cursor<SpineElement>) {
+        self.init(spineElement: spineElement, eventHandler: DefaultFindawayPlaybackNotificationHandler(), cursor: cursor)
     }
 
     func skipForward() {
@@ -126,35 +123,36 @@ class FindawayPlayer: NSObject, Player {
     }
     
     func jumpToLocation(_ location: ChapterLocation) {
-        var possibleDestinationChapter: ChapterLocation? = location
+        var possibleDestinationLocation: ChapterLocation? = location
         guard !self.readyForPlayback else {
             self.queuedLocation = location
             return
         }
 
-        if let timeIntoNextChapter = location.timeIntoNextChapter {
-            self.cursor = self.cursor?.next()
-            possibleDestinationChapter = self.cursor?.currentElement.chapter.chapterWith(timeIntoNextChapter)
-        } else if let timeIntoPreviousChapter = location.secondsBeforeStart {
-            self.cursor = self.cursor?.prev()
-            let durationOfChapter = (self.cursor?.currentElement.chapter.duration ?? 0)
+        let locationBeforeNavigation = self.currentChapterLocation
+        if let timeIntoNextChapter = location.timeIntoNextChapter, self.cursor.hasNext {
+            self.cursor = self.cursor.next()!
+            possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(timeIntoNextChapter)
+        } else if let timeIntoPreviousChapter = location.secondsBeforeStart, self.cursor.hasPrev {
+            self.cursor = self.cursor.prev()!
+            let durationOfChapter = self.cursor.currentElement.chapter.duration
             let playheadOffset = durationOfChapter - timeIntoPreviousChapter
-            possibleDestinationChapter = self.cursor?.currentElement.chapter.chapterWith(max(0, playheadOffset))
+            possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(max(0, playheadOffset))
         }
         
-        guard let destinationChapter = possibleDestinationChapter else { return }
+        guard let destinationLocation = possibleDestinationLocation else { return }
     
         if self.currentBookIsPlaying {
-            if self.currentChapterIsAt(part: destinationChapter.part, number: destinationChapter.number) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationChapter.playheadOffset)
-                self.delegate?.player(self, didBeginPlaybackOf: destinationChapter)
+            if self.locationsAreEqual(lhs: destinationLocation, rhs: locationBeforeNavigation) {
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
+                self.delegate?.player(self, didBeginPlaybackOf: destinationLocation)
             } else {
-                self.playAtLocation(destinationChapter)
+                self.playAtLocation(destinationLocation)
             }
-        } else if self.isResumeDescription(destinationChapter) {
+        } else if self.isResumeDescription(destinationLocation) {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
         } else {
-            self.playAtLocation(destinationChapter)
+            self.playAtLocation(destinationLocation)
         }
     }
     
@@ -169,12 +167,11 @@ class FindawayPlayer: NSObject, Player {
         )
     }
 
-    func cursorIsAt(part: UInt, number: UInt) -> Bool {
-        guard let cursorCapter = self.chapterAtCursor else { return false }
-        return cursorCapter.part == part &&
-            cursorCapter.number == number
+    func locationsAreEqual(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
+        guard let lhs = lhs else { return false }
+        guard let rhs = rhs else { return false }
+        return lhs.part == rhs.part && lhs.number == rhs.number
     }
-
     func currentChapterIsAt(part: UInt, number: UInt) -> Bool {
         guard let chapter = self.currentChapterLocation else { return false }
         return chapter.part == part &&
@@ -201,10 +198,17 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
 
 extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
-        self.updateCursorTo(findawayChapter: findawayChapter) { (chapter) in
-            if let chapter = chapter {
-                self.delegate?.player(self, didBeginPlaybackOf: chapter)
+        if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
+            let cursorPredicate = { (spineElement: SpineElement) -> Bool in
+                return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
             }
+            if let newCursor = self.cursor.cursor(at: cursorPredicate) {
+                self.cursor = newCursor
+            }
+        }
+    
+        if let chapter = self.currentChapterLocation {
+            self.delegate?.player(self, didBeginPlaybackOf: chapter)
         }
     }
     
@@ -214,17 +218,5 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 self.delegate?.player(self, didStopPlaybackOf: currentChapter)
             }
         }
-    }
-
-    func updateCursorTo(findawayChapter: FAEChapterDescription, completion: (_ chapter: ChapterLocation?) -> Void) {
-        var currentChapter = self.currentChapterLocation
-        if !self.cursorIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
-            let newCursor = self.cursor?.cursor(at: { (spineElement) -> Bool in
-                return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
-            })
-            self.cursor = newCursor
-            currentChapter = self.chapterAtCursor
-        }
-        completion(currentChapter)
     }
 }

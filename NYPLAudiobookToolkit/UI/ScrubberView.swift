@@ -27,7 +27,7 @@ struct ScrubberProgress: Equatable {
     }
     
     var succ: ScrubberProgress {
-        let newOffset = self.offset < self.duration ? self.offset + 1 : self.duration
+        let newOffset = self.offset <= self.duration ? self.offset + 1 : self.duration
         return ScrubberProgress(offset: newOffset, duration: self.duration)
     }
     
