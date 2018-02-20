@@ -11,11 +11,9 @@ import AudioEngine
 
 class FindawayPlayer: NSObject, Player {
     private var currentChapterLocation: ChapterLocation? {
-        let findaway = self.currentFindawayChapter
-        let possibleDuration = self.currentDuration ?? self.chapterAtCursor?.duration
-        guard let chapterNumber = (findaway?.chapterNumber ?? self.chapterAtCursor?.number) else { return nil }
-        guard let partNumber = (findaway?.partNumber ?? self.chapterAtCursor?.part) else { return nil }
-        guard let duration = possibleDuration else { return nil }
+        guard let chapterNumber = self.chapterAtCursor?.number else { return nil }
+        guard let partNumber = self.chapterAtCursor?.part else { return nil }
+        guard let duration = self.chapterAtCursor?.duration else { return nil }
         return ChapterLocation(
             number: chapterNumber,
             part: partNumber,
@@ -52,17 +50,6 @@ class FindawayPlayer: NSObject, Player {
     /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
     private var currentOffset: UInt {
         return FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0
-    }
-
-    
-    private var currentDuration: TimeInterval? {
-        var possibleDuration: TimeInterval? = nil
-        if self.currentBookIsPlaying {
-            /// If no book is loaded, AudioEngine returns 0, so this is consistent with their behavior
-            print("DEANDEBUG current duration from findawaySDK \(FAEAudioEngine.shared()?.playbackEngine?.currentDuration)")
-            possibleDuration = TimeInterval(FAEAudioEngine.shared()?.playbackEngine?.currentDuration ?? 0)
-        }
-        return possibleDuration
     }
 
     private var currentBookIsPlaying: Bool {
