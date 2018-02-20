@@ -67,9 +67,9 @@ private class FindawayAudiobook: Audiobook {
                 licenseID: licenseID
             )
         }
-        guard let firstSpineElement = self.spine.first else { return nil }
-        guard let cursor = Cursor(data: self.spine, index: 0) else { return nil }
-        self.player = FindawayPlayer(spineElement: firstSpineElement as! FindawaySpineElement, cursor: cursor)
+        guard let firstSpineElement = self.spine.first as? FindawaySpineElement else { return nil }
+        guard let cursor = Cursor(data: self.spine) else { return nil }
+        self.player = FindawayPlayer(spineElement: firstSpineElement , cursor: cursor)
     }
 }
 

@@ -51,4 +51,9 @@ class Cursor<T> {
         self.data = data
         self.index = index
     }
+
+    convenience init?(data: [T]) {
+        guard !data.isEmpty else { return nil }
+        self.init(data: data, index: data.startIndex)
+    }
 }
