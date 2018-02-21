@@ -29,7 +29,7 @@ private func findawayKey(_ key: String) -> String {
 /// This audiobook should then be able to construct utility classes
 /// using data in the spine of that JSON.
 
-@objc public class AudiobookFactory: NSObject {
+@objc public final class AudiobookFactory: NSObject {
     public static func audiobook(_ JSON: Any?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }
         let drm = JSON["drm:type"] as? [String: Any]
@@ -49,7 +49,7 @@ private func findawayKey(_ key: String) -> String {
     }
 }
 
-private class FindawayAudiobook: Audiobook {
+private final class FindawayAudiobook: Audiobook {
     let player: Player
     let spine: [SpineElement]
     public required init?(JSON: Any?) {
@@ -73,7 +73,7 @@ private class FindawayAudiobook: Audiobook {
     }
 }
 
-class FindawaySpineElement: SpineElement {
+final class FindawaySpineElement: SpineElement {
     var key: String {
         return "FAEAudioEngine-\(self.audiobookID)-\(self.chapterNumber)-\(self.partNumber)"
     }
@@ -115,7 +115,7 @@ class FindawaySpineElement: SpineElement {
     
 }
 
-private class OpenAccessAudiobook: Audiobook {
+private final class OpenAccessAudiobook: Audiobook {
     var spine: [SpineElement]
     let player: Player
     public required init?(JSON: Any?) {
@@ -132,7 +132,7 @@ private class OpenAccessAudiobook: Audiobook {
 }
 
 
-class OpenAccessSpineElement: SpineElement {
+final class OpenAccessSpineElement: SpineElement {
     let url: URL
     let mediaType: String
     let duration: TimeInterval

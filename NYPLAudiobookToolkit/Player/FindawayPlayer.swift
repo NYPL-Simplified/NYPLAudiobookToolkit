@@ -9,7 +9,7 @@
 import UIKit
 import AudioEngine
 
-class FindawayPlayer: NSObject, Player {
+final class FindawayPlayer: NSObject, Player {
     private var currentChapterLocation: ChapterLocation? {
         return ChapterLocation(
             number: self.chapterAtCursor.number,

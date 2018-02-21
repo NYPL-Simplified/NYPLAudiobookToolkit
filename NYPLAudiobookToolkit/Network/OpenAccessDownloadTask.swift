@@ -8,7 +8,7 @@
 
 import UIKit
 
-class OpenAccessDownloadTask: DownloadTask {
+final class OpenAccessDownloadTask: DownloadTask {
     var downloadProgress: Float {
         return 0
     }

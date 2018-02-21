@@ -87,7 +87,7 @@ struct ScrubberUIState: Equatable {
     }
 }
 
-class ScrubberView: UIView {
+final class ScrubberView: UIView {
     var delegate: ScrubberViewDelegate?
 
     let barHeight = 4

@@ -43,7 +43,7 @@ import Foundation
 ///
 /// This is also likely to change as the interface for doing this with
 /// AVPlayer & FAEPlaybackEngine are quite different.
-@objc public class ChapterLocation: NSObject {
+@objc public final class ChapterLocation: NSObject {
     let number: UInt
     let part: UInt
     let duration: TimeInterval
