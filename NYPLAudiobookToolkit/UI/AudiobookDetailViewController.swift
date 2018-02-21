@@ -165,15 +165,18 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 }
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
-    public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
-        self.chapterTitleLabel.text = self.downloadCompleteText
-        Timer.scheduledTimer(
-            timeInterval: 3,
-            target: self,
-            selector: #selector(AudiobookDetailViewController.postPlaybackReadyTimerFired(_:)),
-            userInfo: nil,
-            repeats: false
-        )
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) {
+        guard let currentChapter = self.currentChapter else { return }
+        if spineElement.chapter.number == currentChapter.number && spineElement.chapter.part == currentChapter.part {
+            self.chapterTitleLabel.text = self.downloadCompleteText
+            Timer.scheduledTimer(
+                timeInterval: 3,
+                target: self,
+                selector: #selector(AudiobookDetailViewController.postPlaybackReadyTimerFired(_:)),
+                userInfo: nil,
+                repeats: false
+            )
+        }
     }
     
     @objc func postPlaybackReadyTimerFired(_ timer: Timer) {
@@ -185,14 +188,15 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
             }
         }
     }
-    // TODO: have more defined relationships for how errors come in and will be handled
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError) {
-        let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
-        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
+
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+        self.chapterTitleLabel.text = "Downloading \(Int(spineElement.downloadTask.downloadProgress * 100))%"
     }
-    
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
-        self.chapterTitleLabel.text = "Downloading \(Int(percentage * 100))%"
+
+    // TODO: have more defined relationships for how errors come in and will be handled
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceiveErrorFor spineElement: SpineElement) {
+        let errorMessage = ((spineElement.downloadTask.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
+        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
     }
 }
 

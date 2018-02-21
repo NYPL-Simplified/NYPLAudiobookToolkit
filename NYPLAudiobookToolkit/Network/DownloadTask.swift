@@ -25,6 +25,7 @@
 @objc public protocol DownloadTask: class {
     func fetch()
     var downloadProgress: Float { get }
+    var key: String { get }
     var error: AudiobookError? { get }
     weak var delegate: DownloadTaskDelegate? { get set }
 }

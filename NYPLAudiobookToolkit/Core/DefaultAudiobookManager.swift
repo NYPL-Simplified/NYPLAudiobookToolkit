@@ -9,6 +9,81 @@
 import UIKit
 import AudioEngine
 
+@objc public protocol AudiobookNetworkServiceDelegate: class {
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didErrorFor spineElement: SpineElement)
+}
+
+@objc public protocol AudiobookNetworkService: class {
+    func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate)
+    func removeDelegate(_ delegate: AudiobookNetworkServiceDelegate)
+    func fetch()
+    func fetchSpineAt(index: Int)
+}
+
+public final class DefaultAudiobookNetworkService: AudiobookNetworkService, DownloadTaskDelegate {
+    private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
+    
+    public func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate) {
+        self.delegates.add(delegate)
+    }
+    
+    public func removeDelegate(_ delegate: AudiobookNetworkServiceDelegate) {
+        self.delegates.remove(delegate)
+    }
+    
+    public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
+            })
+        }
+    }
+
+    public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
+            })
+        }
+    }
+    
+    public func downloadTaskDidError(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.audiobookNetworkService(self, didErrorFor: spineElement)
+            })
+        }
+    }
+    
+    let spine: [SpineElement]
+    lazy var spineElementByKey: [String: SpineElement] = {
+        var dict = [String: SpineElement]()
+        self.spine.forEach { (element) in
+            dict[element.downloadTask.key] = element
+        }
+        return dict
+    }()
+
+    public init(spine: [SpineElement]) {
+        self.spine = spine
+    }
+
+    public func fetch() {
+        self.spine.forEach { (element) in
+            element.downloadTask.delegate = self
+            element.downloadTask.fetch()
+        }
+    }
+    
+    public func fetchSpineAt(index: Int) {
+        let downloadTask = self.spine[index].downloadTask
+        downloadTask.delegate = self
+        downloadTask.fetch()
+    }
+}
+
 /// If the AudiobookManager runs into an error while fetching
 /// values from the provided Audiobook, it may use this
 /// protocol to request a new Audiobook from the host app.
@@ -33,9 +108,9 @@ import AudioEngine
 }
 
 @objc public protocol AudiobookManagerDownloadDelegate {
-    func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float)
-    func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didReceiveErrorFor spineElement: SpineElement)
 }
 
 @objc public protocol AudiobookManagerPlaybackDelegate {
@@ -72,27 +147,32 @@ public class DefaultAudiobookManager: AudiobookManager {
         return self.player.isPlaying
     }
 
-    let player: Player
-    public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player) {
+    private let player: Player
+    private let networkService: AudiobookNetworkService
+    public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player, networkService: AudiobookNetworkService) {
         self.metadata = metadata
         self.audiobook = audiobook
         self.player = player
-
-
+        self.networkService = networkService
+        
         self.player.delegate = self
+        self.networkService.registerDelegate(self)
+        
     }
 
     public convenience init (metadata: AudiobookMetadata, audiobook: Audiobook) {
         self.init(
             metadata: metadata,
             audiobook: audiobook,
-            player: audiobook.player
+            player: audiobook.player,
+            networkService: DefaultAudiobookNetworkService(spine: audiobook.spine)
         )
     }
     
     weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
+        self.networkService.fetch()
     }
 
     public func play() {
@@ -114,6 +194,22 @@ public class DefaultAudiobookManager: AudiobookManager {
     public func updatePlaybackWith(_ chapter: ChapterLocation) {
         self.player.jumpToLocation(chapter)
     }
+}
+
+extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didBecomeReadyForPlayback: spineElement)
+    }
+    
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentageFor: spineElement)
+    }
+    
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didErrorFor spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didReceiveErrorFor: spineElement)
+    }
+    
+    
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {

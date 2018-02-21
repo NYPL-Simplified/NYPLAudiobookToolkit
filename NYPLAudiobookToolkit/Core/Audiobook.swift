@@ -143,7 +143,7 @@ class OpenAccessSpineElement: SpineElement {
     }
     
     lazy var downloadTask: DownloadTask = {
-        return OpenAccessDownloadTask()
+        return OpenAccessDownloadTask(spineElement: self)
     }()
     
     lazy var chapter: ChapterLocation = {
