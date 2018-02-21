@@ -20,6 +20,7 @@ class Cursor<T> {
     var hasPrev: Bool {
         return self.index > self.data.startIndex
     }
+
     func prev() -> Cursor<T>? {
         return Cursor(data: self.data, index: self.index - 1)
     }

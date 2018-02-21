@@ -108,8 +108,8 @@ class FindawayPlayer: NSObject, Player {
     }
 
     func play() {
-        if let resumeCommand = self.resumePlaybackLocation {
-            self.jumpToLocation(resumeCommand)
+        if let resumeLocation = self.resumePlaybackLocation {
+            self.jumpToLocation(resumeLocation)
         } else {
             if let location = self.currentChapterLocation?.chapterWith(0) {
                 self.jumpToLocation(location)
@@ -156,12 +156,12 @@ class FindawayPlayer: NSObject, Player {
         }
     }
     
-    func playAtLocation(_ chapter: ChapterLocation) {
+    func playAtLocation(_ location: ChapterLocation) {
         FAEAudioEngine.shared()?.playbackEngine?.play(
             forAudiobookID: self.audiobookID,
-            partNumber: chapter.part,
-            chapterNumber: chapter.number,
-            offset: UInt(chapter.playheadOffset),
+            partNumber: location.part,
+            chapterNumber: location.number,
+            offset: UInt(location.playheadOffset),
             sessionKey: self.sessionKey,
             licenseID: self.licenseID
         )
