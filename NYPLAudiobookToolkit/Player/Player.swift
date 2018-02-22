@@ -28,6 +28,10 @@ import Foundation
     func jumpToLocation(_ location: ChapterLocation)
 }
 
+internal protocol PlayerNavigable {
+    var cursor: Cursor<SpineElement> { get }
+}
+
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
 /// This protocol is supposed to represent how to issue complex commands to the player.
 /// IE: stop and seek to 3:00
