@@ -12,14 +12,6 @@ final class Cursor<T> {
     var currentElement: T {
         return self.data[self.index]
     }
-    
-    var hasNext: Bool {
-        return (self.index - 1) < self.data.count
-    }
-    
-    var hasPrev: Bool {
-        return self.index > self.data.startIndex
-    }
 
     func prev() -> Cursor<T>? {
         return Cursor(data: self.data, index: self.index - 1)
