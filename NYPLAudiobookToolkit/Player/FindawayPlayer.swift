@@ -11,6 +11,7 @@ import AudioEngine
 
 final class FindawayPlayer: NSObject, Player {
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
+        guard self.isPlaying else { return false }
         return self.currentChapterIsAt(part: location.part, number: location.number)
     }
 

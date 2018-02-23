@@ -25,6 +25,8 @@ class AudiobookTableOfContentsTableViewController: UITableViewController {
         super.init(nibName: nil, bundle: nil)
         self.title = "Table Of Contents"
         self.dataSource.tableView = self.tableView
+        self.tableView.dataSource = self.dataSource
+        
     }
     
     required init?(coder aDecoder: NSCoder) {

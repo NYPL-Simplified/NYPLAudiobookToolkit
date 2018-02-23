@@ -45,7 +45,7 @@ public final class AudiobookTableOfContentsDataSource: NSObject, AudiobookNetwor
         self.tableView?.reloadData()
     }
     
-    public var tableView: UITableView?
+    public weak var tableView: UITableView?
     private let networkService: AudiobookNetworkService
     private let player: Player
     internal init(networkService: AudiobookNetworkService, player: Player) {
