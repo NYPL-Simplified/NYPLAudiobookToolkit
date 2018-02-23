@@ -11,16 +11,6 @@ import XCTest
 
 class CursorTests: XCTestCase {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
     func testIndexOutOfBounds() {
         let data: [Int] = []
         let cursor = Cursor(data: data, index: 3)
@@ -46,10 +36,22 @@ class CursorTests: XCTestCase {
         XCTAssertEqual(cursor!.currentElement, 1)
     }
 
+    func testNextItemFails() {
+        let data: [Int] = [0, 1, 2]
+        let cursor = Cursor(data: data, index: 2)?.next()
+        XCTAssertNil(cursor)
+    }
+
     func testPrevItem() {
         let data: [Int] = [0, 1, 2]
         let cursor = Cursor(data: data, index: 1)?.prev()
         XCTAssertNotNil(cursor)
         XCTAssertEqual(cursor!.currentElement, 0)
+    }
+
+    func testPrevItemFails() {
+        let data: [Int] = [0, 1, 2]
+        let cursor = Cursor(data: data, index: 0)?.prev()
+        XCTAssertNil(cursor)
     }
 }
