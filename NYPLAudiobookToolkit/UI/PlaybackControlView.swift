@@ -18,7 +18,7 @@ protocol PlaybackControlViewDelegate: class {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView)
 }
 
-class PlaybackControlView: UIView {
+final class PlaybackControlView: UIView {
     weak var delegate: PlaybackControlViewDelegate?
     
     public func showPlayButton () {

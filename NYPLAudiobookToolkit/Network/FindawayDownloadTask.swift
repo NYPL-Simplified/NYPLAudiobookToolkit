@@ -11,7 +11,7 @@ import AudioEngine
 
 
 /// Handle network interactions with the AudioEngine SDK.
-class FindawayDownloadTask: DownloadTask {
+final class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
     var downloadProgress: Float {

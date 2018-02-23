@@ -10,7 +10,7 @@ import UIKit
 import Foundation
 import PureLayout
 
-public class AudiobookDetailViewController: UIViewController {
+public final class AudiobookDetailViewController: UIViewController {
     
     /// Light gray
     public var backgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1) {

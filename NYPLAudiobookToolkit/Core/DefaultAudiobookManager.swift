@@ -64,7 +64,7 @@ import AudioEngine
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
 /// to be used by the AudibookDetailViewController to respond to UI events.
-public class DefaultAudiobookManager: AudiobookManager {
+public final class DefaultAudiobookManager: AudiobookManager {
     public weak var downloadDelegate: AudiobookManagerDownloadDelegate?
     public weak var playbackDelegate: AudiobookManagerPlaybackDelegate?
     public let metadata: AudiobookMetadata

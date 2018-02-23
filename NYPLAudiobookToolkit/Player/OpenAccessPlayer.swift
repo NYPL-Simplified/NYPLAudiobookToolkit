@@ -8,7 +8,7 @@
 
 import UIKit
 
-class OpenAccessPlayer: NSObject, Player {
+final class OpenAccessPlayer: NSObject, Player {
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
         return false
     }

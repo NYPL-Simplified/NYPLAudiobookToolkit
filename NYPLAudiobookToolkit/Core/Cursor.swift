@@ -8,17 +8,10 @@
 
 import UIKit
 
-public class Cursor<T>: NSObject {
+
+public final class Cursor<T>: NSObject {
     var currentElement: T {
         return self.data[self.index]
-    }
-    
-    var hasNext: Bool {
-        return (self.index - 1) < self.data.count
-    }
-    
-    var hasPrev: Bool {
-        return self.index > self.data.startIndex
     }
 
     func prev() -> Cursor<T>? {
