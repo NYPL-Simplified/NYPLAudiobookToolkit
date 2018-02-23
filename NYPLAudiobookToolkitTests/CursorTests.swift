@@ -41,13 +41,15 @@ class CursorTests: XCTestCase {
     
     func testNextItem() {
         let data: [Int] = [0, 1, 2]
-        let cursor = Cursor(data: data, index: 0)
-        XCTAssertEqual(cursor?.next().currentElement, 1)
+        let cursor = Cursor(data: data, index: 0)?.next()
+        XCTAssertNotNil(cursor)
+        XCTAssertEqual(cursor!.currentElement, 1)
     }
 
     func testPrevItem() {
         let data: [Int] = [0, 1, 2]
-        let cursor = Cursor(data: data, index: 1)
-        XCTAssertEqual(cursor?.prev().currentElement, 0)
+        let cursor = Cursor(data: data, index: 1)?.prev()
+        XCTAssertNotNil(cursor)
+        XCTAssertEqual(cursor!.currentElement, 0)
     }
 }
