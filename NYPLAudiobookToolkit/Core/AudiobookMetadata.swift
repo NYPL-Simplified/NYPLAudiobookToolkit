@@ -8,7 +8,7 @@
 
 import UIKit
 
-public class AudiobookMetadata: NSObject {
+public final class AudiobookMetadata: NSObject {
     public let title: String
     public let authors: [String]
     public let narrators: [String]
