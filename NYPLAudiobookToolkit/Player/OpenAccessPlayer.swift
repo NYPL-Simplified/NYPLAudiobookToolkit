@@ -14,7 +14,7 @@ class OpenAccessPlayer: NSObject, Player {
     
     var delegate: PlayerDelegate?
     
-    func jumpToChapter(_ chapter: ChapterLocation) {
+    func jumpToLocation(_ chapter: ChapterLocation) {
 
     }
     
@@ -36,10 +36,5 @@ class OpenAccessPlayer: NSObject, Player {
     
     func pause() {
         
-    }
-    
-    private let spine: [OpenAccessSpineElement]
-    public init(spine: [OpenAccessSpineElement]) {
-        self.spine = spine
     }
 }

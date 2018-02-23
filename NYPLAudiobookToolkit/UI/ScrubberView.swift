@@ -27,7 +27,7 @@ struct ScrubberProgress: Equatable {
     }
     
     var succ: ScrubberProgress {
-        let newOffset = self.offset < self.duration ? self.offset + 1 : self.duration
+        let newOffset = self.offset <= self.duration ? self.offset + 1 : self.duration
         return ScrubberProgress(offset: newOffset, duration: self.duration)
     }
     
@@ -138,7 +138,21 @@ class ScrubberView: UIView {
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
+        self.leftLabel.text = self.state.progress.offsetText
+        self.rightLabel.text = self.state.progress.durationText
         self.setNeedsUpdateConstraints()
+        if self.timer == nil && self.state.isScrubbing {
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 1,
+                target: self,
+                selector: #selector(ScrubberView.updateProgress(_:)),
+                userInfo: nil,
+                repeats: true
+            )
+        } else if !self.state.isScrubbing {
+            self.timer?.invalidate()
+            self.timer = nil
+        }
     }
 
     override init(frame: CGRect) {
@@ -213,25 +227,9 @@ class ScrubberView: UIView {
         self.gripperSizeConstraints?.forEach{ (constraint) in
             constraint.constant = CGFloat(self.state.gripperDiameter)
         }
-
-        self.leftLabel.text = self.state.progress.offsetText
-        self.rightLabel.text = self.state.progress.durationText
         self.progressBar.backgroundColor = self.state.progressColor
         self.gripper.backgroundColor = self.state.progressColor
         UIView.commitAnimations()
-        
-        if self.timer == nil && self.state.isScrubbing {
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 1,
-                target: self,
-                selector: #selector(ScrubberView.updateProgress(_:)),
-                userInfo: nil,
-                repeats: true
-            )
-        } else if !self.state.isScrubbing {
-            self.timer?.invalidate()
-            self.timer = nil
-        }
     }
     
     @objc func updateProgress(_ timer: Timer) {

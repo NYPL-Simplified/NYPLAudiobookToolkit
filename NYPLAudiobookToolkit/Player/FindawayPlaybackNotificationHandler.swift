@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import AudioEngine
 
 protocol FindawayPlaybackNotificationHandlerDelegate: class {
-    func audioEngineChapterPlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler)
-    func audioEngineChapterPlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler)
+    func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
+    func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
 }
 
 protocol FindawayPlaybackNotificationHandler {
@@ -81,11 +82,14 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     }
     
     @objc func audioEngineChapterPlaybackStarted(_ notification: NSNotification) {
-        self.delegate?.audioEngineChapterPlaybackStarted(self)
+        if let chapter = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription {
+            self.delegate?.audioEnginePlaybackStarted(self, for: chapter)
+        }
     }
     
     @objc func audioEngineChapterPlaybackPaused(_ notification: NSNotification) {
-        print("DEANDEBUG chapter playback started \(notification.userInfo)")
-        self.delegate?.audioEngineChapterPlaybackPaused(self)
+        if let chapter = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription {
+            self.delegate?.audioEnginePlaybackPaused(self, for: chapter)
+        }
     }
 }
