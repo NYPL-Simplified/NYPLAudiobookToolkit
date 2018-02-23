@@ -130,12 +130,15 @@ final class FindawayPlayer: NSObject, Player {
         }
 
         let locationBeforeNavigation = self.currentChapterLocation
-        if let timeIntoNextChapter = location.timeIntoNextChapter, self.cursor.hasNext {
-            self.cursor = self.cursor.next()!
+        if let timeIntoNextChapter = location.timeIntoNextChapter,
+            let newCursor = self.cursor.next() {
+            self.cursor = newCursor
             possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(timeIntoNextChapter)
-        } else if let timeIntoPreviousChapter = location.secondsBeforeStart, self.cursor.hasPrev {
-            self.cursor = self.cursor.prev()!
-            let durationOfChapter = self.cursor.currentElement.chapter.duration
+
+        } else if let timeIntoPreviousChapter = location.secondsBeforeStart,
+            let newCursor = self.cursor.prev() {
+            self.cursor = newCursor
+            let durationOfChapter =  self.cursor.currentElement.chapter.duration
             let playheadOffset = durationOfChapter - timeIntoPreviousChapter
             possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(max(0, playheadOffset))
         }
