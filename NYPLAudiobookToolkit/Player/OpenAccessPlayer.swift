@@ -9,6 +9,16 @@
 import UIKit
 
 class OpenAccessPlayer: NSObject, Player {
+    func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
+        return false
+    }
+    
+    func registerDelegate(_ delegate: PlayerDelegate) {
+    }
+    
+    func removeDelegate(_ delegate: PlayerDelegate) {
+    }
+    
     func seekTo(_ offsetInChapter: Float) {
     }
     

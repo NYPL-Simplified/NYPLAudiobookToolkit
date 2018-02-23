@@ -123,9 +123,7 @@ public class AudiobookDetailViewController: UIViewController {
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = UITableViewController()
-        tbvc.tableView.dataSource = self
-        tbvc.navigationItem.title = "Table Of Contents"
+        let tbvc = AudiobookTableOfContentsTableViewController(dataSource: self.audiobookManager.tableOfContents)
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
 

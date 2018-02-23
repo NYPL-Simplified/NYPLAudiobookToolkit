@@ -88,7 +88,8 @@ class FindawaySpineElement: SpineElement {
             part: self.partNumber,
             duration: self.duration,
             startOffset: 0,
-            playheadOffset: 0
+            playheadOffset: 0,
+            title: self.title
         )!
     }()
     
@@ -98,12 +99,14 @@ class FindawaySpineElement: SpineElement {
     let audiobookID: String
     let licenseID: String
     let duration: TimeInterval
+    let title: String?
     
     public init?(JSON: Any?, sessionKey: String, audiobookID: String, licenseID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let sequence = payload[findawayKey("sequence")] as? UInt else { return nil }
         guard let partNumber = payload[findawayKey("part")] as? UInt else { return nil }
         guard let duration = payload["duration"] as? TimeInterval else { return nil }
+        self.title = payload["title"] as? String
         self.licenseID = licenseID
         self.chapterNumber = sequence
         self.partNumber = partNumber
@@ -152,7 +155,8 @@ class OpenAccessSpineElement: SpineElement {
             part: 0,
             duration: self.duration,
             startOffset: 0,
-            playheadOffset: 0
+            playheadOffset: 0,
+            title: nil
         )!
     }()
 
