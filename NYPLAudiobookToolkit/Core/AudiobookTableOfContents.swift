@@ -14,6 +14,10 @@ protocol AudiobookTableOfContentsDelegate: class {
 
 public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
 
+    public func deleteAll() {
+        self.networkService.deleteAll()
+    }
+
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.networkService.fetchSpineAt(index: indexPath.row)
         let spineElement = self.networkService.spine[indexPath.row]
@@ -72,5 +76,8 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
     internal init(networkService: AudiobookNetworkService, player: Player) {
         self.networkService = networkService
         self.player = player
+        super.init()
+        self.player.registerDelegate(self)
+        self.networkService.registerDelegate(self)
     }
 }

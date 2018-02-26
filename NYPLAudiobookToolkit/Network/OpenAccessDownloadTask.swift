@@ -9,6 +9,10 @@
 import UIKit
 
 final class OpenAccessDownloadTask: DownloadTask {
+    func delete() {
+    
+    }
+    
     var downloadProgress: Float {
         return 0
     }

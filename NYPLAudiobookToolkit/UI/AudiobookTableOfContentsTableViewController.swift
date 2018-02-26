@@ -18,6 +18,11 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
     public init(tableOfContents: AudiobookTableOfContents) {
         self.tableOfContents = tableOfContents
         super.init(nibName: nil, bundle: nil)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .trash,
+            target: self,
+            action: #selector(AudiobookTableOfContentsTableViewController.deleteChapterRequested(_:))
+        )
         self.title = "Table Of Contents"
         self.tableOfContents.delegate = self
         self.tableView.dataSource = self.tableOfContents
@@ -26,5 +31,9 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc func deleteChapterRequested(_ sender: Any) {
+        self.tableOfContents.deleteAll()
     }
 }

@@ -28,7 +28,6 @@ private func findawayKey(_ key: String) -> String {
 /// Host app should instantiate a audiobook object with JSON.
 /// This audiobook should then be able to construct utility classes
 /// using data in the spine of that JSON.
-
 @objc public final class AudiobookFactory: NSObject {
     public static func audiobook(_ JSON: Any?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }

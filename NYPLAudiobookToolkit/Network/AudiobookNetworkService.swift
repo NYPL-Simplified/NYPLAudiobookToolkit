@@ -18,12 +18,20 @@ import UIKit
     var spine: [SpineElement] { get }
     func fetch()
     func fetchSpineAt(index: Int)
-
+    func deleteAll()
     func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate)
     func removeDelegate(_ delegate: AudiobookNetworkServiceDelegate)
 }
 
 public final class DefaultAudiobookNetworkService: AudiobookNetworkService, DownloadTaskDelegate {
+    public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach { (delegate) in
+                delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
+            }
+        }
+    }
+
     private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     
     public func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate) {
@@ -34,6 +42,12 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService, Down
         self.delegates.remove(delegate)
     }
     
+    public func deleteAll() {
+        self.spine.forEach { (spineElement) in
+            spineElement.downloadTask.delete()
+        }
+    }
+
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             self.delegates.allObjects.forEach({ (delegate) in

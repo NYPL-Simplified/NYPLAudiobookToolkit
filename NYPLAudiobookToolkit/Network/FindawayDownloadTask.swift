@@ -16,38 +16,56 @@ final class FindawayDownloadTask: DownloadTask {
     weak var delegate: DownloadTaskDelegate?
     var downloadProgress: Float {
         return findawayProgressToNYPLToolkit(
-            FAEAudioEngine.shared()?.downloadEngine?.percentage(forAudiobookID: self.findawaySpineElement.audiobookID, partNumber: self.findawaySpineElement.partNumber, chapterNumber: self.findawaySpineElement.chapterNumber)
+            FAEAudioEngine.shared()?.downloadEngine?.percentage(
+                forAudiobookID: self.downloadRequest.audiobookID,
+                partNumber: self.downloadRequest.partNumber,
+                chapterNumber: self.downloadRequest.chapterNumber
+            )
         )
     }
 
-    let key: String
-    private let findawaySpineElement: FindawaySpineElement // retain cycle! This should be a weak reference, instead of retaining this here, use the data available in downloadRequest
+    var key: String {
+        return self.downloadRequest.requestIdentifier
+    }
+
     private var timer: Timer?
     private var retryAfterVerification = false
     private var databaseHasBeenVerified: Bool
-    private var downloadRequest: FAEDownloadRequest?
+    private var downloadRequest: FAEDownloadRequest
     private var downloadStatus: FAEDownloadStatus {
         var status = FAEDownloadStatus.notDownloaded
-        if let storedStatus = FAEAudioEngine.shared()?.downloadEngine?.status(forAudiobookID: self.findawaySpineElement.audiobookID, partNumber: self.findawaySpineElement.partNumber, chapterNumber: self.findawaySpineElement.chapterNumber) {
+        let statusFromFindaway = FAEAudioEngine.shared()?.downloadEngine?.status(
+            forAudiobookID: self.downloadRequest.audiobookID,
+            partNumber: self.downloadRequest.partNumber,
+            chapterNumber: self.downloadRequest.chapterNumber
+        )
+        if let storedStatus = statusFromFindaway {
             status = storedStatus
         }
         return status
     }
+    
+    private var downloadEngineIsFree: Bool {
+        return FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().isEmpty ?? false
+    }
 
-    public init(spineElement: FindawaySpineElement, audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest?, key: String) {
-        self.key = key
-        self.findawaySpineElement = spineElement
-        self.databaseHasBeenVerified = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
+    private var notifiedDownloadProgress: Float = nan("Download Progress has not started yet")
+
+    public init(audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest) {
+        self.downloadRequest = downloadRequest
+        self.databaseHasBeenVerified =  audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
         if !self.databaseHasBeenVerified {
             audiobookLifeCycleManager.registerDelegate(self)
         }
-        self.downloadRequest = downloadRequest
     }
 
     convenience init(spineElement: FindawaySpineElement) {
         var request = FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().first(where: { (existingRequest) -> Bool in
-            existingRequest.audiobookID == spineElement.audiobookID
+            return existingRequest.audiobookID == spineElement.audiobookID
+                && existingRequest.chapterNumber == spineElement.chapterNumber
+                && existingRequest.chapterNumber == spineElement.partNumber
         })
+        
         if request == nil {
             request = FAEDownloadRequest(
                 audiobookID: spineElement.audiobookID,
@@ -59,7 +77,7 @@ final class FindawayDownloadTask: DownloadTask {
                 restrictToWiFi: false
             )
         }
-        self.init(spineElement: spineElement, audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request, key: spineElement.key)
+        self.init(audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request!)
     }
     
     deinit {
@@ -82,36 +100,50 @@ final class FindawayDownloadTask: DownloadTask {
             self.delegate?.downloadTaskReadyForPlayback(self)
             return
         }
-
-        if let downloadRequest = self.downloadRequest {
-            FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: downloadRequest)
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 0.5,
-                target: self,
-                selector: #selector(FindawayDownloadTask.pollForDownloadPercentage(_:)),
-                userInfo: nil,
-                repeats: true
-            )
-        }
-    }
     
+        FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: self.downloadRequest)
+        self.timer = Timer.scheduledTimer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(FindawayDownloadTask.pollForDownloadPercentage(_:)),
+            userInfo: nil,
+            repeats: true
+        )
+        print("DEANDEBUG download started for \(self.downloadRequest)")
+        print("DEANDEBUG current download queue: \(FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests())")
+
+    }
+
     @objc func pollForDownloadPercentage(_ timer: Timer) {
         self.notifyDelegate()
     }
 
     private func notifyDelegate() {
-        self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
+        if self.notifiedDownloadProgress != self.downloadProgress {
+            self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
+            self.notifiedDownloadProgress = self.downloadProgress
+        }
         if self.downloadStatus == .downloaded {
             self.timer?.invalidate()
             self.delegate?.downloadTaskReadyForPlayback(self)
         }
+        print("DEANDEBUG current download queue: \(FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests())")
+    }
+
+    public func delete() {
+        FAEAudioEngine.shared()?.downloadEngine?.delete(
+            forAudiobookID: self.downloadRequest.audiobookID,
+            partNumber: self.downloadRequest.partNumber,
+            chapterNumber: self.downloadRequest.chapterNumber
+        )
+        self.delegate?.downloadTaskDidDeleteAsset(self)
     }
 }
 
 extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
     // TODO: Update this to pass the chapter that the error happened to instead of audiobook id
     func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
-        if error.audiobookID == self.findawaySpineElement.audiobookID {
+        if error.audiobookID == self.downloadRequest.audiobookID {
             self.error = error
             self.delegate?.downloadTaskDidError(self)
         }
