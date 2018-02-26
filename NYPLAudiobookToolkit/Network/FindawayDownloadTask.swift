@@ -76,6 +76,9 @@ final class FindawayDownloadTask: DownloadTask {
                 licenseID: spineElement.licenseID,
                 restrictToWiFi: false
             )
+            print("DEANDEBUG new request for spine \(spineElement.key)")
+        } else {
+            print("DEANDEBUG spine is already downloading")
         }
         self.init(audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request!)
     }

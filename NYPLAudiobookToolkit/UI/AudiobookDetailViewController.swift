@@ -204,6 +204,7 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     }
 
     public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterLocation) {
+        print("DEANDEBUG stop with chapter: \(chapter)")
         self.updateUIWithChapter(chapter, scrubbing: false)
     }
     
