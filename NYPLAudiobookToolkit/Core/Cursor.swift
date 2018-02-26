@@ -9,7 +9,7 @@
 import UIKit
 
 
-public final class Cursor<T>: NSObject {
+final class Cursor<T> {
     var currentElement: T {
         return self.data[self.index]
     }
