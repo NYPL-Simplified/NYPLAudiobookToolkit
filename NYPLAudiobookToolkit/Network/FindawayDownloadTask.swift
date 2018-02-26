@@ -15,6 +15,10 @@ final class FindawayDownloadTask: DownloadTask {
     var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
     var downloadProgress: Float {
+        guard self.databaseHasBeenVerified else {
+            return 0
+        }
+
         return findawayProgressToNYPLToolkit(
             FAEAudioEngine.shared()?.downloadEngine?.percentage(
                 forAudiobookID: self.downloadRequest.audiobookID,
@@ -34,6 +38,10 @@ final class FindawayDownloadTask: DownloadTask {
     private var downloadRequest: FAEDownloadRequest
     private var downloadStatus: FAEDownloadStatus {
         var status = FAEDownloadStatus.notDownloaded
+        guard self.databaseHasBeenVerified else {
+            return status
+        }
+        
         let statusFromFindaway = FAEAudioEngine.shared()?.downloadEngine?.status(
             forAudiobookID: self.downloadRequest.audiobookID,
             partNumber: self.downloadRequest.partNumber,
@@ -46,14 +54,21 @@ final class FindawayDownloadTask: DownloadTask {
     }
     
     private var downloadEngineIsFree: Bool {
+        guard self.databaseHasBeenVerified else {
+            return false
+        }
+        
         return FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().isEmpty ?? false
     }
 
     private var notifiedDownloadProgress: Float = nan("Download Progress has not started yet")
-
-    public init(audiobookLifeCycleManager: AudiobookLifeCycleManager, downloadRequest: FAEDownloadRequest) {
+    private let notificationHandler: FindawayDownloadNotificationHandler
+    public init(audiobookLifeCycleManager: AudiobookLifeCycleManager, findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, downloadRequest: FAEDownloadRequest) {
         self.downloadRequest = downloadRequest
-        self.databaseHasBeenVerified =  audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
+        self.notificationHandler = findawayDownloadNotificationHandler
+        self.databaseHasBeenVerified = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
+
+        self.notificationHandler.delegate = self
         if !self.databaseHasBeenVerified {
             audiobookLifeCycleManager.registerDelegate(self)
         }
@@ -76,11 +91,15 @@ final class FindawayDownloadTask: DownloadTask {
                 licenseID: spineElement.licenseID,
                 restrictToWiFi: false
             )
-            print("DEANDEBUG new request for spine \(spineElement.key)")
+            print("DEANDEBUG new request \(request!)")
         } else {
             print("DEANDEBUG spine is already downloading")
         }
-        self.init(audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared, downloadRequest: request!)
+        self.init(
+            audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared,
+            findawayDownloadNotificationHandler: DefaultFindawayDownloadNotificationHandler(),
+            downloadRequest: request!
+        )
     }
     
     deinit {
@@ -143,15 +162,17 @@ final class FindawayDownloadTask: DownloadTask {
     }
 }
 
-extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
-    // TODO: Update this to pass the chapter that the error happened to instead of audiobook id
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError) {
+extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didRecieve error: AudiobookError) {
         if error.audiobookID == self.downloadRequest.audiobookID {
             self.error = error
+            self.timer?.invalidate()
             self.delegate?.downloadTaskDidError(self)
         }
     }
-    
+}
+
+extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
         self.databaseHasBeenVerified = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
         guard self.databaseHasBeenVerified else { return }

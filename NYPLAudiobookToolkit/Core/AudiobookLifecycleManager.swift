@@ -17,12 +17,6 @@ import AudioEngine
      General notifications about the state of the manager.
     */
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager)
-    
-    /**
-     Notifications specific to errors. The lifeCycleManager does not retain errors, simply listens for them and passes them forward.
-     The reason for this is multiple clients can be fetching books at once, but there should be only one AudiobookLifeCycleManager.
-     */
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: AudiobookError)
 }
 
 /// Implementers of this protocol should hook into Lifecycle events in AppDelegate.swift.
@@ -59,12 +53,6 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
             name: NSNotification.Name.FAEDatabaseVerificationComplete,
             object: nil
         )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDidReceiveError(_:)),
-            name: NSNotification.Name.FAEDownloadRequestFailed,
-            object: nil
-        )
     }
     
     deinit {
@@ -84,18 +72,7 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookLifecycleManagerDidUpdate(self)
         }
-    }
-    
-    @objc public func audioEngineDidReceiveError(_ notification: NSNotification) {
-        guard let audiobookID = notification.userInfo?["audiobookID"] as? String else { return }
-        guard let audiobookError = notification.userInfo?["audioEngineError"] as? NSError else { return }
-        self.delegates.allObjects.forEach { (delegate) in
-            delegate.audiobookLifecycleManager(self,
-                didRecieve: DefaultAudiobookError(error: audiobookError, audiobookID: audiobookID)
-            )
-        }
-    }
-}
+    }}
 
 extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
