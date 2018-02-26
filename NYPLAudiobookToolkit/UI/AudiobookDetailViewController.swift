@@ -123,7 +123,7 @@ public final class AudiobookDetailViewController: UIViewController {
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = AudiobookTableOfContentsTableViewController(dataSource: self.audiobookManager.tableOfContents)
+        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents)
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
 

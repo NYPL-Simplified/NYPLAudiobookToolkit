@@ -8,11 +8,11 @@
 
 import UIKit
 
-protocol AudiobookTableOfContentsDataSourceDelegate: class {
-    func audiobookTableOfContentsDataSourceDidRequestReload(_ audiobookTableOfContentsDataSource: AudiobookTableOfContentsDataSource)
+protocol AudiobookTableOfContentsDelegate: class {
+    func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
 }
 
-public final class AudiobookTableOfContentsDataSource: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
+public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
 
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.networkService.fetchSpineAt(index: indexPath.row)
@@ -47,26 +47,26 @@ public final class AudiobookTableOfContentsDataSource: NSObject, AudiobookNetwor
     }
 
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        self.delegate?.audiobookTableOfContentsDataSourceDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        self.delegate?.audiobookTableOfContentsDataSourceDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsDataSourceDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsDataSourceDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didErrorFor spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsDataSourceDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
-    weak var delegate: AudiobookTableOfContentsDataSourceDelegate?
+    weak var delegate: AudiobookTableOfContentsDelegate?
     private let networkService: AudiobookNetworkService
     private let player: Player
     internal init(networkService: AudiobookNetworkService, player: Player) {

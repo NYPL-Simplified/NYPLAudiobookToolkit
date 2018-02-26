@@ -47,7 +47,7 @@
 		7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759B4201279BB004CE65F /* TextWithImageView.swift */; };
 		7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD759B720127E31004CE65F /* MediaPlayer.framework */; };
 		7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BC20163B71004CE65F /* PlaybackControlView.swift */; };
-		7BD759BF20168995004CE65F /* AudiobookTableOfContentsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BE20168995004CE65F /* AudiobookTableOfContentsDataSource.swift */; };
+		7BD759BF20168995004CE65F /* AudiobookTableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */; };
 		7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C220169084004CE65F /* FindawayDownloadTask.swift */; };
 		7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C92017CEA3004CE65F /* DownloadTask.swift */; };
 		7BDD33AF204461A000CC8807 /* HumanReadableTimeInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */; };
@@ -154,7 +154,7 @@
 		7BD759B4201279BB004CE65F /* TextWithImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextWithImageView.swift; sourceTree = "<group>"; };
 		7BD759B720127E31004CE65F /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		7BD759BC20163B71004CE65F /* PlaybackControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControlView.swift; sourceTree = "<group>"; };
-		7BD759BE20168995004CE65F /* AudiobookTableOfContentsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTableOfContentsDataSource.swift; sourceTree = "<group>"; };
+		7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTableOfContents.swift; sourceTree = "<group>"; };
 		7BD759C220169084004CE65F /* FindawayDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadTask.swift; sourceTree = "<group>"; };
 		7BD759C92017CEA3004CE65F /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
 		7BD759CB20191980004CE65F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
@@ -324,7 +324,7 @@
 		7B987FDA201B88FF00A94B12 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				7BD759BE20168995004CE65F /* AudiobookTableOfContentsDataSource.swift */,
+				7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */,
 				7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */,
 				7B5441E0200EA82C0047B6C6 /* DefaultAudiobookManager.swift */,
 				7B5441DC200EA82C0047B6C6 /* Audiobook.swift */,
@@ -582,7 +582,7 @@
 				7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */,
 				7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */,
 				7B7B37112028FC7D00030A1E /* FindawayPlaybackNotificationHandler.swift in Sources */,
-				7BD759BF20168995004CE65F /* AudiobookTableOfContentsDataSource.swift in Sources */,
+				7BD759BF20168995004CE65F /* AudiobookTableOfContents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

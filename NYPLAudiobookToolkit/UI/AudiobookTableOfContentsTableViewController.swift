@@ -8,20 +8,20 @@
 
 import UIKit
 
-class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDataSourceDelegate {
+class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
 
-    func audiobookTableOfContentsDataSourceDidRequestReload(_ audiobookTableOfContentsDataSource: AudiobookTableOfContentsDataSource) {
+    func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
         self.tableView.reloadData()
     }
 
-    let dataSource: AudiobookTableOfContentsDataSource
-    public init(dataSource: AudiobookTableOfContentsDataSource) {
-        self.dataSource = dataSource
+    let tableOfContents: AudiobookTableOfContents
+    public init(tableOfContents: AudiobookTableOfContents) {
+        self.tableOfContents = tableOfContents
         super.init(nibName: nil, bundle: nil)
         self.title = "Table Of Contents"
-        self.dataSource.delegate = self
-        self.tableView.dataSource = self.dataSource
-        self.tableView.delegate = self.dataSource
+        self.tableOfContents.delegate = self
+        self.tableView.dataSource = self.tableOfContents
+        self.tableView.delegate = self.tableOfContents
     }
     
     required init?(coder aDecoder: NSCoder) {

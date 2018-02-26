@@ -52,7 +52,7 @@ import AudioEngine
     weak var playbackDelegate: AudiobookManagerPlaybackDelegate? { get set }
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
-    var tableOfContents: AudiobookTableOfContentsDataSource { get }
+    var tableOfContents: AudiobookTableOfContents { get }
     var isPlaying: Bool { get }
     func fetch()
     func skipForward()
@@ -73,8 +73,8 @@ public final class DefaultAudiobookManager: AudiobookManager {
         return self.player.isPlaying
     }
     
-    public var tableOfContents: AudiobookTableOfContentsDataSource {
-        return AudiobookTableOfContentsDataSource(
+    public var tableOfContents: AudiobookTableOfContents {
+        return AudiobookTableOfContents(
             networkService: self.networkService,
             player: self.player
         )
