@@ -50,6 +50,7 @@
 		7BD759BF20168995004CE65F /* AudiobookTableOfContentsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BE20168995004CE65F /* AudiobookTableOfContentsDataSource.swift */; };
 		7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C220169084004CE65F /* FindawayDownloadTask.swift */; };
 		7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C92017CEA3004CE65F /* DownloadTask.swift */; };
+		7BDD33AF204461A000CC8807 /* HumanReadableTimeInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -157,6 +158,7 @@
 		7BD759C220169084004CE65F /* FindawayDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadTask.swift; sourceTree = "<group>"; };
 		7BD759C92017CEA3004CE65F /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
 		7BD759CB20191980004CE65F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeInterval.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -329,6 +331,7 @@
 				7B5441DF200EA82C0047B6C6 /* DefaultAudiobookLifecycleManager.swift */,
 				7B987FDB201B892000A94B12 /* AudibookError.swift */,
 				7B4F1B1F20361546003F047B /* Cursor.swift */,
+				7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -575,6 +578,7 @@
 				7B7B370B202274DA00030A1E /* Player.swift in Sources */,
 				7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */,
 				7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */,
+				7BDD33AF204461A000CC8807 /* HumanReadableTimeInterval.swift in Sources */,
 				7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */,
 				7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */,
 				7B7B37112028FC7D00030A1E /* FindawayPlaybackNotificationHandler.swift in Sources */,
