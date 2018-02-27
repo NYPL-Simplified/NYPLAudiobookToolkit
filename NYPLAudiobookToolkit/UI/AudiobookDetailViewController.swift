@@ -237,16 +237,3 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         self.audiobookManager.pause()
     }
 }
-
-extension AudiobookDetailViewController: UITableViewDataSource {
-
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
-    }
-    
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
-        cell.textLabel?.text = "Chapter \(indexPath.row)"
-        return cell
-    }
-}
