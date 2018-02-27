@@ -72,7 +72,8 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookLifecycleManagerDidUpdate(self)
         }
-    }}
+    }
+}
 
 extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
