@@ -11,7 +11,7 @@ import UIKit
 @objc public protocol AudiobookNetworkServiceDelegate: class {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement)
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didErrorFor spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement)
 }
 
 @objc public protocol AudiobookNetworkService: class {
@@ -23,14 +23,7 @@ import UIKit
     func removeDelegate(_ delegate: AudiobookNetworkServiceDelegate)
 }
 
-public final class DefaultAudiobookNetworkService: AudiobookNetworkService, DownloadTaskDelegate {
-    public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
-        if let spineElement = self.spineElementByKey[downloadTask.key] {
-            self.delegates.allObjects.forEach { (delegate) in
-                delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
-            }
-        }
-    }
+public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
 
     private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     
@@ -45,30 +38,6 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService, Down
     public func deleteAll() {
         self.spine.forEach { (spineElement) in
             spineElement.downloadTask.delete()
-        }
-    }
-
-    public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
-        if let spineElement = self.spineElementByKey[downloadTask.key] {
-            self.delegates.allObjects.forEach({ (delegate) in
-                delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
-            })
-        }
-    }
-    
-    public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
-        if let spineElement = self.spineElementByKey[downloadTask.key] {
-            self.delegates.allObjects.forEach({ (delegate) in
-                delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
-            })
-        }
-    }
-    
-    public func downloadTaskDidError(_ downloadTask: DownloadTask) {
-        if let spineElement = self.spineElementByKey[downloadTask.key] {
-            self.delegates.allObjects.forEach({ (delegate) in
-                delegate.audiobookNetworkService(self, didErrorFor: spineElement)
-            })
         }
     }
     
@@ -96,5 +65,39 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService, Down
         let downloadTask = self.spine[index].downloadTask
         downloadTask.delegate = self
         downloadTask.fetch()
+    }
+}
+
+extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
+    public func downloadTask(_ downloadTask: DownloadTask, didRecieve error: NSError) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.audiobookNetworkService(self, didRecieve: error, for: spineElement)
+            })
+        }
+    }
+    
+    public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
+            })
+        }
+    }
+    
+    public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
+            })
+        }
+    }
+
+    public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.delegates.allObjects.forEach { (delegate) in
+                delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
+            }
+        }
     }
 }

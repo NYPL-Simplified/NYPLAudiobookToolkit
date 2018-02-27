@@ -191,10 +191,14 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
         self.chapterTitleLabel.text = "Downloading \(Int(spineElement.downloadTask.downloadProgress * 100))%"
     }
 
-    // TODO: have more defined relationships for how errors come in and will be handled
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceiveErrorFor spineElement: SpineElement) {
-        let errorMessage = ((spineElement.downloadTask.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
-        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement) {
+        let alertController = UIAlertController(
+            title: "Error!",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alertController.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        self.present(alertController, animated: false, completion: nil)
     }
 }
 

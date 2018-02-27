@@ -13,6 +13,10 @@ protocol AudiobookTableOfContentsDelegate: class {
 }
 
 public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement) {
+    
+    }
+    
 
     public func deleteAll() {
         self.networkService.deleteAll()

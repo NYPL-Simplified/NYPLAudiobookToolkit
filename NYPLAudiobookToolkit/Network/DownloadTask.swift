@@ -12,7 +12,7 @@
     func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
-    func downloadTaskDidError(_ downloadTask: DownloadTask)
+    func downloadTask(_ downloadTask: DownloadTask, didRecieve error: NSError)
 }
 
 /// Protocol to handle hitting the network to download an audiobook.
@@ -28,6 +28,5 @@
     func delete()
     var downloadProgress: Float { get }
     var key: String { get }
-    var error: AudiobookError? { get }
     weak var delegate: DownloadTaskDelegate? { get set }
 }

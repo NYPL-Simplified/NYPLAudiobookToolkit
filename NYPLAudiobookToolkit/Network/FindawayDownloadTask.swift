@@ -12,7 +12,6 @@ import AudioEngine
 
 /// Handle network interactions with the AudioEngine SDK.
 final class FindawayDownloadTask: DownloadTask {
-    var error: AudiobookError?
     weak var delegate: DownloadTaskDelegate?
     var downloadProgress: Float {
         guard self.databaseHasBeenVerified else {
@@ -163,11 +162,10 @@ final class FindawayDownloadTask: DownloadTask {
 }
 
 extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
-    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didRecieve error: AudiobookError) {
-        if error.audiobookID == self.downloadRequest.audiobookID {
-            self.error = error
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didRecieve error: NSError, for downloadRequestID: String) {
+        if self.downloadRequest.requestIdentifier == downloadRequestID {
             self.timer?.invalidate()
-            self.delegate?.downloadTaskDidError(self)
+            self.delegate?.downloadTask(self, didRecieve: error)
         }
     }
 }

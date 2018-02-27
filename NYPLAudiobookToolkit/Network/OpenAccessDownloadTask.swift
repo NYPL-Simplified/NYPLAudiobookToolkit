@@ -21,8 +21,6 @@ final class OpenAccessDownloadTask: DownloadTask {
     public init(spineElement: SpineElement) {
         self.key = spineElement.key
     }
-
-    var error: AudiobookError?
     
     weak var delegate: DownloadTaskDelegate?
 

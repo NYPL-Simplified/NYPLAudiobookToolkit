@@ -35,7 +35,7 @@ import AudioEngine
 @objc public protocol AudiobookManagerDownloadDelegate {
     func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement)
     func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didReceiveErrorFor spineElement: SpineElement)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement)
 }
 
 @objc public protocol AudiobookManagerPlaybackDelegate {
@@ -129,6 +129,10 @@ public final class DefaultAudiobookManager: AudiobookManager {
 }
 
 extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didReceive: error, for: spineElement)
+    }
+    
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
         self.downloadDelegate?.audiobookManager(self, didBecomeReadyForPlayback: spineElement)
     }
@@ -136,12 +140,6 @@ extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
         self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentageFor: spineElement)
     }
-    
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didErrorFor spineElement: SpineElement) {
-        self.downloadDelegate?.audiobookManager(self, didReceiveErrorFor: spineElement)
-    }
-    
-    
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {
