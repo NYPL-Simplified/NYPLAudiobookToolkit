@@ -14,7 +14,7 @@ protocol AudiobookTableOfContentsDelegate: class {
 
 public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement) {
-    
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
 
@@ -70,10 +70,6 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didErrorFor spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-    }
-    
     weak var delegate: AudiobookTableOfContentsDelegate?
     private let networkService: AudiobookNetworkService
     private let player: Player
@@ -83,5 +79,10 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
         super.init()
         self.player.registerDelegate(self)
         self.networkService.registerDelegate(self)
+    }
+    
+    deinit {
+        self.player.removeDelegate(self)
+        self.networkService.removeDelegate(self)
     }
 }

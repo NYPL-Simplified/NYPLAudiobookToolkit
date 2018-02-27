@@ -30,10 +30,11 @@ public final class AudiobookDetailViewController: UIViewController {
         self.audiobookManager.downloadDelegate = self
         self.audiobookManager.playbackDelegate = self
     }
-    
+
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     private let downloadCompleteText = "Title Downloaded!"
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()

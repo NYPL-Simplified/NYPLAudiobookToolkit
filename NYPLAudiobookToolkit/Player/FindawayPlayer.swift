@@ -90,7 +90,7 @@ final class FindawayPlayer: NSObject, Player {
         return loadedAudiobookID == self.audiobookID
     }
 
-    public var cursor: Cursor<SpineElement>
+    private var cursor: Cursor<SpineElement>
     private let spineElement: FindawaySpineElement
     private var eventHandler: FindawayPlaybackNotificationHandler
 
