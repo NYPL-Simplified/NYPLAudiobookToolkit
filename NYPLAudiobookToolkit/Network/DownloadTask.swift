@@ -12,7 +12,7 @@
     func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
-    func downloadTask(_ downloadTask: DownloadTask, didRecieve error: NSError)
+    func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError)
 }
 
 /// Protocol to handle hitting the network to download an audiobook.

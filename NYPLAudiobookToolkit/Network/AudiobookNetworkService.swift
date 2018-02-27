@@ -11,7 +11,7 @@ import UIKit
 @objc public protocol AudiobookNetworkServiceDelegate: class {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement)
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement)
 }
 
 @objc public protocol AudiobookNetworkService: class {
@@ -69,17 +69,17 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
 }
 
 extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
-    public func downloadTask(_ downloadTask: DownloadTask, didRecieve error: NSError) {
+    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesThatErrorWasRecievedFor(spineElement, error: error)
+                self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
             }
         }
     }
 
-    func notifyDelegatesThatErrorWasRecievedFor(_ spineElement: SpineElement, error: NSError) {
+    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError) {
         self.delegates.allObjects.forEach({ (delegate) in
-            delegate.audiobookNetworkService(self, didRecieve: error, for: spineElement)
+            delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
         })
     }
     

@@ -162,10 +162,10 @@ final class FindawayDownloadTask: DownloadTask {
 }
 
 extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
-    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didRecieve error: NSError, for downloadRequestID: String) {
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String) {
         if self.downloadRequest.requestIdentifier == downloadRequestID {
             self.timer?.invalidate()
-            self.delegate?.downloadTask(self, didRecieve: error)
+            self.delegate?.downloadTask(self, didReceive: error)
         }
     }
 }

@@ -9,7 +9,7 @@
 import UIKit
 
 @objc protocol FindawayDownloadNotificationHandlerDelegate: class {
-    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didRecieve error: NSError, for downloadRequestID: String)
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String)
 }
 
 @objc protocol FindawayDownloadNotificationHandler: class {
@@ -34,6 +34,6 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
     @objc public func audioEngineDidReceiveError(_ notification: NSNotification) {
         guard let downloadRequestID = notification.userInfo?["DownloadRequestID"] as? String else { return }
         guard let audiobookError = notification.userInfo?["AudioEngineError"] as? NSError else { return }
-        self.delegate?.findawayDownloadNotificationHandler(self, didRecieve: audiobookError, for: downloadRequestID)
+        self.delegate?.findawayDownloadNotificationHandler(self, didReceive: audiobookError, for: downloadRequestID)
     }
 }

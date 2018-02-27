@@ -129,7 +129,7 @@ public final class DefaultAudiobookManager: AudiobookManager {
 }
 
 extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement) {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         self.downloadDelegate?.audiobookManager(self, didReceive: error, for: spineElement)
     }
     

@@ -13,7 +13,7 @@ protocol AudiobookTableOfContentsDelegate: class {
 }
 
 public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didRecieve error: NSError, for spineElement: SpineElement) {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     

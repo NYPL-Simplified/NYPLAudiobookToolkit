@@ -212,7 +212,7 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     }
     
     // TODO: Update this to pass the chapter that the error happened to instead of audiobook id
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didRecieve error: Error) {
+    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didReceive error: Error) {
     }
 }
 
