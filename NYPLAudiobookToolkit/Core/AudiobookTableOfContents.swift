@@ -12,8 +12,7 @@ protocol AudiobookTableOfContentsDelegate: class {
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
 }
 
-public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
-
+public final class AudiobookTableOfContents: NSObject {
     public func fetch() {
         self.networkService.fetch()
     }
@@ -21,7 +20,25 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
     public func deleteAll() {
         self.networkService.deleteAll()
     }
+    
+    weak var delegate: AudiobookTableOfContentsDelegate?
+    private let networkService: AudiobookNetworkService
+    private let player: Player
+    internal init(networkService: AudiobookNetworkService, player: Player) {
+        self.networkService = networkService
+        self.player = player
+        super.init()
+        self.player.registerDelegate(self)
+        self.networkService.registerDelegate(self)
+    }
+    
+    deinit {
+        self.player.removeDelegate(self)
+        self.networkService.removeDelegate(self)
+    }
+}
 
+extension AudiobookTableOfContents: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.networkService.fetchSpineAt(index: indexPath.row)
         let spineElement = self.networkService.spine[indexPath.row]
@@ -33,7 +50,10 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
         // explicitly stated elsewhere.
         self.player.jumpToLocation(spineElement.chapter)
     }
+}
 
+
+extension AudiobookTableOfContents: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.networkService.spine.count
     }
@@ -44,7 +64,7 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
         cell.textLabel?.text = spineElement.chapter.title
         cell.detailTextLabel?.text = self.subtitleFor(spineElement)
         cell.selectionStyle = .none
-
+        
         if self.player.chapterIsPlaying(spineElement.chapter) {
             cell.contentView.layer.borderColor = UIColor.red.cgColor
             cell.contentView.layer.borderWidth = 1
@@ -65,7 +85,10 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
         }
         
     }
+}
 
+
+extension AudiobookTableOfContents: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
@@ -73,32 +96,18 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
+}
 
+extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
-
+    
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-    }
-    
-    weak var delegate: AudiobookTableOfContentsDelegate?
-    private let networkService: AudiobookNetworkService
-    private let player: Player
-    internal init(networkService: AudiobookNetworkService, player: Player) {
-        self.networkService = networkService
-        self.player = player
-        super.init()
-        self.player.registerDelegate(self)
-        self.networkService.registerDelegate(self)
-    }
-    
-    deinit {
-        self.player.removeDelegate(self)
-        self.networkService.removeDelegate(self)
     }
 }
