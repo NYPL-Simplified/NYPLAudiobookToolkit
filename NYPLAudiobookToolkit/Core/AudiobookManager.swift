@@ -140,6 +140,8 @@ extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
         self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentageFor: spineElement)
     }
+
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {

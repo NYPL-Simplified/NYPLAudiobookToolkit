@@ -38,7 +38,27 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
     }
     
     @objc func deleteChapterRequested(_ sender: Any) {
-        self.tableOfContents.deleteAll()
+        let confirmController = UIAlertController(
+            title: "Clear Files",
+            message: "Delete files from your local device.",
+            preferredStyle: .alert
+        )
+        confirmController.addAction(
+            UIAlertAction(
+                title: "Delete",
+                style: .destructive,
+                handler: { (action) in
+                self.tableOfContents.deleteAll()
+            })
+        )
+        confirmController.addAction(
+            UIAlertAction(
+                title: "Cancel",
+                style: .cancel,
+                handler: nil
+            )
+        )
+        self.present(confirmController, animated: true, completion: nil)
     }
 
     @objc func downloadAllChaptersRequested(_ sender: Any) {

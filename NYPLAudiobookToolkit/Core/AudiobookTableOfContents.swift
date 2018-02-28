@@ -12,15 +12,23 @@ protocol AudiobookTableOfContentsDelegate: class {
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
 }
 
+/// This class may be used in conjunction with a UITableView
+/// to create a fully functioning Table of Contents UI for the
+/// current audiobook. To get a functioning ToC that works
+/// out of the box, construct a
+/// AudiobookTableOfContentsTableViewController.
 public final class AudiobookTableOfContents: NSObject {
+    
+    /// Download all available files from network  for the current audiobook.
     public func fetch() {
         self.networkService.fetch()
     }
 
+    /// Delete all available files for the current audiobook.
     public func deleteAll() {
         self.networkService.deleteAll()
     }
-    
+
     weak var delegate: AudiobookTableOfContentsDelegate?
     private let networkService: AudiobookNetworkService
     private let player: Player
@@ -83,7 +91,6 @@ extension AudiobookTableOfContents: UITableViewDataSource {
             let duration = HumanReadableTimeInterval(timeInterval: spineElement.chapter.duration).value
             return "Duration \(duration)"
         }
-        
     }
 }
 
@@ -108,6 +115,10 @@ extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+    }
+    
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
 }
