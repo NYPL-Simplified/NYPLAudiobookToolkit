@@ -32,6 +32,8 @@ import AudioEngine
     func updateAudiobook(completion: (_ audiobook: Audiobook?) -> Void)
 }
 
+/// Conform to this in order to get notifications about download
+/// updates from the manager.
 @objc public protocol AudiobookManagerDownloadDelegate {
     func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement)
     func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement)
