@@ -14,7 +14,7 @@ import AudioEngine
 final class FindawayDownloadTask: DownloadTask {
     weak var delegate: DownloadTaskDelegate?
     var downloadProgress: Float {
-        guard self.databaseHasBeenVerified else {
+        guard self.readyToDownload else {
             return 0
         }
 
@@ -33,11 +33,11 @@ final class FindawayDownloadTask: DownloadTask {
 
     private var timer: Timer?
     private var retryAfterVerification = false
-    private var databaseHasBeenVerified: Bool
+    private var readyToDownload: Bool
     private var downloadRequest: FAEDownloadRequest
     private var downloadStatus: FAEDownloadStatus {
         var status = FAEDownloadStatus.notDownloaded
-        guard self.databaseHasBeenVerified else {
+        guard self.readyToDownload else {
             return status
         }
         
@@ -53,7 +53,7 @@ final class FindawayDownloadTask: DownloadTask {
     }
     
     private var downloadEngineIsFree: Bool {
-        guard self.databaseHasBeenVerified else {
+        guard self.readyToDownload else {
             return false
         }
         
@@ -65,10 +65,10 @@ final class FindawayDownloadTask: DownloadTask {
     public init(audiobookLifeCycleManager: AudiobookLifeCycleManager, findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, downloadRequest: FAEDownloadRequest) {
         self.downloadRequest = downloadRequest
         self.notificationHandler = findawayDownloadNotificationHandler
-        self.databaseHasBeenVerified = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
+        self.readyToDownload = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
 
         self.notificationHandler.delegate = self
-        if !self.databaseHasBeenVerified {
+        if !self.readyToDownload {
             audiobookLifeCycleManager.registerDelegate(self)
         }
     }
@@ -109,7 +109,7 @@ final class FindawayDownloadTask: DownloadTask {
      events, then it will never even hit the network.
      */
     public func fetch() {
-        guard self.databaseHasBeenVerified else {
+        guard self.readyToDownload else {
             self.retryAfterVerification = true
             return
         }
@@ -127,6 +127,7 @@ final class FindawayDownloadTask: DownloadTask {
             userInfo: nil,
             repeats: true
         )
+        self.retryAfterVerification = false
     }
 
     @objc func pollForDownloadPercentage(_ timer: Timer) {
@@ -154,32 +155,46 @@ final class FindawayDownloadTask: DownloadTask {
             partNumber: self.downloadRequest.partNumber,
             chapterNumber: self.downloadRequest.chapterNumber
         )
-        self.delegate?.downloadTaskDidDeleteAsset(self)
-        self.downloadRequest = FAEDownloadRequest(
-            audiobookID: self.downloadRequest.audiobookID,
-            partNumber: self.downloadRequest.partNumber,
-            chapterNumber: self.downloadRequest.chapterNumber,
-            downloadType: self.downloadRequest.downloadType,
-            sessionKey: self.downloadRequest.sessionKey,
-            licenseID: self.downloadRequest.licenseID,
-            restrictToWiFi: self.downloadRequest.restrictToWiFi
-        )!
+        self.readyToDownload = false
     }
 }
 
 extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
+
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String) {
         if self.downloadRequest.requestIdentifier == downloadRequestID {
             self.timer?.invalidate()
             self.delegate?.downloadTask(self, didReceive: error)
         }
     }
+
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didDeleteAudiobookFor chapterDescription: FAEChapterDescription) {
+        if self.isTaskFor(chapterDescription) {
+            self.delegate?.downloadTaskDidDeleteAsset(self)
+            self.downloadRequest = FAEDownloadRequest(
+                audiobookID: self.downloadRequest.audiobookID,
+                partNumber: self.downloadRequest.partNumber,
+                chapterNumber: self.downloadRequest.chapterNumber,
+                downloadType: self.downloadRequest.downloadType,
+                sessionKey: self.downloadRequest.sessionKey,
+                licenseID: self.downloadRequest.licenseID,
+                restrictToWiFi: self.downloadRequest.restrictToWiFi
+            )!
+            self.readyToDownload = true
+        }
+    }
+    
+    func isTaskFor(_ chapter: FAEChapterDescription) -> Bool {
+        return self.downloadRequest.audiobookID == chapter.audiobookID &&
+            self.downloadRequest.chapterNumber == chapter.chapterNumber &&
+            self.downloadRequest.partNumber == chapter.partNumber
+    }
 }
 
 extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
-        self.databaseHasBeenVerified = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
-        guard self.databaseHasBeenVerified else { return }
+        self.readyToDownload = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
+        guard self.readyToDownload else { return }
         guard self.retryAfterVerification else { return }
         self.fetch()
     }

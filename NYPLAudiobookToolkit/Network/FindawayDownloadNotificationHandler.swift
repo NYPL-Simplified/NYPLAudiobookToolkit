@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import AudioEngine
 
 @objc protocol FindawayDownloadNotificationHandlerDelegate: class {
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String)
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didDeleteAudiobookFor chapterDescription: FAEChapterDescription)
 }
 
 @objc protocol FindawayDownloadNotificationHandler: class {
@@ -25,6 +27,13 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
             name: NSNotification.Name.FAEDownloadRequestFailed,
             object: nil
         )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidDeleteAudiobook(_:)),
+            name: NSNotification.Name.FAEChapterDeleteSuccess,
+            object: nil
+        )
     }
     
     deinit {
@@ -35,5 +44,10 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
         guard let downloadRequestID = notification.userInfo?["DownloadRequestID"] as? String else { return }
         guard let audiobookError = notification.userInfo?["AudioEngineError"] as? NSError else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didReceive: audiobookError, for: downloadRequestID)
+    }
+
+    @objc public func audioEngineDidDeleteAudiobook(_ notification: NSNotification) {
+        guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
+        self.delegate?.findawayDownloadNotificationHandler(self, didDeleteAudiobookFor: chapterDescription)
     }
 }
