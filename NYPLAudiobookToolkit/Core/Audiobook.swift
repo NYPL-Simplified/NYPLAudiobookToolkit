@@ -31,15 +31,16 @@ private func findawayKey(_ key: String) -> String {
 @objc public final class AudiobookFactory: NSObject {
     public static func audiobook(_ JSON: Any?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }
-        let drm = JSON["drm:type"] as? [String: Any]
-        let  possibleScheme = drm?["drm:scheme"] as? String
+        let metadata = JSON["metadata"] as? [String: Any]
+        let drm = metadata?["encrypted"] as? [String: Any]
+        let  possibleScheme = drm?["scheme"] as? String
         guard let scheme = possibleScheme else {
             return OpenAccessAudiobook(JSON: JSON)
         }
 
         var audiobook: Audiobook?
         switch scheme {
-        case "http://www.librarysimplified.org/terms/drm/scheme/FAE":
+        case "http://librarysimplified.org/terms/drm/scheme/FAE":
             audiobook = FindawayAudiobook(JSON: JSON)
         default:
             audiobook = OpenAccessAudiobook(JSON: JSON)
@@ -54,10 +55,11 @@ private final class FindawayAudiobook: Audiobook {
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
+        guard let encrypted = metadata["encrypted"] as? [String: Any] else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
-        guard let sessionKey = metadata[findawayKey("sessionKey")] as? String else { return nil }
-        guard let audiobookID = metadata[findawayKey("fulfillmentId")] as? String else { return nil }
-        guard let licenseID = metadata[findawayKey("licenseId")] as? String else { return nil }
+        guard let sessionKey = encrypted[findawayKey("sessionKey")] as? String else { return nil }
+        guard let audiobookID = encrypted[findawayKey("fulfillmentId")] as? String else { return nil }
+        guard let licenseID = encrypted[findawayKey("licenseId")] as? String else { return nil }
         self.spine = spine.flatMap { (possibleLink) -> SpineElement? in
             FindawaySpineElement(
                 JSON: possibleLink,
