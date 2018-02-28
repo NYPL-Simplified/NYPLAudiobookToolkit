@@ -18,11 +18,15 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
     public init(tableOfContents: AudiobookTableOfContents) {
         self.tableOfContents = tableOfContents
         super.init(nibName: nil, bundle: nil)
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+        let deleteItem = UIBarButtonItem(
             barButtonSystemItem: .trash,
             target: self,
             action: #selector(AudiobookTableOfContentsTableViewController.deleteChapterRequested(_:))
         )
+        let downloadAllItem = UIBarButtonItem(
+            barButtonSystemItem: .save,
+            target: self, action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
+        self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem ]
         self.title = "Table Of Contents"
         self.tableOfContents.delegate = self
         self.tableView.dataSource = self.tableOfContents
@@ -35,5 +39,9 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
     
     @objc func deleteChapterRequested(_ sender: Any) {
         self.tableOfContents.deleteAll()
+    }
+
+    @objc func downloadAllChaptersRequested(_ sender: Any) {
+        self.tableOfContents.fetch()
     }
 }

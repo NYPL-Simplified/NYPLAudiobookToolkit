@@ -51,6 +51,7 @@
 		7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C92017CEA3004CE65F /* DownloadTask.swift */; };
 		7BDD33AF204461A000CC8807 /* HumanReadableTimeInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */; };
 		7BDD33B12044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B02044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift */; };
+		7BDD33B320470A7100CC8807 /* HumanReadablePercentage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -159,6 +160,7 @@
 		7BD759CB20191980004CE65F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeInterval.swift; sourceTree = "<group>"; };
 		7BDD33B02044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadNotificationHandler.swift; sourceTree = "<group>"; };
+		7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePercentage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -331,6 +333,7 @@
 				7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */,
 				7B4F1B1F20361546003F047B /* Cursor.swift */,
 				7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */,
+				7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -573,6 +576,7 @@
 				7BDD33B12044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift in Sources */,
 				7B5441E6200EA82C0047B6C6 /* AudiobookLifecycleManager.swift in Sources */,
 				7B5441E7200EA82C0047B6C6 /* AudiobookManager.swift in Sources */,
+				7BDD33B320470A7100CC8807 /* HumanReadablePercentage.swift in Sources */,
 				7B5441E1200EA82C0047B6C6 /* AudiobookMetadata.swift in Sources */,
 				7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */,
 				7B7B370B202274DA00030A1E /* Player.swift in Sources */,

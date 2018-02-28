@@ -13,10 +13,10 @@ protocol AudiobookTableOfContentsDelegate: class {
 }
 
 public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDelegate, PlayerDelegate, UITableViewDataSource, UITableViewDelegate {
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+
+    public func fetch() {
+        self.networkService.fetch()
     }
-    
 
     public func deleteAll() {
         self.networkService.deleteAll()
@@ -25,9 +25,13 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.networkService.fetchSpineAt(index: indexPath.row)
         let spineElement = self.networkService.spine[indexPath.row]
+        
+        // This assumes the player can handle this command before a
+        // chapter has been downloaded. AudioEngine can handle this
+        // use case, and AVPlayer should as well. However it is an
+        // implied requirement of the player that has not been
+        // explicitly stated elsewhere.
         self.player.jumpToLocation(spineElement.chapter)
-        let cell = tableView.cellForRow(at: indexPath)
-        cell?.isSelected = true
     }
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -39,19 +43,27 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
         let spineElement = self.networkService.spine[indexPath.row]
         cell.textLabel?.text = spineElement.chapter.title
         cell.detailTextLabel?.text = self.subtitleFor(spineElement)
+        cell.selectionStyle = .none
+
         if self.player.chapterIsPlaying(spineElement.chapter) {
-            cell.isSelected = true
+            cell.contentView.layer.borderColor = UIColor.red.cgColor
+            cell.contentView.layer.borderWidth = 1
         }
         return cell
     }
     
     func subtitleFor(_ spineElement: SpineElement) -> String {
-        if spineElement.downloadTask.downloadProgress < 1 {
-            return "Download %\(spineElement.downloadTask.downloadProgress)"
+        let progress = spineElement.downloadTask.downloadProgress
+        if progress == 0 {
+            return "Not Downloaded"
+        } else if progress > 0 && progress < 1  {
+            let label = HumanReadablePercentage(percentage: progress).value
+            return "Downloading \(label)%"
         } else {
             let duration = HumanReadableTimeInterval(timeInterval: spineElement.chapter.duration).value
             return "Duration \(duration)"
         }
+        
     }
 
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
@@ -61,7 +73,11 @@ public final class AudiobookTableOfContents: NSObject, AudiobookNetworkServiceDe
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
-    
+
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+    }
+
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }

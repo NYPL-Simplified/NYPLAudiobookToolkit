@@ -90,9 +90,6 @@ final class FindawayDownloadTask: DownloadTask {
                 licenseID: spineElement.licenseID,
                 restrictToWiFi: false
             )
-            print("DEANDEBUG new request \(request!)")
-        } else {
-            print("DEANDEBUG spine is already downloading")
         }
         self.init(
             audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared,
@@ -130,9 +127,6 @@ final class FindawayDownloadTask: DownloadTask {
             userInfo: nil,
             repeats: true
         )
-        print("DEANDEBUG download started for \(self.downloadRequest)")
-        print("DEANDEBUG current download queue: \(FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests())")
-
     }
 
     @objc func pollForDownloadPercentage(_ timer: Timer) {
@@ -148,9 +142,12 @@ final class FindawayDownloadTask: DownloadTask {
             self.timer?.invalidate()
             self.delegate?.downloadTaskReadyForPlayback(self)
         }
-        print("DEANDEBUG current download queue: \(FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests())")
     }
 
+    /// This implementation of delete must be sure to set a new download request
+    /// once the chapter has deleted. If a user attempts to download a book with a
+    /// request thats already been deleted from the filesystem, then the engine will
+    /// throw an error.
     public func delete() {
         FAEAudioEngine.shared()?.downloadEngine?.delete(
             forAudiobookID: self.downloadRequest.audiobookID,
@@ -158,6 +155,15 @@ final class FindawayDownloadTask: DownloadTask {
             chapterNumber: self.downloadRequest.chapterNumber
         )
         self.delegate?.downloadTaskDidDeleteAsset(self)
+        self.downloadRequest = FAEDownloadRequest(
+            audiobookID: self.downloadRequest.audiobookID,
+            partNumber: self.downloadRequest.partNumber,
+            chapterNumber: self.downloadRequest.chapterNumber,
+            downloadType: self.downloadRequest.downloadType,
+            sessionKey: self.downloadRequest.sessionKey,
+            licenseID: self.downloadRequest.licenseID,
+            restrictToWiFi: self.downloadRequest.restrictToWiFi
+        )!
     }
 }
 

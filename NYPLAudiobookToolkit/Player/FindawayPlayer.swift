@@ -38,15 +38,7 @@ final class FindawayPlayer: NSObject, Player {
     private var resumePlaybackLocation: ChapterLocation?
     // Only queue the last issued command if they are issued before Findaway has been verified
     private var queuedLocation: ChapterLocation?
-    private var readyForPlayback = false {
-        didSet {
-            if let location = self.queuedLocation {
-                self.jumpToLocation(location)
-                self.queuedLocation = nil
-            }
-        }
-    }
-
+    private var readyForPlayback = false
     private var sessionKey: String {
         return self.spineElement.sessionKey
     }
@@ -208,11 +200,17 @@ final class FindawayPlayer: NSObject, Player {
 
 extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
-        self.readyForPlayback = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
+        DispatchQueue.main.async { [weak self] () -> Void in
+            self?.handleLifecycleManagerUpdate(readyForPlayback: audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified)
+        }
     }
     
-    // TODO: Update this to pass the chapter that the error happened to instead of audiobook id
-    func audiobookLifecycleManager(_ audiobookLifecycleManager: AudiobookLifeCycleManager, didReceive error: Error) {
+    func handleLifecycleManagerUpdate(readyForPlayback: Bool) {
+        self.readyForPlayback = readyForPlayback
+        if let location = self.queuedLocation {
+            self.jumpToLocation(location)
+            self.queuedLocation = nil
+        }
     }
 }
 
@@ -228,19 +226,32 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
         }
     
         if let chapter = self.currentChapterLocation {
-            self.delegates.allObjects.forEach({ (delegate) in
-                delegate.player(self, didBeginPlaybackOf: chapter)
-            })
+            DispatchQueue.main.async { [weak self] () -> Void in 
+                self?.notifyDelegatesOfPlaybackFor(chapter: chapter)
+            }
         }
+    }
+    
+    func notifyDelegatesOfPlaybackFor(chapter: ChapterLocation) {
+        self.delegates.allObjects.forEach({ (delegate) in
+            delegate.player(self, didBeginPlaybackOf: chapter)
+        })
     }
     
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
             if let currentChapter = self.currentChapterLocation {
-                self.delegates.allObjects.forEach({ (delegate) in
-                    delegate.player(self, didStopPlaybackOf: currentChapter)
-                })
+                DispatchQueue.main.async { [weak self] () -> Void in
+                    self?.notifyDelegatesOfPauseFor(chapter: currentChapter)
+                }
             }
         }
+    }
+
+    
+    func notifyDelegatesOfPauseFor(chapter: ChapterLocation) {
+        self.delegates.allObjects.forEach({ (delegate) in
+            delegate.player(self, didStopPlaybackOf: chapter)
+        })
     }
 }
