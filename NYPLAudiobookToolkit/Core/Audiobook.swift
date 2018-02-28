@@ -33,7 +33,7 @@ private func findawayKey(_ key: String) -> String {
         guard let JSON = JSON as? [String: Any] else { return nil }
         let metadata = JSON["metadata"] as? [String: Any]
         let drm = metadata?["encrypted"] as? [String: Any]
-        let  possibleScheme = drm?["scheme"] as? String
+        let possibleScheme = drm?["scheme"] as? String
         guard let scheme = possibleScheme else {
             return OpenAccessAudiobook(JSON: JSON)
         }
