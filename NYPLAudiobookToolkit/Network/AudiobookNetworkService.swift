@@ -71,7 +71,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public let spine: [SpineElement]
-    lazy var spineElementByKey: [String: SpineElement] = {
+    private lazy var spineElementByKey: [String: SpineElement] = {
         var dict = [String: SpineElement]()
         self.spine.forEach { (element) in
             dict[element.downloadTask.key] = element
@@ -107,9 +107,9 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
 
     func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError) {
-        self.delegates.allObjects.forEach({ (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
-        })
+        }
     }
     
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
@@ -121,9 +121,9 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
     
     func notifyDelegatesThatPlaybackIsReadyFor(_ spineElement: SpineElement) {
-        self.delegates.allObjects.forEach({ (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
-        })
+        }
     }
 
     public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
@@ -135,9 +135,9 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
     
     func notifyDelegatesOfDownloadPercentFor(_ spineElement: SpineElement) {
-        self.delegates.allObjects.forEach({ (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
-        })
+        }
     }
 
     public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
@@ -149,8 +149,8 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
     
     func notifyDelegatesOfDeleteFor(_ spineElement: SpineElement) {
-        self.delegates.allObjects.forEach({ (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didDeleteFileFor: spineElement)
-        })
+        }
     }
 }

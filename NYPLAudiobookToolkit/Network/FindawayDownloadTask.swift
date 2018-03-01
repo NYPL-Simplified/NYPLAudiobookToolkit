@@ -33,7 +33,13 @@ final class FindawayDownloadTask: DownloadTask {
 
     private var timer: Timer?
     private var retryAfterVerification = false
-    private var readyToDownload: Bool
+    private var readyToDownload: Bool {
+        didSet {
+            guard self.readyToDownload else { return }
+            guard self.retryAfterVerification else { return }
+            self.fetch()
+        }
+    }
     private var downloadRequest: FAEDownloadRequest
     private var downloadStatus: FAEDownloadStatus {
         var status = FAEDownloadStatus.notDownloaded
@@ -145,10 +151,15 @@ final class FindawayDownloadTask: DownloadTask {
         }
     }
 
-    /// This implementation of delete must be sure to set a new download request
-    /// once the chapter has deleted. If a user attempts to download a book with a
-    /// request thats already been deleted from the filesystem, then the engine will
-    /// throw an error.
+    /// If we try to download the book again before the deletion has
+    /// finished, AudioEngine will throw an error and fail the download.
+    ///
+    /// After the deletion has finished, we must aquire a new DownloadRequest
+    /// in order to perform another download.
+    ///
+    /// To compensate for this, if `fetch` is called directly after `delete`,
+    /// this object ought to wait until the new DownloadRequest is created
+    /// and then attempt the `fetch` again.
     public func delete() {
         FAEAudioEngine.shared()?.downloadEngine?.delete(
             forAudiobookID: self.downloadRequest.audiobookID,
@@ -168,6 +179,11 @@ extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
         }
     }
 
+    /// If a user attempts to download a book with a request thats already
+    /// been deleted from the filesystem, then AudioEngine will throw an error.
+    ///
+    /// As a result of this, once we have confirmed that a chapter has been removed,
+    /// we instantiate a new FAEDownloadRequest for our asset.
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didDeleteAudiobookFor chapterDescription: FAEChapterDescription) {
         if self.isTaskFor(chapterDescription) {
             self.delegate?.downloadTaskDidDeleteAsset(self)
@@ -194,9 +210,6 @@ extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
 extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
         self.readyToDownload = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
-        guard self.readyToDownload else { return }
-        guard self.retryAfterVerification else { return }
-        self.fetch()
     }
 }
 

@@ -233,9 +233,9 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     }
     
     func notifyDelegatesOfPlaybackFor(chapter: ChapterLocation) {
-        self.delegates.allObjects.forEach({ (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.player(self, didBeginPlaybackOf: chapter)
-        })
+        }
     }
     
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
@@ -250,8 +250,8 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
 
     
     func notifyDelegatesOfPauseFor(chapter: ChapterLocation) {
-        self.delegates.allObjects.forEach({ (delegate) in
+        self.delegates.allObjects.forEach { (delegate) in
             delegate.player(self, didStopPlaybackOf: chapter)
-        })
+        }
     }
 }

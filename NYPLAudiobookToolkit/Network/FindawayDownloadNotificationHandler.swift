@@ -30,7 +30,7 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
         
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidDeleteAudiobook(_:)),
+            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidDeleteChapter(_:)),
             name: NSNotification.Name.FAEChapterDeleteSuccess,
             object: nil
         )
@@ -46,7 +46,7 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
         self.delegate?.findawayDownloadNotificationHandler(self, didReceive: audiobookError, for: downloadRequestID)
     }
 
-    @objc public func audioEngineDidDeleteAudiobook(_ notification: NSNotification) {
+    @objc public func audioEngineDidDeleteChapter(_ notification: NSNotification) {
         guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didDeleteAudiobookFor: chapterDescription)
     }
