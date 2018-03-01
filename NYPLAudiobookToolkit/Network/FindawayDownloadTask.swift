@@ -119,20 +119,16 @@ final class FindawayDownloadTask: DownloadTask {
             self.retryAfterVerification = true
             return
         }
-
-        guard self.downloadStatus != .downloaded else {
+        let status = self.downloadStatus
+        if status == .notDownloaded {
+            self.requestDownload()
+        } else if status == .downloaded {
             self.delegate?.downloadTaskReadyForPlayback(self)
-            return
         }
-    
+    }
+
+    private func requestDownload() {
         FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: self.downloadRequest)
-        self.timer = Timer.scheduledTimer(
-            timeInterval: 0.5,
-            target: self,
-            selector: #selector(FindawayDownloadTask.pollForDownloadPercentage(_:)),
-            userInfo: nil,
-            repeats: true
-        )
         self.retryAfterVerification = false
     }
 
@@ -144,10 +140,6 @@ final class FindawayDownloadTask: DownloadTask {
         if self.notifiedDownloadProgress != self.downloadProgress {
             self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
             self.notifiedDownloadProgress = self.downloadProgress
-        }
-        if self.downloadStatus == .downloaded {
-            self.timer?.invalidate()
-            self.delegate?.downloadTaskReadyForPlayback(self)
         }
     }
 
@@ -171,6 +163,28 @@ final class FindawayDownloadTask: DownloadTask {
 }
 
 extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didPauseDownloadFor chapterDescription: FAEChapterDescription) {
+        guard self.isTaskFor(chapterDescription) else { return }
+        self.timer?.invalidate()
+    }
+
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didSucceedDownloadFor chapterDescription: FAEChapterDescription) {
+        guard self.isTaskFor(chapterDescription) else { return }
+        self.timer?.invalidate()
+        self.delegate?.downloadTaskReadyForPlayback(self)
+    }
+    
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didStartDownloadFor chapterDescription: FAEChapterDescription) {
+        guard self.isTaskFor(chapterDescription) else { return }
+        guard self.timer != nil else { return }
+        self.timer = Timer.scheduledTimer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(FindawayDownloadTask.pollForDownloadPercentage(_:)),
+            userInfo: nil,
+            repeats: true
+        )
+    }
 
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String) {
         if self.downloadRequest.requestIdentifier == downloadRequestID {
