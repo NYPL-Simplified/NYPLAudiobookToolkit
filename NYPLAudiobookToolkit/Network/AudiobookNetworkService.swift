@@ -71,28 +71,25 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public let spine: [SpineElement]
-    private lazy var spineElementByKey: [String: SpineElement] = {
-        var dict = [String: SpineElement]()
-        self.spine.forEach { (element) in
-            dict[element.downloadTask.key] = element
-        }
-        return dict
-    }()
+    private var spineElementByKey: [String: SpineElement]
     
     public init(spine: [SpineElement]) {
         self.spine = spine
+        self.spineElementByKey = [String: SpineElement]()
+        self.spine.forEach { (element) in
+            element.downloadTask.delegate = self
+            self.spineElementByKey[element.downloadTask.key] = element
+        }
     }
     
     public func fetch() {
         self.spine.forEach { (element) in
-            element.downloadTask.delegate = self
             element.downloadTask.fetch()
         }
     }
     
     public func fetchSpineAt(index: Int) {
         let downloadTask = self.spine[index].downloadTask
-        downloadTask.delegate = self
         downloadTask.fetch()
     }
 }

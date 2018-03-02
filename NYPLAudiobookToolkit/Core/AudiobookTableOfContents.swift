@@ -98,12 +98,10 @@ extension AudiobookTableOfContents: UITableViewDataSource {
 extension AudiobookTableOfContents: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-        print("DEANDEBUG")
     }
     
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-        print("DEANDEBUG")
     }
 }
 
