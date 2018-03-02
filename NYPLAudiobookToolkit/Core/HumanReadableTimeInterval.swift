@@ -8,6 +8,10 @@
 
 import UIKit
 
+/// Utility class to turn a time interval
+/// into a human readable string. The format will be
+/// HH:MM:SS if the TimeInterval is longer than 1 hour,
+/// otherwise it will be MM:SS.
 class HumanReadableTimeInterval {
     lazy var value: String = {
         let interval = Int(self.timeInterval)
