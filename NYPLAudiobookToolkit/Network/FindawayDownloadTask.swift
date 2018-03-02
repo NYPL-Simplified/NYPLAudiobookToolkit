@@ -28,7 +28,7 @@ final class FindawayDownloadTask: DownloadTask {
     }
 
     var key: String {
-        return self.downloadRequest.requestIdentifier
+        return "FAE.audioEngine/\(self.downloadRequest.audiobookID)/\(self.downloadRequest.partNumber)/\(self.downloadRequest.chapterNumber)"
     }
 
     private var timer: Timer?
