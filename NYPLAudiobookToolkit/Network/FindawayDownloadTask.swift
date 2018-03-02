@@ -119,6 +119,7 @@ final class FindawayDownloadTask: DownloadTask {
             self.retryAfterVerification = true
             return
         }
+        
         let status = self.downloadStatus
         if status == .notDownloaded {
             self.requestDownload()

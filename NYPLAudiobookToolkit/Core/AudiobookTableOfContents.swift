@@ -108,21 +108,19 @@ extension AudiobookTableOfContents: PlayerDelegate {
 extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-        print("DEANDEBUG request reload for error")
+
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-        print("DEANDEBUG request reload for download")
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-        print("DEANDEBUG request reload for download percentage update")
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-        print("DEANDEBUG request reload for deletion")
+
     }
 }

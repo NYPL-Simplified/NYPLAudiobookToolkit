@@ -79,7 +79,6 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
     }
 
     @objc public func audioEngineDidDeleteChapter(_ notification: NSNotification) {
-        print("DEANDEBUG userInfo for delete \(notification.userInfo)")
         guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didDeleteAudiobookFor: chapterDescription)
     }
@@ -95,7 +94,6 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
     }
 
     @objc public func audioEngineDidSucceed(_ notification: NSNotification) {
-        print("DEANDEBUG userInfo for download \(notification.userInfo)")
         guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didSucceedDownloadFor: chapterDescription)
     }
