@@ -108,7 +108,6 @@ extension AudiobookTableOfContents: PlayerDelegate {
 extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
@@ -121,6 +120,5 @@ extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
-
     }
 }
