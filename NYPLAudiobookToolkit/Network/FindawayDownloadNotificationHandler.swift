@@ -73,28 +73,28 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
     }
     
     @objc public func audioEngineDidReceiveError(_ notification: NSNotification) {
-        guard let downloadRequestID = notification.userInfo?["DownloadRequestID"] as? String else { return }
-        guard let audiobookError = notification.userInfo?["AudioEngineError"] as? NSError else { return }
+        guard let downloadRequestID = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? String else { return }
+        guard let audiobookError = notification.userInfo?[FAEAudioEngineErrorUserInfoKey] as? NSError else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didReceive: audiobookError, for: downloadRequestID)
     }
 
     @objc public func audioEngineDidDeleteChapter(_ notification: NSNotification) {
-        guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didDeleteAudiobookFor: chapterDescription)
     }
 
     @objc public func audioEngineDidStartDownload(_ notification: NSNotification) {
-        guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didStartDownloadFor: chapterDescription)
     }
 
     @objc public func audioEngineDidPauseDownload(_ notification: NSNotification) {
-        guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didStartDownloadFor: chapterDescription)
     }
 
     @objc public func audioEngineDidSucceed(_ notification: NSNotification) {
-        guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didSucceedDownloadFor: chapterDescription)
     }
 }
