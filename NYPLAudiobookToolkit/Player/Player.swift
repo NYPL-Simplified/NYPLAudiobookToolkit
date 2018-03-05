@@ -70,7 +70,7 @@ import Foundation
         return timeInterval
     }
 
-    init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval, title: String?) {
+    public init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval, title: String?) {
         guard startOffset <= duration else {
             return nil
         }
