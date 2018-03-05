@@ -73,7 +73,7 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
     }
     
     @objc public func audioEngineDidReceiveError(_ notification: NSNotification) {
-        guard let downloadRequestID = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? String else { return }
+        guard let downloadRequestID = notification.userInfo?[FAEDownloadRequestIDUserInfoKey] as? String else { return }
         guard let audiobookError = notification.userInfo?[FAEAudioEngineErrorUserInfoKey] as? NSError else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didReceive: audiobookError, for: downloadRequestID)
     }
