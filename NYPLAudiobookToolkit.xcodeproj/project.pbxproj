@@ -34,7 +34,7 @@
 		7B6C1BD0203F1CDA00EB791E /* AudiobookNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C1BCF203F1CDA00EB791E /* AudiobookNetworkService.swift */; };
 		7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C1BD1203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift */; };
 		7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C1BD320405C4D00EB791E /* CursorTests.swift */; };
-		7B78545B204DEE8500F6589B /* AudiobookNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78545A204DEE8500F6589B /* AudiobookNetworkService.swift */; };
+		7B78545B204DEE8500F6589B /* AudiobookNetworkServiceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78545A204DEE8500F6589B /* AudiobookNetworkServiceTest.swift */; };
 		7B78545D204DEE9900F6589B /* DownloadTaskMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78545C204DEE9900F6589B /* DownloadTaskMock.swift */; };
 		7B78545F204DF12600F6589B /* SpineElementMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B78545E204DF12600F6589B /* SpineElementMock.swift */; };
 		7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B370720211CE100030A1E /* OpenAccessDownloadTask.swift */; };
@@ -149,7 +149,7 @@
 		7B6C1BCF203F1CDA00EB791E /* AudiobookNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookNetworkService.swift; sourceTree = "<group>"; };
 		7B6C1BD1203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTableOfContentsTableViewController.swift; sourceTree = "<group>"; };
 		7B6C1BD320405C4D00EB791E /* CursorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorTests.swift; sourceTree = "<group>"; };
-		7B78545A204DEE8500F6589B /* AudiobookNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookNetworkService.swift; sourceTree = "<group>"; };
+		7B78545A204DEE8500F6589B /* AudiobookNetworkServiceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookNetworkServiceTest.swift; sourceTree = "<group>"; };
 		7B78545C204DEE9900F6589B /* DownloadTaskMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTaskMock.swift; sourceTree = "<group>"; };
 		7B78545E204DF12600F6589B /* SpineElementMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpineElementMock.swift; sourceTree = "<group>"; };
 		7B7B370720211CE100030A1E /* OpenAccessDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAccessDownloadTask.swift; sourceTree = "<group>"; };
@@ -272,7 +272,7 @@
 				7B54419A200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift */,
 				7B54419C200EA7C20047B6C6 /* Info.plist */,
 				7B6C1BD320405C4D00EB791E /* CursorTests.swift */,
-				7B78545A204DEE8500F6589B /* AudiobookNetworkService.swift */,
+				7B78545A204DEE8500F6589B /* AudiobookNetworkServiceTest.swift */,
 				7B78545C204DEE9900F6589B /* DownloadTaskMock.swift */,
 				7B78545E204DF12600F6589B /* SpineElementMock.swift */,
 			);
@@ -604,7 +604,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B54419B200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift in Sources */,
-				7B78545B204DEE8500F6589B /* AudiobookNetworkService.swift in Sources */,
+				7B78545B204DEE8500F6589B /* AudiobookNetworkServiceTest.swift in Sources */,
 				7B78545D204DEE9900F6589B /* DownloadTaskMock.swift in Sources */,
 				7B78545F204DF12600F6589B /* SpineElementMock.swift in Sources */,
 				7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */,

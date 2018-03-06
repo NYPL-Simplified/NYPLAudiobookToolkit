@@ -9,7 +9,7 @@
 import XCTest
 import NYPLAudiobookToolkit
 
-class AudiobookNetworkService: XCTestCase {
+class AudiobookNetworkServiceTest: XCTestCase {
     
     func testDownloadProgressWithEmptySpine() {
         let service = DefaultAudiobookNetworkService(spine: [])
@@ -21,8 +21,8 @@ class AudiobookNetworkService: XCTestCase {
         let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start")!
         let spine1 = SpineElementMock(key: task1.key, downloadTask: task1, chapter: chapter1)
 
-        let task2 = DownloadTaskMock(progress: 0.25, key: "http://chap1")
-        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start")!
+        let task2 = DownloadTaskMock(progress: 0.25, key: "http://chap2")
+        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End")!
         let spine2 = SpineElementMock(key: task2.key, downloadTask: task2, chapter: chapter2)
 
         let service = DefaultAudiobookNetworkService(spine: [spine1, spine2])
