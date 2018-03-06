@@ -9,8 +9,12 @@
 import UIKit
 import NYPLAudiobookToolkit
 
+typealias TaskCallback = (_ task: DownloadTask) -> Void
+
 class DownloadTaskMock: DownloadTask {
-    func fetch() { }
+    func fetch() {
+        self.fetchClosure?(self)
+    }
     
     func delete() { }
     
@@ -19,9 +23,10 @@ class DownloadTaskMock: DownloadTask {
     let key: String
     
     weak var delegate: DownloadTaskDelegate?
-    
-    public init(progress: Float, key: String) {
+    var fetchClosure: TaskCallback?
+    public init(progress: Float, key: String, fetchClosure: TaskCallback?) {
         self.downloadProgress = progress
+        self.fetchClosure = fetchClosure
         self.key = key
     }
 }
