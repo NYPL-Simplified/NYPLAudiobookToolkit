@@ -19,6 +19,10 @@ protocol AudiobookTableOfContentsDelegate: class {
 /// AudiobookTableOfContentsTableViewController.
 public final class AudiobookTableOfContents: NSObject {
     
+    public var downloadProgress: Float {
+        return self.networkService.downloadProgress
+    }
+
     /// Download all available files from network  for the current audiobook.
     public func fetch() {
         self.networkService.fetch()

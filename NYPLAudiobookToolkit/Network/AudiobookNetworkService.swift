@@ -25,6 +25,7 @@ import UIKit
 /// for delegates to consume.
 @objc public protocol AudiobookNetworkService: class {
     var spine: [SpineElement] { get }
+    var downloadProgress: Float { get }
     
     /// Implmenters of this should attempt to download all
     /// spine elements.
@@ -53,6 +54,13 @@ import UIKit
 }
 
 public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
+    public var downloadProgress: Float {
+        guard !self.spine.isEmpty else { return 0 }
+        let taskCompletedPercentage = self.spine.reduce(0) { (memo: Float, element: SpineElement) -> Float in
+            return memo + element.downloadTask.downloadProgress
+        }
+        return taskCompletedPercentage / Float(self.spine.count)
+    }
 
     private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     
