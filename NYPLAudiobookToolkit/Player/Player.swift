@@ -19,13 +19,16 @@ import Foundation
 /// This does not specifically refer to AVPlayer, but could also be
 /// FAEPlaybackEngine, or another engine that handles DRM content.
 @objc public protocol Player {
-    weak var delegate: PlayerDelegate? { get set }
     func play()
     func pause()
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
+    func chapterIsPlaying(_ location: ChapterLocation) -> Bool
     func jumpToLocation(_ location: ChapterLocation)
+    
+    func registerDelegate(_ delegate: PlayerDelegate)
+    func removeDelegate(_ delegate: PlayerDelegate)
 }
 
 /// *EXPERIMENTAL AND LIKELY TO CHANGE*
@@ -44,6 +47,7 @@ import Foundation
 /// This is also likely to change as the interface for doing this with
 /// AVPlayer & FAEPlaybackEngine are quite different.
 @objc public final class ChapterLocation: NSObject {
+    let title: String?
     let number: UInt
     let part: UInt
     let duration: TimeInterval
@@ -66,7 +70,7 @@ import Foundation
         return timeInterval
     }
 
-    init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval) {
+    init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval, title: String?) {
         guard startOffset <= duration else {
             return nil
         }
@@ -76,6 +80,8 @@ import Foundation
         self.duration = duration
         self.startOffset = startOffset
         self.playheadOffset = playheadOffset
+        self.title = title
+        
     }
 
     func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
@@ -84,7 +90,8 @@ import Foundation
             part: self.part,
             duration: self.duration,
             startOffset: self.startOffset,
-            playheadOffset: offset
+            playheadOffset: offset,
+            title: self.title
         )
     }
     public override var description: String {

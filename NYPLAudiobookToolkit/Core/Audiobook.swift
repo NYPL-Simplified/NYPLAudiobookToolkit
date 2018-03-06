@@ -28,19 +28,19 @@ private func findawayKey(_ key: String) -> String {
 /// Host app should instantiate a audiobook object with JSON.
 /// This audiobook should then be able to construct utility classes
 /// using data in the spine of that JSON.
-
 @objc public final class AudiobookFactory: NSObject {
     public static func audiobook(_ JSON: Any?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }
-        let drm = JSON["drm:type"] as? [String: Any]
-        let  possibleScheme = drm?["drm:scheme"] as? String
+        let metadata = JSON["metadata"] as? [String: Any]
+        let drm = metadata?["encrypted"] as? [String: Any]
+        let possibleScheme = drm?["scheme"] as? String
         guard let scheme = possibleScheme else {
             return OpenAccessAudiobook(JSON: JSON)
         }
 
         var audiobook: Audiobook?
         switch scheme {
-        case "http://www.librarysimplified.org/terms/drm/scheme/FAE":
+        case "http://librarysimplified.org/terms/drm/scheme/FAE":
             audiobook = FindawayAudiobook(JSON: JSON)
         default:
             audiobook = OpenAccessAudiobook(JSON: JSON)
@@ -55,10 +55,11 @@ private final class FindawayAudiobook: Audiobook {
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
+        guard let encrypted = metadata["encrypted"] as? [String: Any] else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
-        guard let sessionKey = metadata[findawayKey("sessionKey")] as? String else { return nil }
-        guard let audiobookID = metadata[findawayKey("fulfillmentId")] as? String else { return nil }
-        guard let licenseID = metadata[findawayKey("licenseId")] as? String else { return nil }
+        guard let sessionKey = encrypted[findawayKey("sessionKey")] as? String else { return nil }
+        guard let audiobookID = encrypted[findawayKey("fulfillmentId")] as? String else { return nil }
+        guard let licenseID = encrypted[findawayKey("licenseId")] as? String else { return nil }
         self.spine = spine.flatMap { (possibleLink) -> SpineElement? in
             FindawaySpineElement(
                 JSON: possibleLink,
@@ -69,7 +70,7 @@ private final class FindawayAudiobook: Audiobook {
         }
         guard let firstSpineElement = self.spine.first as? FindawaySpineElement else { return nil }
         guard let cursor = Cursor(data: self.spine) else { return nil }
-        self.player = FindawayPlayer(spineElement: firstSpineElement , cursor: cursor)
+        self.player = FindawayPlayer(spineElement: firstSpineElement, cursor: cursor)
     }
 }
 
@@ -88,7 +89,8 @@ final class FindawaySpineElement: SpineElement {
             part: self.partNumber,
             duration: self.duration,
             startOffset: 0,
-            playheadOffset: 0
+            playheadOffset: 0,
+            title: self.title
         )!
     }()
     
@@ -98,12 +100,14 @@ final class FindawaySpineElement: SpineElement {
     let audiobookID: String
     let licenseID: String
     let duration: TimeInterval
+    let title: String?
     
     public init?(JSON: Any?, sessionKey: String, audiobookID: String, licenseID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let sequence = payload[findawayKey("sequence")] as? UInt else { return nil }
         guard let partNumber = payload[findawayKey("part")] as? UInt else { return nil }
         guard let duration = payload["duration"] as? TimeInterval else { return nil }
+        self.title = payload["title"] as? String
         self.licenseID = licenseID
         self.chapterNumber = sequence
         self.partNumber = partNumber
@@ -143,7 +147,7 @@ final class OpenAccessSpineElement: SpineElement {
     }
     
     lazy var downloadTask: DownloadTask = {
-        return OpenAccessDownloadTask()
+        return OpenAccessDownloadTask(spineElement: self)
     }()
     
     lazy var chapter: ChapterLocation = {
@@ -152,7 +156,8 @@ final class OpenAccessSpineElement: SpineElement {
             part: 0,
             duration: self.duration,
             startOffset: 0,
-            playheadOffset: 0
+            playheadOffset: 0,
+            title: nil
         )!
     }()
 

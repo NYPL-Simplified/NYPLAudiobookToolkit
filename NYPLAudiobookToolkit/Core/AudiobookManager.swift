@@ -32,10 +32,12 @@ import AudioEngine
     func updateAudiobook(completion: (_ audiobook: Audiobook?) -> Void)
 }
 
+/// Conform to this in order to get notifications about download
+/// updates from the manager.
 @objc public protocol AudiobookManagerDownloadDelegate {
-    func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float)
-    func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement)
+    func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement)
 }
 
 @objc public protocol AudiobookManagerPlaybackDelegate {
@@ -52,6 +54,7 @@ import AudioEngine
     weak var playbackDelegate: AudiobookManagerPlaybackDelegate? { get set }
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
+    var tableOfContents: AudiobookTableOfContents { get }
     var isPlaying: Bool { get }
     func fetch()
     func skipForward()
@@ -71,28 +74,39 @@ public final class DefaultAudiobookManager: AudiobookManager {
     public var isPlaying: Bool {
         return self.player.isPlaying
     }
+    
+    public var tableOfContents: AudiobookTableOfContents {
+        return AudiobookTableOfContents(
+            networkService: self.networkService,
+            player: self.player
+        )
+    }
 
-    let player: Player
-    public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player) {
+    private let player: Player
+    private let networkService: AudiobookNetworkService
+    public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player, networkService: AudiobookNetworkService) {
         self.metadata = metadata
         self.audiobook = audiobook
         self.player = player
-
-
-        self.player.delegate = self
+        self.networkService = networkService
+        
+        self.player.registerDelegate(self)
+        self.networkService.registerDelegate(self)
     }
 
     public convenience init (metadata: AudiobookMetadata, audiobook: Audiobook) {
         self.init(
             metadata: metadata,
             audiobook: audiobook,
-            player: audiobook.player
+            player: audiobook.player,
+            networkService: DefaultAudiobookNetworkService(spine: audiobook.spine)
         )
     }
     
     weak public var refreshDelegate: RefreshDelegate?
     
     public func fetch() {
+        self.networkService.fetch()
     }
 
     public func play() {
@@ -114,6 +128,22 @@ public final class DefaultAudiobookManager: AudiobookManager {
     public func updatePlaybackWith(_ chapter: ChapterLocation) {
         self.player.jumpToLocation(chapter)
     }
+}
+
+extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didReceive: error, for: spineElement)
+    }
+    
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didBecomeReadyForPlayback: spineElement)
+    }
+    
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+        self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentageFor: spineElement)
+    }
+
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {

@@ -9,11 +9,18 @@
 import UIKit
 
 final class OpenAccessDownloadTask: DownloadTask {
+    func delete() {
+    
+    }
+    
     var downloadProgress: Float {
         return 0
     }
     
-    var error: AudiobookError?
+    let key: String
+    public init(spineElement: SpineElement) {
+        self.key = spineElement.key
+    }
     
     weak var delegate: DownloadTaskDelegate?
 

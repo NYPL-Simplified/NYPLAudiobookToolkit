@@ -19,11 +19,11 @@ struct ScrubberProgress: Equatable {
     let duration: TimeInterval
     
     var durationText: String {
-        return self.timeIntervalToString(self.duration)
+        return HumanReadableTimeInterval(timeInterval: self.duration).value
     }
     
     var offsetText: String {
-        return self.timeIntervalToString(self.offset)
+        return HumanReadableTimeInterval(timeInterval: self.offset).value
     }
     
     var succ: ScrubberProgress {
@@ -36,18 +36,6 @@ struct ScrubberProgress: Equatable {
             offset: TimeInterval(Float(self.duration) * percentage),
             duration: self.duration
         )
-    }
-
-    func timeIntervalToString(_ interval: TimeInterval) -> String {
-        let interval = Int(interval)
-        let seconds = interval % 60
-        let minutes = (interval / 60) % 60
-        let hours = (interval / 3600)
-        var timeString = String(format: "%02d:%02d", minutes, seconds)
-        if hours > 0 {
-            timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-        }
-        return timeString
     }
 
     static func ==(lhs: ScrubberProgress, rhs: ScrubberProgress) -> Bool {

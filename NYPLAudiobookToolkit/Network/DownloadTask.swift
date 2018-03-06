@@ -9,9 +9,10 @@
 
 /// Notifications about the status of the download.
 @objc public protocol DownloadTaskDelegate: class {
+    func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
-    func downloadTaskDidError(_ downloadTask: DownloadTask)
+    func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError)
 }
 
 /// Protocol to handle hitting the network to download an audiobook.
@@ -24,7 +25,8 @@
 /// locally, it should notify it's delegates as if it were a successful download.
 @objc public protocol DownloadTask: class {
     func fetch()
+    func delete()
     var downloadProgress: Float { get }
-    var error: AudiobookError? { get }
+    var key: String { get }
     weak var delegate: DownloadTaskDelegate? { get set }
 }

@@ -30,10 +30,11 @@ public final class AudiobookDetailViewController: UIViewController {
         self.audiobookManager.downloadDelegate = self
         self.audiobookManager.playbackDelegate = self
     }
-    
+
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     private let downloadCompleteText = "Title Downloaded!"
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
@@ -123,9 +124,7 @@ public final class AudiobookDetailViewController: UIViewController {
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = UITableViewController()
-        tbvc.tableView.dataSource = self
-        tbvc.navigationItem.title = "Table Of Contents"
+        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents)
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
 
@@ -165,15 +164,18 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 }
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
-    public func audiobookManagerReadyForPlayback(_ audiobookManager: AudiobookManager) {
-        self.chapterTitleLabel.text = self.downloadCompleteText
-        Timer.scheduledTimer(
-            timeInterval: 3,
-            target: self,
-            selector: #selector(AudiobookDetailViewController.postPlaybackReadyTimerFired(_:)),
-            userInfo: nil,
-            repeats: false
-        )
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) {
+        guard let currentChapter = self.currentChapter else { return }
+        if spineElement.chapter.number == currentChapter.number && spineElement.chapter.part == currentChapter.part {
+            self.chapterTitleLabel.text = self.downloadCompleteText
+            Timer.scheduledTimer(
+                timeInterval: 3,
+                target: self,
+                selector: #selector(AudiobookDetailViewController.postPlaybackReadyTimerFired(_:)),
+                userInfo: nil,
+                repeats: false
+            )
+        }
     }
     
     @objc func postPlaybackReadyTimerFired(_ timer: Timer) {
@@ -185,14 +187,19 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
             }
         }
     }
-    // TODO: have more defined relationships for how errors come in and will be handled
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: AudiobookError) {
-        let errorMessage = ((error.error as? NSError)?.userInfo["localizedMessage"] as? String ?? "Something is rotten in the state of Denmark.")
-        self.present(UIAlertController(title: "Error!", message: errorMessage, preferredStyle: .alert), animated: false, completion: nil)
+
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+        self.chapterTitleLabel.text = "Downloading \(Int(spineElement.downloadTask.downloadProgress * 100))%"
     }
-    
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentage percentage: Float) {
-        self.chapterTitleLabel.text = "Downloading \(Int(percentage * 100))%"
+
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement) {
+        let alertController = UIAlertController(
+            title: "Error!",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alertController.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        self.present(alertController, animated: false, completion: nil)
     }
 }
 
@@ -227,18 +234,5 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
 
     func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView) {
         self.audiobookManager.pause()
-    }
-}
-
-extension AudiobookDetailViewController: UITableViewDataSource {
-
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
-    }
-    
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
-        cell.textLabel?.text = "Chapter \(indexPath.row)"
-        return cell
     }
 }
