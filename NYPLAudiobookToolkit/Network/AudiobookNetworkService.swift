@@ -61,7 +61,8 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         }
         return taskCompletedPercentage / Float(self.spine.count)
     }
-
+    
+    private var cursor: Cursor<SpineElement>?
     private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     
     public func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate) {
@@ -91,9 +92,13 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public func fetch() {
-        self.spine.forEach { (element) in
-            element.downloadTask.fetch()
+        // It is possible our cursor has become `nil` after
+        // all files were downloaded or if we hit an error
+        // while trying to execute a download task.
+        if self.cursor == nil {
+            self.cursor = Cursor(data: self.spine)
         }
+        self.cursor?.currentElement.downloadTask.fetch()
     }
     
     public func fetchSpineAt(index: Int) {
@@ -104,6 +109,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
 
 extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
+        self.cursor = nil
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
@@ -118,6 +124,8 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
     
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
+        self.cursor = self.cursor?.next()
+        self.cursor?.currentElement.downloadTask.fetch()
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesThatPlaybackIsReadyFor(spineElement)
