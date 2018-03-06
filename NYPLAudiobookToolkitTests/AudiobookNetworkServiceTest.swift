@@ -11,9 +11,7 @@ import NYPLAudiobookToolkit
 
 class RetryAfterErrorAudiobookNetworkServiceDelegate: AudiobookNetworkServiceDelegate {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) { }
-    
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) { }
-    
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
     
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
@@ -41,8 +39,7 @@ class AudiobookNetworkServiceTest: XCTestCase {
         let service = DefaultAudiobookNetworkService(spine: [spine1, spine2])
         XCTAssertEqual(service.downloadProgress, 0.375, accuracy: 0.001)
     }
-    
-    
+
     func testDownloadInSerialOrder() {
         let expectTask1ToFetch = expectation(description: "Task 1 was fetched")
         let fetchClosureForTask1 = { (task: DownloadTask) -> Void in
@@ -70,7 +67,7 @@ class AudiobookNetworkServiceTest: XCTestCase {
         wait(for: [expectTask1ToFetch, expectTask2ToFetch], timeout: 5, enforceOrder: true)
     }
 
-    func testDownloadResumeAfterError() {
+    func testFetchAttemptsEveryFile() {
         var shouldFail = true
         let expectTask1ToFetchFirstTime = expectation(
             description: "Task 1 was fetched once"

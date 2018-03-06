@@ -95,6 +95,10 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         // It is possible our cursor has become `nil` after
         // all files were downloaded or if we hit an error
         // while trying to execute a download task.
+        //
+        // If no cursor exists, then we should message
+        // every task to fetch and let them determine
+        // if a file exists or not.
         if self.cursor == nil {
             self.cursor = Cursor(data: self.spine)
         }

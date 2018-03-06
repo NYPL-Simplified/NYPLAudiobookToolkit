@@ -34,7 +34,8 @@
     /// a subsequent request.
     func fetch()
     
-    /// Request the file that was fetched be deleted.
+    /// Request the file that was fetched be deleted. Once the file
+    /// has been deleted, it should notify the delegate.
     ///
     /// Implementations of `delete` should be idempotent, if a
     /// task is in the process of deleting the file, it should
