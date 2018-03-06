@@ -13,7 +13,12 @@ typealias TaskCallback = (_ task: DownloadTask) -> Void
 
 class DownloadTaskMock: DownloadTask {
     func fetch() {
-        self.fetchClosure?(self)
+        guard let fetchClosure = self.fetchClosure else { return }
+        DispatchQueue.main.async { [weak self] () -> Void in
+            if let strongSelf = self {
+                fetchClosure(strongSelf)
+            }
+        }
     }
     
     func delete() { }
