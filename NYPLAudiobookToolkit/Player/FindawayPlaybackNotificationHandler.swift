@@ -82,13 +82,13 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     }
     
     @objc func audioEngineChapterPlaybackStarted(_ notification: NSNotification) {
-        if let chapter = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription {
+        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
             self.delegate?.audioEnginePlaybackStarted(self, for: chapter)
         }
     }
     
     @objc func audioEngineChapterPlaybackPaused(_ notification: NSNotification) {
-        if let chapter = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription {
+        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
             self.delegate?.audioEnginePlaybackPaused(self, for: chapter)
         }
     }

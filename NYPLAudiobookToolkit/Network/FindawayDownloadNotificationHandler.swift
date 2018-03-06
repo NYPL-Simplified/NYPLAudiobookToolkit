@@ -12,6 +12,10 @@ import AudioEngine
 @objc protocol FindawayDownloadNotificationHandlerDelegate: class {
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String)
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didDeleteAudiobookFor chapterDescription: FAEChapterDescription)
+
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didSucceedDownloadFor chapterDescription: FAEChapterDescription)
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didPauseDownloadFor chapterDescription: FAEChapterDescription)
+    func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didStartDownloadFor chapterDescription: FAEChapterDescription)
 }
 
 @objc protocol FindawayDownloadNotificationHandler: class {
@@ -21,13 +25,41 @@ import AudioEngine
 class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHandler {
     weak var delegate: FindawayDownloadNotificationHandlerDelegate?
     public init() {
+        // DOWNLOAD LIFECYCLE
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidStartDownload(_:)),
+            name: NSNotification.Name.FAEChapterDownloadStarted,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidSucceed(_:)),
+            name: NSNotification.Name.FAEChapterDownloadSuccess,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidSucceed(_:)),
+            name: NSNotification.Name.FAEDownloadRequestPaused,
+            object: nil
+        )
+
+        // ERRORS
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidReceiveError(_:)),
             name: NSNotification.Name.FAEDownloadRequestFailed,
             object: nil
         )
-        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidReceiveError(_:)),
+            name: NSNotification.Name.FAEChapterDownloadFailed,
+            object: nil
+        )
+
+        // DELETE
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(DefaultFindawayDownloadNotificationHandler.audioEngineDidDeleteChapter(_:)),
@@ -41,13 +73,28 @@ class DefaultFindawayDownloadNotificationHandler: FindawayDownloadNotificationHa
     }
     
     @objc public func audioEngineDidReceiveError(_ notification: NSNotification) {
-        guard let downloadRequestID = notification.userInfo?["DownloadRequestID"] as? String else { return }
-        guard let audiobookError = notification.userInfo?["AudioEngineError"] as? NSError else { return }
+        guard let downloadRequestID = notification.userInfo?[FAEDownloadRequestIDUserInfoKey] as? String else { return }
+        guard let audiobookError = notification.userInfo?[FAEAudioEngineErrorUserInfoKey] as? NSError else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didReceive: audiobookError, for: downloadRequestID)
     }
 
     @objc public func audioEngineDidDeleteChapter(_ notification: NSNotification) {
-        guard let chapterDescription = notification.userInfo?["ChapterDescription"] as? FAEChapterDescription else { return }
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
         self.delegate?.findawayDownloadNotificationHandler(self, didDeleteAudiobookFor: chapterDescription)
+    }
+
+    @objc public func audioEngineDidStartDownload(_ notification: NSNotification) {
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
+        self.delegate?.findawayDownloadNotificationHandler(self, didStartDownloadFor: chapterDescription)
+    }
+
+    @objc public func audioEngineDidPauseDownload(_ notification: NSNotification) {
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
+        self.delegate?.findawayDownloadNotificationHandler(self, didStartDownloadFor: chapterDescription)
+    }
+
+    @objc public func audioEngineDidSucceed(_ notification: NSNotification) {
+        guard let chapterDescription = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription else { return }
+        self.delegate?.findawayDownloadNotificationHandler(self, didSucceedDownloadFor: chapterDescription)
     }
 }
