@@ -13,7 +13,7 @@ class AudiobookNetworkService: XCTestCase {
     
     func testDownloadProgressWithEmptySpine() {
         let service = DefaultAudiobookNetworkService(spine: [])
-        XCTAssertEqual(service.downloadPercentage, 0)
+        XCTAssertEqual(service.downloadProgress, 0)
     }
     
     func testDownloadProgressWithTwoSpineElements() {
@@ -26,6 +26,6 @@ class AudiobookNetworkService: XCTestCase {
         let spine2 = SpineElementMock(key: task2.key, downloadTask: task2, chapter: chapter2)
 
         let service = DefaultAudiobookNetworkService(spine: [spine1, spine2])
-        XCTAssertEqual(service.downloadPercentage, 0.375, accuracy: 0.001)
+        XCTAssertEqual(service.downloadProgress, 0.375, accuracy: 0.001)
     }
 }
