@@ -17,7 +17,6 @@ class RetryAfterErrorAudiobookNetworkServiceDelegate: AudiobookNetworkServiceDel
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         audiobookNetworkService.fetch()
     }
-    
 }
 
 class AudiobookNetworkServiceTest: XCTestCase {
