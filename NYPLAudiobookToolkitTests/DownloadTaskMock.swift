@@ -14,6 +14,7 @@ typealias TaskCallback = (_ task: DownloadTask) -> Void
 class DownloadTaskMock: DownloadTask {
     func fetch() {
         guard let fetchClosure = self.fetchClosure else { return }
+        // Call the closure async to prevent temporal dependencies.
         DispatchQueue.main.async { [weak self] () -> Void in
             if let strongSelf = self {
                 fetchClosure(strongSelf)

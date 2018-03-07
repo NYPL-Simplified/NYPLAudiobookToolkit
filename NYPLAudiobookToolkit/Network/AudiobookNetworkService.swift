@@ -28,23 +28,22 @@ import UIKit
     var downloadProgress: Float { get }
     
     /// Implmenters of this should attempt to download all
-    /// spine elements.
+    /// spine elements in a serial order. Once the
+    /// implementer has begun requesting files, calling this
+    /// again should not fire more requests. If no request is
+    /// in progress, fetch should always start at the first
+    /// spine element.
     ///
+    /// Implementations of this should be non-blocking.
     /// Updates for the status of each download task will
     /// come through delegate methods.
     func fetch()
-    
-    /// Implmenters of this should attempt to download spine
-    /// elements at the requested index.
-    ///
-    /// Updates for the status of this download task will
-    /// come through delegate methods.
-    func fetchSpineAt(index: Int)
     
     
     /// Implmenters of this should attempt to delete all
     /// spine elements.
     ///
+    /// Implementations of this should be non-blocking.
     /// Updates for the status of each download task will
     /// come through delegate methods.
     func deleteAll()
@@ -103,11 +102,6 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
             self.cursor = Cursor(data: self.spine)
         }
         self.cursor?.currentElement.downloadTask.fetch()
-    }
-    
-    public func fetchSpineAt(index: Int) {
-        let downloadTask = self.spine[index].downloadTask
-        downloadTask.fetch()
     }
 }
 

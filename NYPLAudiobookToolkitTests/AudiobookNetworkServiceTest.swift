@@ -66,8 +66,15 @@ class AudiobookNetworkServiceTest: XCTestCase {
         wait(for: [expectTask1ToFetch, expectTask2ToFetch], timeout: 5, enforceOrder: true)
     }
 
+    /// This test confirms that we stop requesting files after we hit an error.
+    /// It also confirms that every time we call fetch, it starts at the first
+    /// spine element.
     func testFetchAttemptsEveryFile() {
-        var shouldFail = true
+        // firstFetchAttempt is a flag for which attempt
+        // the network service is making.
+        // This variable is mutable so it can be modified
+        // by the closures called within the download tasks.
+        var firstFetchAttempt = true
         let expectTask1ToFetchFirstTime = expectation(
             description: "Task 1 was fetched once"
         )
@@ -75,7 +82,7 @@ class AudiobookNetworkServiceTest: XCTestCase {
             description: "Task 1 was fetched twice"
         )
         let fetchClosureForTask1 = { (task: DownloadTask) -> Void in
-            if shouldFail {
+            if firstFetchAttempt {
                 expectTask1ToFetchFirstTime.fulfill()
             } else {
                 expectTask1ToFetchSecondTime.fulfill()
@@ -83,11 +90,18 @@ class AudiobookNetworkServiceTest: XCTestCase {
             task.delegate?.downloadTaskReadyForPlayback(task)
         }
         
-        let expectTask2ToFail = expectation(description: "Task 2 hit an error")
-        let expectTask2ToFetch = expectation(description: "Task 2 was fetched")
+        let expectTask2ToFail = expectation(
+            description: "Task 2 hit an error"
+        )
+        let expectTask2ToFetch = expectation(
+            description: "Task 2 was fetched"
+        )
         let fetchClosureForTask2 = { (task: DownloadTask) -> Void in
-            if shouldFail {
-                shouldFail = false
+            if firstFetchAttempt {
+                // We expect to retry on an error,
+                // so we change the flag so we are
+                // no longer in the first attempt.
+                firstFetchAttempt = false
                 expectTask2ToFail.fulfill()
                 task.delegate?.downloadTask(task, didReceive: NSError())
             } else {
@@ -98,6 +112,8 @@ class AudiobookNetworkServiceTest: XCTestCase {
 
         let expectTask3ToFetch = expectation(description: "Task 3 was fetched")
         let fetchClosureForTask3 = { (task: DownloadTask) -> Void in
+            // This should not be hit until the second request,
+            // so there is no need to check the flag.
             expectTask3ToFetch.fulfill()
             task.delegate?.downloadTaskReadyForPlayback(task)
         }
