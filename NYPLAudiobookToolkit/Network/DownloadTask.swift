@@ -24,8 +24,24 @@
 /// If a DownloadTask is attempting to download a file that is already available
 /// locally, it should notify it's delegates as if it were a successful download.
 @objc public protocol DownloadTask: class {
+    
+    /// Ask the task to fetch the file and notify it's delegate
+    /// when playback is ready. If this file is stored locally
+    /// already, it should simply call the delegate immediately.
+    ///
+    /// Implementations of `fetch` should be idempotent, if a
+    /// task is already requesting data it should not fire
+    /// a subsequent request.
     func fetch()
+    
+    /// Request the file that was fetched be deleted. Once the file
+    /// has been deleted, it should notify the delegate.
+    ///
+    /// Implementations of `delete` should be idempotent, if a
+    /// task is in the process of deleting the file, it should
+    /// not raise an error.
     func delete()
+    
     var downloadProgress: Float { get }
     var key: String { get }
     weak var delegate: DownloadTaskDelegate? { get set }
