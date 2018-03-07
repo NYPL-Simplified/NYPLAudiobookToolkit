@@ -56,6 +56,7 @@ import AudioEngine
     var audiobook: Audiobook { get }
     var tableOfContents: AudiobookTableOfContents { get }
     var isPlaying: Bool { get }
+    var sleepTimer: SleepTimer { get }
     func fetch()
     func skipForward()
     func skipBack()
@@ -81,6 +82,10 @@ public final class DefaultAudiobookManager: AudiobookManager {
             player: self.player
         )
     }
+
+    public lazy var sleepTimer: SleepTimer = {
+        return SleepTimer(player: self.player)
+    }()
 
     private let player: Player
     private let networkService: AudiobookNetworkService
