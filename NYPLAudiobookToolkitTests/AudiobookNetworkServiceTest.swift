@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import NYPLAudiobookToolkit
+@testable import NYPLAudiobookToolkit
 
 class RetryAfterErrorAudiobookNetworkServiceDelegate: AudiobookNetworkServiceDelegate {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) { }
