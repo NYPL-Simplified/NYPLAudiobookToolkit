@@ -83,6 +83,8 @@ public final class DefaultAudiobookManager: AudiobookManager {
         )
     }
 
+    /// The sleep timer holds a specific _timer_, therefore
+    /// we cannot create a new one every time it is requested.
     public lazy var sleepTimer: SleepTimer = {
         return SleepTimer(player: self.player)
     }()
