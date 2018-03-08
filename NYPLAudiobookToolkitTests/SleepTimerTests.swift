@@ -41,7 +41,6 @@ class SleepTimerTests: XCTestCase {
     
     func asyncCheckFor(sleepTimer: SleepTimer, untilTime time: TimeInterval, theExpectation: XCTestExpectation) {
         let tts = sleepTimer.timeRemaining
-        print("DEANDEBUG timeRemaining \(tts)")
         if  tts < time  && tts > 0{
             theExpectation.fulfill()
         } else {
