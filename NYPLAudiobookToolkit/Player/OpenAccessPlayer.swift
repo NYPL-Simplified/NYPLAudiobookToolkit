@@ -13,6 +13,7 @@ final class OpenAccessPlayer: NSObject, Player {
         return false
     }
     
+    var currentChapterLocation: ChapterLocation? = nil
     func registerDelegate(_ delegate: PlayerDelegate) {
     }
     

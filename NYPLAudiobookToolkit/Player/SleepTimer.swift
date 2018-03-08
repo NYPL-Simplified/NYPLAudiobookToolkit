@@ -29,20 +29,33 @@ import UIKit
         return value
     }
 
-    public var timeToSleep: TimeInterval {
-        var tts = TimeInterval(0)
-        self.queue.sync {
-            tts = self._timeToSleep
+    public var timeRemaining: TimeInterval {
+        var timeRemaining = TimeInterval(0)
+        self.queue.sync { [weak self] () -> Void in
+            if let strongSelf = self {
+                switch strongSelf.trigger {
+                case .never:
+                    break
+                case .endOfChapter:
+                    let playHead = strongSelf.player.currentChapterLocation?.playheadOffset ?? 0
+                    let duration = strongSelf.player.currentChapterLocation?.duration ?? 0
+                    timeRemaining = duration - playHead
+                case .fifteenMinutes, .thirtyMinutes, .oneHour:
+                    if let tts = strongSelf.timeToSleep {
+                        timeRemaining = abs(Date().timeIntervalSince(tts))
+                    }
+                }
+            }
         }
-        return tts
+        return timeRemaining
     }
-    private var _timeToSleep: TimeInterval = 0
-    private var trigger: SleepTimerTriggerAt = .never
 
+    private var timeToSleep: Date?
+    private var trigger: SleepTimerTriggerAt = .never
     public func cancel() {
         self.queue.sync {  [weak self] () -> Void in
             self?.trigger = .never
-            self?._timeToSleep = 0
+            self?.timeToSleep = nil
         }
     }
 
@@ -57,29 +70,27 @@ import UIKit
         let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60}
         switch self.trigger {
         case .fifteenMinutes:
-            self._timeToSleep = minutes(15)
+            self.timeToSleep = Date().addingTimeInterval(minutes(15))
         case .thirtyMinutes:
-            self._timeToSleep = minutes(30)
+            self.timeToSleep = Date().addingTimeInterval(minutes(30))
         case .oneHour:
-            self._timeToSleep = minutes(60)
+            self.timeToSleep = Date().addingTimeInterval(minutes(60))
         default:
-            self._timeToSleep = 0
+            self.timeToSleep = nil
         }
         self.scheduleTimerIfNeeded()
     }
 
     private func scheduleTimerIfNeeded() {
-        let oneSecond = DispatchWallTime(timespec: timespec(tv_sec: 1, tv_nsec: 0))
-        self.queue.asyncAfter(wallDeadline: oneSecond) { [weak self] () -> Void in
+        self.queue.asyncAfter(deadline: DispatchTime.now() + 1) { [weak self] () -> Void in
             self?.checkTimerStateAndScheduleNextRun()
         }
     }
     
     private func checkTimerStateAndScheduleNextRun() {
-        if self.trigger != .never && self._timeToSleep > 0 {
-            self._timeToSleep = self._timeToSleep - 1
-            print("DEANDEBUG time is slipping \(self._timeToSleep)")
-            if self._timeToSleep <= 0 {
+        if let tts = self.timeToSleep, self.trigger != .never {
+            let now = Date()
+            if now.compare(tts) == ComparisonResult.orderedDescending {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.player.pause()
                 }
@@ -111,7 +122,7 @@ extension SleepTimer: PlayerDelegate {
             }
             self.queue.async {
                 self.trigger = .never
-                self._timeToSleep = 0
+                self.timeToSleep = nil
             }
         }
     }

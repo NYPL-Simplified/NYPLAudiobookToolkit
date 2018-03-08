@@ -24,6 +24,7 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
+    var currentChapterLocation: ChapterLocation? { get }
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool
     func jumpToLocation(_ location: ChapterLocation)
     

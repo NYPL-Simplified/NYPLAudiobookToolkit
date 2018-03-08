@@ -29,18 +29,19 @@ class SleepTimerTests: XCTestCase {
     func testTimeDecreases() {
         let expectTimeToDecrease = expectation(description: "time to decrease")
         let sleepTimer = SleepTimer(player: PlayerMock())
-        sleepTimer.startTimerFor(trigger: .thirtyMinutes)
-        let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 50
+        sleepTimer.startTimerFor(trigger: .fifteenMinutes)
+        let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 58
         self.asyncCheckFor(
             sleepTimer: sleepTimer,
             untilTime: fourteenMinutesAndFiftyEightSeconds,
             theExpectation: expectTimeToDecrease
         )
-        wait(for: [expectTimeToDecrease], timeout: 5)
+        wait(for: [expectTimeToDecrease], timeout: 4)
     }
     
     func asyncCheckFor(sleepTimer: SleepTimer, untilTime time: TimeInterval, theExpectation: XCTestExpectation) {
-        let tts = sleepTimer.timeToSleep
+        let tts = sleepTimer.timeRemaining
+        print("DEANDEBUG timeRemaining \(tts)")
         if  tts < time  && tts > 0{
             theExpectation.fulfill()
         } else {

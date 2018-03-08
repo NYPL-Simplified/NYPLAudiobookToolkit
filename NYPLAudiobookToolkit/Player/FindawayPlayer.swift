@@ -15,7 +15,7 @@ final class FindawayPlayer: NSObject, Player {
         return self.currentChapterIsAt(part: location.part, number: location.number)
     }
 
-    private var currentChapterLocation: ChapterLocation? {
+    public var currentChapterLocation: ChapterLocation? {
         return ChapterLocation(
             number: self.chapterAtCursor.number,
             part: self.chapterAtCursor.part,

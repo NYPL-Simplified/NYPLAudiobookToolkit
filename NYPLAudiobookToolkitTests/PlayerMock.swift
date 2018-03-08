@@ -10,6 +10,8 @@ import UIKit
 import NYPLAudiobookToolkit
 
 class PlayerMock: Player {
+    var currentChapterLocation: ChapterLocation?
+    
     var isPlaying: Bool = false
     
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
