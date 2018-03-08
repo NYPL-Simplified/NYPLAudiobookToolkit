@@ -25,4 +25,28 @@ class SleepTimerTests: XCTestCase {
         sleepTimer.cancel()
         XCTAssertFalse(sleepTimer.isScheduled)
     }
+    
+    func testTimeDecreases() {
+        let expectTimeToDecrease = expectation(description: "time to decrease")
+        let sleepTimer = SleepTimer(player: PlayerMock())
+        sleepTimer.startTimerFor(trigger: .thirtyMinutes)
+        let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 50
+        self.asyncCheckFor(
+            sleepTimer: sleepTimer,
+            untilTime: fourteenMinutesAndFiftyEightSeconds,
+            theExpectation: expectTimeToDecrease
+        )
+        wait(for: [expectTimeToDecrease], timeout: 5)
+    }
+    
+    func asyncCheckFor(sleepTimer: SleepTimer, untilTime time: TimeInterval, theExpectation: XCTestExpectation) {
+        let tts = sleepTimer.timeToSleep
+        if  tts < time  && tts > 0{
+            theExpectation.fulfill()
+        } else {
+            DispatchQueue.main.async { [weak self] () -> Void in
+                self?.asyncCheckFor(sleepTimer: sleepTimer, untilTime: time, theExpectation: theExpectation)
+            }
+        }
+    }
 }
