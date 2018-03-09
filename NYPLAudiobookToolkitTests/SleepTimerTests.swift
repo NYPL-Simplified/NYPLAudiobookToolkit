@@ -14,22 +14,39 @@ class SleepTimerTests: XCTestCase {
     func testIsScheduled() {
         let sleepTimer = SleepTimer(player: PlayerMock())
         XCTAssertFalse(sleepTimer.isScheduled)
-        sleepTimer.startTimerFor(trigger: .fifteenMinutes)
+        sleepTimer.setTimerTo(trigger: .fifteenMinutes)
         XCTAssertTrue(sleepTimer.isScheduled)
     }
     
     func testCancelSchedule() {
         let sleepTimer = SleepTimer(player: PlayerMock())
-        sleepTimer.startTimerFor(trigger: .thirtyMinutes)
+        sleepTimer.setTimerTo(trigger: .thirtyMinutes)
         XCTAssertTrue(sleepTimer.isScheduled)
         sleepTimer.cancel()
         XCTAssertFalse(sleepTimer.isScheduled)
+        XCTAssertEqual(sleepTimer.timeRemaining, 0)
     }
     
+    func testTestEndOfChapter() {
+        let duration = TimeInterval(60)
+        let chapter = ChapterLocation(
+            number: 1,
+            part: 0,
+            duration: duration,
+            startOffset: 0,
+            playheadOffset: 0,
+            title: "Sometime"
+        )
+        let sleepTimer = SleepTimer(player: PlayerMock(currentChapter: chapter))
+        sleepTimer.setTimerTo(trigger: .endOfChapter)
+        XCTAssertTrue(sleepTimer.isScheduled)
+        XCTAssertEqual(sleepTimer.timeRemaining, duration)
+    }
+
     func testTimeDecreases() {
         let expectTimeToDecrease = expectation(description: "time to decrease")
         let sleepTimer = SleepTimer(player: PlayerMock())
-        sleepTimer.startTimerFor(trigger: .fifteenMinutes)
+        sleepTimer.setTimerTo(trigger: .fifteenMinutes)
         let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 58
         self.asyncCheckFor(
             sleepTimer: sleepTimer,

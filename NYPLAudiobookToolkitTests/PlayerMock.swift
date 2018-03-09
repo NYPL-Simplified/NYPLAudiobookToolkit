@@ -9,10 +9,15 @@
 import UIKit
 import NYPLAudiobookToolkit
 
+typealias Callback = () -> Void
 class PlayerMock: Player {
-    var currentChapterLocation: ChapterLocation?
+    var currentChapterLocation: ChapterLocation? {
+        return self.currentChapter
+    }
     
     var isPlaying: Bool = false
+    
+    private var currentChapter: ChapterLocation?
     
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
         return false
@@ -31,4 +36,10 @@ class PlayerMock: Player {
     func registerDelegate(_ delegate: PlayerDelegate) { }
     
     func removeDelegate(_ delegate: PlayerDelegate) { }
+
+    convenience init (currentChapter: ChapterLocation?) {
+        self.init()
+        self.currentChapter = currentChapter
+
+    }
 }
