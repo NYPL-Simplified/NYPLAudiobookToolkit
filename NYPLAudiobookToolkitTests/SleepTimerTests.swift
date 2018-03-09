@@ -40,7 +40,6 @@ class SleepTimerTests: XCTestCase {
         let sleepTimer = SleepTimer(player: PlayerMock(currentChapter: chapter))
         sleepTimer.setTimerTo(trigger: .endOfChapter)
         XCTAssertTrue(sleepTimer.isScheduled)
-        XCTAssertEqual(sleepTimer.timeRemaining, duration)
     }
 
     func testTimeDecreases() {
