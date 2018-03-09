@@ -16,9 +16,18 @@ import UIKit
     case endOfChapter
 }
 
+/// Class used to schedule timers to automatically pause
+/// the current playing audiobook. This class must be retained
+/// after the timer has been started in order to properly
+/// stop the current playing book.
+///
+/// All methods should block until they can safely access their
+/// properties.
 @objc public final class SleepTimer: NSObject {
     private let player: Player
     private let queue = DispatchQueue(label: "com.nyplaudiobooktoolkit.SleepTimer")
+    
+    /// Flag to find out if the timer is currently scheduled.
     public var isScheduled: Bool {
         var value = false
         self.queue.sync { [weak self] () -> Void in
@@ -29,6 +38,7 @@ import UIKit
         return value
     }
 
+    /// Time remaining until the book will be paused.
     public var timeRemaining: TimeInterval {
         var timeRemaining = TimeInterval(0)
         self.queue.sync { [weak self] () -> Void in
@@ -50,16 +60,24 @@ import UIKit
         return timeRemaining
     }
 
+    /// The time for us to pause the player, aka the bedtime.
     private var timeToSleep: Date?
+    
+    /// The type of trigger, determines if the timer is active
+    /// and if the pause will come from a specific time,
+    /// or the conclusion of a chapter.
     private var trigger: SleepTimerTriggerAt = .never
+    
+    /// Cancel the current sleep timer. May be called
+    /// when timer is not scheduled.
     public func cancel() {
         self.queue.sync {  [weak self] () -> Void in
-            self?.trigger = .never
-            self?.timeToSleep = nil
+            self?.update(trigger: .never)
         }
     }
 
-    public func startTimerFor(trigger: SleepTimerTriggerAt) {
+    /// Start a timer for a specific amount of time.
+    public func setTimerTo(trigger: SleepTimerTriggerAt) {
         self.queue.sync { [weak self] () -> Void in
             self?.update(trigger: trigger)
         }
@@ -69,16 +87,24 @@ import UIKit
         self.trigger = trigger
         let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60}
         switch self.trigger {
+        case .never, .endOfChapter:
+            self.timeToSleepIn(nil)
         case .fifteenMinutes:
-            self.timeToSleep = Date().addingTimeInterval(minutes(15))
+            self.timeToSleepIn(minutes(15))
         case .thirtyMinutes:
-            self.timeToSleep = Date().addingTimeInterval(minutes(30))
+            self.timeToSleepIn(minutes(30))
         case .oneHour:
-            self.timeToSleep = Date().addingTimeInterval(minutes(60))
-        default:
-            self.timeToSleep = nil
+            self.timeToSleepIn(minutes(60))
         }
-        self.scheduleTimerIfNeeded()
+    }
+    
+    private func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
+        var newTime: Date? = nil
+        if let minutesFromNow = minutesFromNow {
+            newTime = Date().addingTimeInterval(minutesFromNow)
+            self.scheduleTimerIfNeeded()
+        }
+        self.timeToSleep = newTime
     }
 
     private func scheduleTimerIfNeeded() {
