@@ -83,8 +83,11 @@ public final class DefaultAudiobookManager: AudiobookManager {
         )
     }
 
-    /// The sleep timer holds a specific _timer_, therefore
-    /// we cannot create a new one every time it is requested.
+    /// The SleepTimer may be used to schedule playback to stop at a specific
+    /// time. When a sleep timer is scheduled through the `setTimerTo:trigger`
+    /// method, it must be retained so that it can properly pause the `player`.
+    /// SleepTimer is thread safe, and will block until it can ensure only one
+    /// object is messaging it at a time.
     public lazy var sleepTimer: SleepTimer = {
         return SleepTimer(player: self.player)
     }()
