@@ -28,6 +28,10 @@ class SleepTimerTests: XCTestCase {
         XCTAssertEqual(sleepTimer.timeRemaining, 0)
     }
     
+    /// `.endOfChapter` works differently from other triggers.
+    /// Instead of keeping track of the time, it simply listens to
+    /// `Player` and waits for the player to report that the
+    /// current chapter has finished.
     func testTestEndOfChapter() {
         let duration = TimeInterval(60)
         let chapter = ChapterLocation(
