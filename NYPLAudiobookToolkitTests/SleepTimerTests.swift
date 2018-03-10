@@ -22,6 +22,7 @@ class SleepTimerTests: XCTestCase {
         let sleepTimer = SleepTimer(player: PlayerMock())
         sleepTimer.setTimerTo(trigger: .thirtyMinutes)
         XCTAssertTrue(sleepTimer.isScheduled)
+        XCTAssertNotEqual(sleepTimer.timeRemaining, 0)
         sleepTimer.cancel()
         XCTAssertFalse(sleepTimer.isScheduled)
         XCTAssertEqual(sleepTimer.timeRemaining, 0)
