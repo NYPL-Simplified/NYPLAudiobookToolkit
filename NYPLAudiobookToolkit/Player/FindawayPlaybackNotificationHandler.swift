@@ -12,6 +12,8 @@ import AudioEngine
 protocol FindawayPlaybackNotificationHandlerDelegate: class {
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
+    func audioEnginePlaybackStreaming(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
+    func audioEnginePlaybackLoaded(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
 }
 
 protocol FindawayPlaybackNotificationHandler {
@@ -35,7 +37,7 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
         // Chapter Playback
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterLoaded(_:)),
             name: NSNotification.Name.FAEPlaybackChapterLoaded,
             object: nil
         )
@@ -76,6 +78,15 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     }
 
     @objc func audioEngineStreamingBegan(_ notification: NSNotification) {
+        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
+            self.delegate?.audioEnginePlaybackStreaming(self, for: chapter)
+        }
+    }
+
+    @objc func audioEngineChapterLoaded(_ notification: NSNotification) {
+        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
+            self.delegate?.audioEnginePlaybackLoaded(self, for: chapter)
+        }
     }
 
     @objc func audioEngineChapterUpdate(_ notification: NSNotification) {

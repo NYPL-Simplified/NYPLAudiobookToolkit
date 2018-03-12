@@ -43,11 +43,21 @@ final class FindawayPlayer: NSObject, Player {
     private var resumePlaybackLocation: ChapterLocation?
     // Only queue the last issued command if they are issued before Findaway has been verified
     private var queuedLocation: ChapterLocation?
-    
+
     /// It is vitally important that modifications to
     /// this variable is only modified synchronously in
     /// the queue.
-    private var readyForPlayback = false
+    private var readyForPlayback: Bool {
+        return self.audioEngineDatabaseHasBeenVerified
+    }
+    
+    private var willBeReadyAt: Date = Date()
+    private var debounceBufferTime: TimeInterval = 0.5
+    private var dispatchDeadline: DispatchTime {
+        return DispatchTime.now() + self.debounceBufferTime
+    }
+
+    private var audioEngineDatabaseHasBeenVerified: Bool
     private var sessionKey: String {
         return self.spineElement.sessionKey
     }
@@ -99,7 +109,7 @@ final class FindawayPlayer: NSObject, Player {
         self.eventHandler = eventHandler
         self.spineElement = spineElement
         self.cursor = cursor
-        self.readyForPlayback = lifeCycleManager.audioEngineDatabaseHasBeenVerified
+        self.audioEngineDatabaseHasBeenVerified = lifeCycleManager.audioEngineDatabaseHasBeenVerified
         super.init()
         self.eventHandler.delegate = self
         lifeCycleManager.registerDelegate(self)
@@ -110,46 +120,55 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     func skipForward() {
-        let someTimeFromNow = self.currentOffset + 15
-        let location = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeFromNow))
-        if let location = location {
-            self.jumpToLocation(location)
+        self.queue.async {
+            let someTimeFromNow = self.currentOffset + 15
+            let location = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeFromNow))
+            if let location = location {
+                self.performJumpToLocation(location)
+            }
         }
     }
 
     func skipBack() {
-        let someTimeAgo = Int(self.currentOffset) - 15
-        let location = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeAgo))
-        if let location = location {
-            self.jumpToLocation(location)
+        self.queue.async {
+            let someTimeAgo = Int(self.currentOffset) - 15
+            let location = self.currentChapterLocation?.chapterWith(TimeInterval(someTimeAgo))
+            if let location = location {
+                self.performJumpToLocation(location)
+            }
         }
     }
 
     func play() {
-        if let resumeLocation = self.resumePlaybackLocation {
-            self.jumpToLocation(resumeLocation)
-        } else {
-            if let location = self.currentChapterLocation?.chapterWith(0) {
-                self.jumpToLocation(location)
+        self.queue.async {
+            if let resumeLocation = self.resumePlaybackLocation {
+                self.jumpToLocation(resumeLocation)
+            } else {
+                if let location = self.currentChapterLocation?.chapterWith(0) {
+                    self.jumpToLocation(location)
+                }
             }
         }
     }
     
     func pause() {
-        self.queue.sync {
+        self.queue.async {
             self.resumePlaybackLocation = self.currentChapterLocation
             FAEAudioEngine.shared()?.playbackEngine?.pause()
         }
     }
     
     func jumpToLocation(_ location: ChapterLocation) {
-        self.queue.sync {
-            if self.readyForPlayback {
-                self.updateCursorAndRequestPlaybackFor(location)
-                self.queuedLocation = nil
-            } else {
-                self.queuedLocation = location
-            }
+        self.queue.async { [weak self] in
+            self?.performJumpToLocation(location)
+        }
+    }
+    
+    func performJumpToLocation(_ location: ChapterLocation) {
+        if self.readyForPlayback {
+            self.updateCursorAndRequestPlaybackFor(location)
+        } else {
+            self.queuedLocation = location
         }
     }
     
@@ -190,24 +209,63 @@ final class FindawayPlayer: NSObject, Player {
         }
         
         guard let destinationLocation = possibleDestinationLocation else { return }
-
-        if self.currentBookIsPlaying {
-            if self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
-                self.delegates.allObjects.forEach({ (delegate) in
-                    delegate.player(self, didBeginPlaybackOf: destinationLocation)
-                })
-            } else {
-                self.playAtLocation(destinationLocation)
-            }
+        
+        // Not all playhead movement costs the same. In order to ensure snappy and consistent
+        // behavior from FAEPlaybackEngine, we must be careful about how many calls we make to
+        // `[FAEPlaybackEngine play:forAudiobookID:partNumber:chapterNumber:offset:sessionKey:licenseID]`.
+        // Meanwhile, calls to `[FAEPlaybackEngine setCurrentOffset]` are cheap and can be made repeatedly.
+        // Because of this we must determine what kind of request we have received before proceeding.
+        //
+        // If moving the playhead stays in the same file, then the update is instant and we are still
+        // ready to get a new request.
+        let isSeekOperation = self.isSeekOperation(
+            locationBeforeNavigation: locationBeforeNavigation,
+            destinationLocation: destinationLocation
+        )
+        
+        // Seek operations are very cheap and move the playhead almost instantly.
+        // They can be performed repeatedly within a chapter without fail.
+        if isSeekOperation {
+            FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
+            self.delegates.allObjects.forEach({ (delegate) in
+                delegate.player(self, didBeginPlaybackOf: destinationLocation)
+            })
+        // Resuming playback from the last point is also practically free.
         } else if self.isResumeDescription(destinationLocation) {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
+        // This is the expensive path, so instead of making the request immediately
+        // we queue it and trash the existing request if a new one comes in.
+        } else {
+            self.willBeReadyAt = Date().addingTimeInterval(self.debounceBufferTime)
+            self.queuedLocation = destinationLocation
+            self.queueChapterManipulation()
+        }
+    }
+    
+    func queueChapterManipulation() {
+        self.queue.asyncAfter(deadline: self.dispatchDeadline) { [weak self] in
+            self?.attemptQueuedPlayheadManipulation()
+        }
+    }
+    
+    func isSeekOperation(locationBeforeNavigation: ChapterLocation?, destinationLocation: ChapterLocation) -> Bool {
+        return self.currentBookIsPlaying && self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
+    }
+
+    func attemptQueuedPlayheadManipulation() {
+        guard let destinationLocation = self.queuedLocation else {
+            return
+        }
+        if Date() < self.willBeReadyAt {
+            self.queueChapterManipulation()
         } else {
             self.playAtLocation(destinationLocation)
+            self.queuedLocation = nil
         }
     }
 
     func playAtLocation(_ location: ChapterLocation) {
+        print("DEANDEBUG chapter update \(location)")
         FAEAudioEngine.shared()?.playbackEngine?.play(
             forAudiobookID: self.audiobookID,
             partNumber: location.part,
@@ -241,13 +299,13 @@ final class FindawayPlayer: NSObject, Player {
 extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
         DispatchQueue.main.async { [weak self] () -> Void in
-            self?.handleLifecycleManagerUpdate(readyForPlayback: audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified)
+            self?.handleLifecycleManagerUpdate(hasBeenVerified: audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified)
         }
     }
     
-    func handleLifecycleManagerUpdate(readyForPlayback: Bool) {
+    func handleLifecycleManagerUpdate(hasBeenVerified: Bool) {
         self.queue.sync {
-            self.readyForPlayback = readyForPlayback
+            self.audioEngineDatabaseHasBeenVerified  = hasBeenVerified
         }
 
         if let location = self.queuedLocation {
@@ -257,21 +315,42 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
 }
 
 extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
+    func audioEnginePlaybackStreaming(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) {
+//        self.queue.async { [weak self] in
+//            if let strongSelf = self {
+//                strongSelf.readyForPlayback = true
+//            }
+//        }
+    }
+    
+    func audioEnginePlaybackLoaded(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) {
+//        self.queue.async { [weak self] in
+//            if let strongSelf = self {
+//                strongSelf.readyForPlayback = true
+//            }
+//        }
+    }
+    
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
-        self.queue.sync {
-            if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
-                let cursorPredicate = { (spineElement: SpineElement) -> Bool in
-                    return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
-                }
-                if let newCursor = self.cursor.cursor(at: cursorPredicate) {
-                    self.cursor = newCursor
-                }
+        self.queue.async { [weak self] in
+            self?.handlePlaybackStartedFor(findawayChapter: findawayChapter)
+        }
+    }
+    
+    func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription) {
+//        self.readyForPlayback = true
+        if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
+            let cursorPredicate = { (spineElement: SpineElement) -> Bool in
+                return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
             }
-
-            if let chapter = self.currentChapterLocation {
-                DispatchQueue.main.async { [weak self] () -> Void in
-                    self?.notifyDelegatesOfPlaybackFor(chapter: chapter)
-                }
+            if let newCursor = self.cursor.cursor(at: cursorPredicate) {
+                self.cursor = newCursor
+            }
+        }
+        
+        if let chapter = self.currentChapterLocation {
+            DispatchQueue.main.async { [weak self] () -> Void in
+                self?.notifyDelegatesOfPlaybackFor(chapter: chapter)
             }
         }
     }
@@ -284,6 +363,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
+//            self.readyForPlayback = true
             if let currentChapter = self.currentChapterLocation {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)
