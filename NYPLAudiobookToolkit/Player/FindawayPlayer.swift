@@ -41,12 +41,14 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private var resumePlaybackLocation: ChapterLocation?
-    // Only queue the last issued command if they are issued before Findaway has been verified
+    
+    // Not all `ChapterLocation`s are played immediately on request.
+    // The two main reasons to queue a chapter instead of playing it
+    // immediately are that the AudioEngine SDK is still initializing
+    // so playback can't be started or you want to load a new chapter
+    // which is an expensive operation.
     private var queuedLocation: ChapterLocation?
 
-    /// It is vitally important that modifications to
-    /// this variable is only modified synchronously in
-    /// the queue.
     private var readyForPlayback: Bool {
         return self.audioEngineDatabaseHasBeenVerified
     }
