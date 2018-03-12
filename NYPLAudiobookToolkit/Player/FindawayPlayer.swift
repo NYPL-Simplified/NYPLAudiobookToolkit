@@ -10,7 +10,7 @@ import UIKit
 import AudioEngine
 
 final class FindawayPlayer: NSObject, Player {
-    public func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
+    func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
         guard self.isPlaying else { return false }
         var chapterIsPlaying = false
         self.queue.sync { [weak self] () -> Void in
@@ -20,18 +20,14 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private var currentChapterLocation: ChapterLocation? {
-        var chapter: ChapterLocation?
-        if let chapterAtCursor = self.chapterAtCursor {
-            chapter = ChapterLocation(
-                number: chapterAtCursor.number,
-                part: chapterAtCursor.part,
-                duration: chapterAtCursor.duration,
-                startOffset: 0,
-                playheadOffset: TimeInterval(self.currentOffset),
-                title: chapterAtCursor.title
-            )
-        }
-        return chapter
+        return ChapterLocation(
+            number: self.chapterAtCursor.number,
+            part: self.chapterAtCursor.part,
+            duration: self.chapterAtCursor.duration,
+            startOffset: 0,
+            playheadOffset: TimeInterval(self.currentOffset),
+            title: self.chapterAtCursor.title
+        )
     }
 
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
@@ -73,7 +69,7 @@ final class FindawayPlayer: NSObject, Player {
         return self.isPlaying && self.bookIsLoaded
     }
     
-    private var chapterAtCursor: ChapterLocation? {
+    private var chapterAtCursor: ChapterLocation {
         return self.cursor.currentElement.chapter
     }
 
@@ -138,8 +134,10 @@ final class FindawayPlayer: NSObject, Player {
     }
     
     func pause() {
-        self.resumePlaybackLocation = self.currentChapterLocation
-        FAEAudioEngine.shared()?.playbackEngine?.pause()
+        self.queue.sync {
+            self.resumePlaybackLocation = self.currentChapterLocation
+            FAEAudioEngine.shared()?.playbackEngine?.pause()
+        }
     }
     
     func jumpToLocation(_ location: ChapterLocation) {
@@ -162,7 +160,6 @@ final class FindawayPlayer: NSObject, Player {
             let newCursor = self.cursor.next() {
             self.cursor = newCursor
             possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(timeIntoNextChapter)
-            
         } else if let timeIntoPreviousChapter = location.secondsBeforeStart,
             let newCursor = self.cursor.prev() {
             self.cursor = newCursor
@@ -172,7 +169,7 @@ final class FindawayPlayer: NSObject, Player {
         }
         
         guard let destinationLocation = possibleDestinationLocation else { return }
-        
+
         if self.currentBookIsPlaying {
             if self.locationsAreEqual(lhs: destinationLocation, rhs: locationBeforeNavigation) {
                 FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
@@ -188,6 +185,7 @@ final class FindawayPlayer: NSObject, Player {
             self.playAtLocation(destinationLocation)
         }
     }
+
     func playAtLocation(_ location: ChapterLocation) {
         FAEAudioEngine.shared()?.playbackEngine?.play(
             forAudiobookID: self.audiobookID,
@@ -251,7 +249,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 self.cursor = newCursor
             }
         }
-        
+
         if let chapter = self.currentChapterLocation {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesOfPlaybackFor(chapter: chapter)
