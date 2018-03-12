@@ -95,16 +95,18 @@ final class FindawayPlayer: NSObject, Player {
     private let spineElement: FindawaySpineElement
     private var eventHandler: FindawayPlaybackNotificationHandler
     private var queue = DispatchQueue(label: "com.nyplaudiobooktoolkit.FindawayPlayer")
-    public init(spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler, cursor: Cursor<SpineElement>) {
+    public init(spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler, lifeCycleManager: AudiobookLifeCycleManager, cursor: Cursor<SpineElement>) {
         self.eventHandler = eventHandler
         self.spineElement = spineElement
         self.cursor = cursor
+        self.readyForPlayback = lifeCycleManager.audioEngineDatabaseHasBeenVerified
         super.init()
         self.eventHandler.delegate = self
+        lifeCycleManager.registerDelegate(self)
     }
     
     convenience init(spineElement: FindawaySpineElement, cursor: Cursor<SpineElement>) {
-        self.init(spineElement: spineElement, eventHandler: DefaultFindawayPlaybackNotificationHandler(), cursor: cursor)
+        self.init(spineElement: spineElement, eventHandler: DefaultFindawayPlaybackNotificationHandler(), lifeCycleManager: DefaultAudiobookLifecycleManager.shared, cursor: cursor)
     }
 
     func skipForward() {
@@ -142,37 +144,60 @@ final class FindawayPlayer: NSObject, Player {
     
     func jumpToLocation(_ location: ChapterLocation) {
         self.queue.sync { [weak self] () -> Void in
-            guard let readyToPlay = self?.readyForPlayback else {
-                return
-            }
-            if readyToPlay {
-                self?.performJumpToLocation(location)
-            } else {
-                self?.queuedLocation = location
-            }
+            self?.performJumpToLocation(location)
         }
     }
     
     func performJumpToLocation(_ location: ChapterLocation) {
+        if self.readyForPlayback {
+            self.updateCursorAndRequestPlaybackFor(location)
+            self.queuedLocation = nil
+        } else {
+            self.queuedLocation = location
+        }
+    }
+    
+    func updateCursorAndRequestPlaybackFor(_ location: ChapterLocation) {
         var possibleDestinationLocation: ChapterLocation? = location
         let locationBeforeNavigation = self.currentChapterLocation
-        if let timeIntoNextChapter = location.timeIntoNextChapter,
-            let newCursor = self.cursor.next() {
-            self.cursor = newCursor
-            possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(timeIntoNextChapter)
-        } else if let timeIntoPreviousChapter = location.secondsBeforeStart,
-            let newCursor = self.cursor.prev() {
-            self.cursor = newCursor
-            let durationOfChapter =  self.cursor.currentElement.chapter.duration
-            let playheadOffset = durationOfChapter - timeIntoPreviousChapter
-            possibleDestinationLocation = self.cursor.currentElement.chapter.chapterWith(max(0, playheadOffset))
+        // Check to see if our playback location is in the next chapter
+        if let timeIntoNextChapter = location.timeIntoNextChapter {
+
+            // Attempt to move the cursor forward indicating
+            // there is a next chapter for us to play.
+            if let newCursor = self.cursor.next() {
+                self.cursor = newCursor
+                possibleDestinationLocation = self.chapterAtCursor.chapterWith(timeIntoNextChapter)
+
+            // If there is no next chapter, then we are at the end of the book
+            // and we skip to the end.
+            } else {
+                possibleDestinationLocation = self.chapterAtCursor.chapterWith(self.chapterAtCursor.duration)
+            }
+
+        // Check if playback location is in the previous chapter
+        } else if let timeIntoPreviousChapter = location.secondsBeforeStart {
+
+            // Attempt to move the cursor backwards indicating
+            // there is a previous chapter for us to play.
+            if let newCursor = self.cursor.prev() {
+                self.cursor = newCursor
+                let durationOfChapter =  self.chapterAtCursor.duration
+                let playheadOffset = durationOfChapter - timeIntoPreviousChapter
+                possibleDestinationLocation = self.chapterAtCursor.chapterWith(max(0, playheadOffset))
+
+            // If there is no previous chapter, we are at the start of the book
+            // and skip to the beginning.
+            } else {
+                possibleDestinationLocation = self.chapterAtCursor.chapterWith(0)
+            }
         }
         
         guard let destinationLocation = possibleDestinationLocation else { return }
 
         if self.currentBookIsPlaying {
-            if self.locationsAreEqual(lhs: destinationLocation, rhs: locationBeforeNavigation) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
+            if self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation) {
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = self.timeIntervalToFindawayOffset(destinationLocation.playheadOffset)
                 self.delegates.allObjects.forEach({ (delegate) in
                     delegate.player(self, didBeginPlaybackOf: destinationLocation)
                 })
@@ -191,13 +216,17 @@ final class FindawayPlayer: NSObject, Player {
             forAudiobookID: self.audiobookID,
             partNumber: location.part,
             chapterNumber: location.number,
-            offset: UInt(location.playheadOffset),
+            offset: self.timeIntervalToFindawayOffset(location.playheadOffset),
             sessionKey: self.sessionKey,
             licenseID: self.licenseID
         )
     }
 
-    func locationsAreEqual(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
+    func timeIntervalToFindawayOffset(_ offset: TimeInterval) -> UInt {
+        return UInt(max(0, offset))
+    }
+
+    func locationsPointToTheSameChapter(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
         guard let lhs = lhs else { return false }
         guard let rhs = rhs else { return false }
         return lhs.part == rhs.part && lhs.number == rhs.number
@@ -225,10 +254,12 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     }
     
     func handleLifecycleManagerUpdate(readyForPlayback: Bool) {
-        self.readyForPlayback = readyForPlayback
+        self.queue.sync {
+            self.readyForPlayback = readyForPlayback
+        }
+
         if let location = self.queuedLocation {
             self.jumpToLocation(location)
-            self.queuedLocation = nil
         }
     }
 }
