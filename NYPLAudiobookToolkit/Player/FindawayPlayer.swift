@@ -197,7 +197,7 @@ final class FindawayPlayer: NSObject, Player {
 
         if self.currentBookIsPlaying {
             if self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation) {
-                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = self.timeIntervalToFindawayOffset(destinationLocation.playheadOffset)
+                FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
                 self.delegates.allObjects.forEach({ (delegate) in
                     delegate.player(self, didBeginPlaybackOf: destinationLocation)
                 })
@@ -216,14 +216,10 @@ final class FindawayPlayer: NSObject, Player {
             forAudiobookID: self.audiobookID,
             partNumber: location.part,
             chapterNumber: location.number,
-            offset: self.timeIntervalToFindawayOffset(location.playheadOffset),
+            offset: UInt(location.playheadOffset),
             sessionKey: self.sessionKey,
             licenseID: self.licenseID
         )
-    }
-
-    func timeIntervalToFindawayOffset(_ offset: TimeInterval) -> UInt {
-        return UInt(max(0, offset))
     }
 
     func locationsPointToTheSameChapter(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
