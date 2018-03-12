@@ -317,21 +317,9 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
 }
 
 extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
-    func audioEnginePlaybackStreaming(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) {
-//        self.queue.async { [weak self] in
-//            if let strongSelf = self {
-//                strongSelf.readyForPlayback = true
-//            }
-//        }
-    }
+    func audioEnginePlaybackStreaming(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) { }
     
-    func audioEnginePlaybackLoaded(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) {
-//        self.queue.async { [weak self] in
-//            if let strongSelf = self {
-//                strongSelf.readyForPlayback = true
-//            }
-//        }
-    }
+    func audioEnginePlaybackLoaded(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) { }
     
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         self.queue.async { [weak self] in
@@ -340,7 +328,6 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     }
     
     func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription) {
-//        self.readyForPlayback = true
         if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
             let cursorPredicate = { (spineElement: SpineElement) -> Bool in
                 return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
@@ -365,7 +352,6 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
-//            self.readyForPlayback = true
             if let currentChapter = self.currentChapterLocation {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)

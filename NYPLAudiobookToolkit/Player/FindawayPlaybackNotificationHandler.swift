@@ -12,8 +12,6 @@ import AudioEngine
 protocol FindawayPlaybackNotificationHandlerDelegate: class {
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
-    func audioEnginePlaybackStreaming(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
-    func audioEnginePlaybackLoaded(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
 }
 
 protocol FindawayPlaybackNotificationHandler {
@@ -29,7 +27,7 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
         // Streaming notifications
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineStreamingBegan(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackStreamingRequestStarted,
             object: nil
         )
@@ -37,7 +35,7 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
         // Chapter Playback
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterLoaded(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
             name: NSNotification.Name.FAEPlaybackChapterLoaded,
             object: nil
         )
@@ -75,18 +73,6 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-    }
-
-    @objc func audioEngineStreamingBegan(_ notification: NSNotification) {
-        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
-            self.delegate?.audioEnginePlaybackStreaming(self, for: chapter)
-        }
-    }
-
-    @objc func audioEngineChapterLoaded(_ notification: NSNotification) {
-        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
-            self.delegate?.audioEnginePlaybackLoaded(self, for: chapter)
-        }
     }
 
     @objc func audioEngineChapterUpdate(_ notification: NSNotification) {
