@@ -214,7 +214,7 @@ final class FindawayPlayer: NSObject, Player {
         
         // Not all playhead movement costs the same. In order to ensure snappy and consistent
         // behavior from FAEPlaybackEngine, we must be careful about how many calls we make to
-        // `[FAEPlaybackEngine play:forAudiobookID:partNumber:chapterNumber:offset:sessionKey:licenseID]`.
+        // `[FAEPlaybackEngine playForAudiobookID:partNumber:chapterNumber:offset:sessionKey:licenseID]`.
         // Meanwhile, calls to `[FAEPlaybackEngine setCurrentOffset]` are cheap and can be made repeatedly.
         // Because of this we must determine what kind of request we have received before proceeding.
         //
