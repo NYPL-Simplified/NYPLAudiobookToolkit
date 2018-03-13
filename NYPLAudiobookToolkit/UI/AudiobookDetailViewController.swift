@@ -218,8 +218,10 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
         self.seekBar.setOffset(chapter.playheadOffset, duration: chapter.duration)
         if scrubbing {
             self.updateControlsForPlaybackStart()
+            self.seekBar.play()
         } else {
             self.updateControlsForPlaybackStop()
+            self.seekBar.pause()
         }
     }
 }
@@ -230,9 +232,5 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.updatePlaybackWith(chapter)
         }
-    }
-
-    func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView) {
-        self.audiobookManager.pause()
     }
 }

@@ -52,9 +52,8 @@ public final class AudiobookTableOfContents: NSObject {
 
 extension AudiobookTableOfContents: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.networkService.fetchSpineAt(index: indexPath.row)
         let spineElement = self.networkService.spine[indexPath.row]
-        
+
         // This assumes the player can handle this command before a
         // chapter has been downloaded. AudioEngine can handle this
         // use case, and AVPlayer should as well. However it is an
@@ -76,8 +75,8 @@ extension AudiobookTableOfContents: UITableViewDataSource {
         cell.textLabel?.text = spineElement.chapter.title
         cell.detailTextLabel?.text = self.subtitleFor(spineElement)
         cell.selectionStyle = .none
-        
-        if self.player.chapterIsPlaying(spineElement.chapter) {
+        let playingChapter = self.player.currentChapterLocation?.inSameChapter(other: spineElement.chapter) ?? false
+        if playingChapter {
             cell.contentView.layer.borderColor = UIColor.red.cgColor
             cell.contentView.layer.borderWidth = 1
         }
