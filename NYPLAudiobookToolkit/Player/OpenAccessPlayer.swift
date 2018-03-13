@@ -24,7 +24,6 @@ final class OpenAccessPlayer: NSObject, Player {
     }
     
     var delegate: PlayerDelegate?
-    var currentChapterLocation: ChapterLocation?
     func jumpToLocation(_ chapter: ChapterLocation) {
 
     }
