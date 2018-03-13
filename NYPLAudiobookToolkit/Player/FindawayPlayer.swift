@@ -287,9 +287,7 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private func locationsPointToTheSameChapter(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
-        guard let lhs = lhs else { return false }
-        guard let rhs = rhs else { return false }
-        return lhs.part == rhs.part && lhs.number == rhs.number
+        return lhs?.inSameChapter(other: rhs) ?? false
     }
 
     private func currentChapterIsAt(part: UInt, number: UInt) -> Bool {
