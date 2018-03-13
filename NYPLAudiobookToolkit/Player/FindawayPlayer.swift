@@ -10,16 +10,7 @@ import UIKit
 import AudioEngine
 
 final class FindawayPlayer: NSObject, Player {
-    func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
-        guard self.isPlaying else { return false }
-        var chapterIsPlaying = false
-        self.queue.sync {
-            chapterIsPlaying = self.currentChapterIsAt(part: location.part, number: location.number)
-        }
-        return chapterIsPlaying
-    }
-
-    private var currentChapterLocation: ChapterLocation? {
+    public var currentChapterLocation: ChapterLocation? {
         return ChapterLocation(
             number: self.chapterAtCursor.number,
             part: self.chapterAtCursor.part,

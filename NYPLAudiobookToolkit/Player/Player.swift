@@ -24,9 +24,8 @@ import Foundation
     func skipForward()
     func skipBack()
     var isPlaying: Bool { get }
-    func chapterIsPlaying(_ location: ChapterLocation) -> Bool
+    var currentChapterLocation: ChapterLocation? { get }
     func jumpToLocation(_ location: ChapterLocation)
-    
     func registerDelegate(_ delegate: PlayerDelegate)
     func removeDelegate(_ delegate: PlayerDelegate)
 }
@@ -68,6 +67,12 @@ import Foundation
             timeInterval = self.playheadOffset - self.duration
         }
         return timeInterval
+    }
+    
+    public func inSameChapter(other: ChapterLocation?) -> Bool {
+        guard let rhs = other else { return false }
+        return self.number == rhs.number &&
+            self.part == rhs.part
     }
 
     public init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval, title: String?) {

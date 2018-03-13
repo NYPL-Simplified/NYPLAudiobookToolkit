@@ -76,8 +76,8 @@ extension AudiobookTableOfContents: UITableViewDataSource {
         cell.textLabel?.text = spineElement.chapter.title
         cell.detailTextLabel?.text = self.subtitleFor(spineElement)
         cell.selectionStyle = .none
-        
-        if self.player.chapterIsPlaying(spineElement.chapter) {
+        let playingChapter = self.player.currentChapterLocation?.inSameChapter(other: spineElement.chapter) ?? false
+        if playingChapter {
             cell.contentView.layer.borderColor = UIColor.red.cgColor
             cell.contentView.layer.borderWidth = 1
         }
