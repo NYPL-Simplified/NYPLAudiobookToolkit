@@ -27,7 +27,7 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
         // Streaming notifications
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineStreamingBegan(_:)),
             name: NSNotification.Name.FAEPlaybackStreamingRequestStarted,
             object: nil
         )
@@ -73,6 +73,9 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc func audioEngineStreamingBegan(_ notification: NSNotification) {
     }
 
     @objc func audioEngineChapterUpdate(_ notification: NSNotification) {

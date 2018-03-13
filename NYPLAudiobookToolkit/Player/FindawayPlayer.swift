@@ -334,10 +334,6 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
 }
 
 extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
-    func audioEnginePlaybackStreaming(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) { }
-    
-    func audioEnginePlaybackLoaded(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription) { }
-    
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         self.queue.async { [weak self] in
             self?.handlePlaybackStartedFor(findawayChapter: findawayChapter)
