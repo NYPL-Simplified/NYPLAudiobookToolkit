@@ -307,16 +307,13 @@ final class FindawayPlayer: NSObject, Player {
 
 extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
-        DispatchQueue.main.async { [weak self] () -> Void in
+        self.queue.async { [weak self] in
             self?.handleLifecycleManagerUpdate(hasBeenVerified: audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified)
         }
     }
     
     func handleLifecycleManagerUpdate(hasBeenVerified: Bool) {
-        self.queue.sync {
-            self.audioEngineDatabaseHasBeenVerified  = hasBeenVerified
-        }
-
+        self.audioEngineDatabaseHasBeenVerified  = hasBeenVerified
         if let location = self.queuedLocation {
             self.jumpToLocation(location)
         }
