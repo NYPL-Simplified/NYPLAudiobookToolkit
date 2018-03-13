@@ -30,10 +30,8 @@ import UIKit
     /// Flag to find out if the timer is currently scheduled.
     public var isScheduled: Bool {
         var value = false
-        self.queue.sync { [weak self] () -> Void in
-            if let strongSelf = self {
-                value = strongSelf.trigger != .never
-            }
+        self.queue.sync {
+            value = self.trigger != .never
         }
         return value
     }
@@ -41,19 +39,17 @@ import UIKit
     /// Time remaining until the book will be paused.
     public var timeRemaining: TimeInterval {
         var timeRemaining = TimeInterval(0)
-        self.queue.sync { [weak self] () -> Void in
-            if let strongSelf = self {
-                switch strongSelf.trigger {
-                case .never:
-                    break
-                case .endOfChapter:
-                    let playHead = strongSelf.player.currentChapterLocation?.playheadOffset ?? 0
-                    let duration = strongSelf.player.currentChapterLocation?.duration ?? 0
-                    timeRemaining = duration - playHead
-                case .fifteenMinutes, .thirtyMinutes, .oneHour:
-                    if let tts = strongSelf.timeToSleep {
-                        timeRemaining = abs(Date().timeIntervalSince(tts))
-                    }
+        self.queue.sync {
+            switch self.trigger {
+            case .never:
+                break
+            case .endOfChapter:
+                let playHead = self.player.currentChapterLocation?.playheadOffset ?? 0
+                let duration = self.player.currentChapterLocation?.duration ?? 0
+                timeRemaining = duration - playHead
+            case .fifteenMinutes, .thirtyMinutes, .oneHour:
+                if let tts = self.timeToSleep {
+                    timeRemaining = abs(Date().timeIntervalSince(tts))
                 }
             }
         }
@@ -71,14 +67,14 @@ import UIKit
     /// Cancel the current sleep timer. May be called
     /// when timer is not scheduled.
     public func cancel() {
-        self.queue.sync {  [weak self] () -> Void in
+        self.queue.async {  [weak self] () -> Void in
             self?.update(trigger: .never)
         }
     }
 
     /// Start a timer for a specific amount of time.
     public func setTimerTo(trigger: SleepTimerTriggerAt) {
-        self.queue.sync { [weak self] () -> Void in
+        self.queue.async { [weak self] () -> Void in
             self?.update(trigger: trigger)
         }
     }
@@ -120,11 +116,16 @@ import UIKit
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.player.pause()
                 }
-                self.trigger = .never
+                self.clearTriggers()
             } else {
                 self.scheduleTimerIfNeeded()
             }
         }
+    }
+
+    private func clearTriggers() {
+        self.trigger = .never
+        self.timeToSleep = nil
     }
 
     init(player: Player) {
@@ -146,9 +147,8 @@ extension SleepTimer: PlayerDelegate {
             DispatchQueue.main.async {
                 player.pause()
             }
-            self.queue.async {
-                self.trigger = .never
-                self.timeToSleep = nil
+            self.queue.async { [weak self] in
+                self?.clearTriggers()
             }
         }
     }
