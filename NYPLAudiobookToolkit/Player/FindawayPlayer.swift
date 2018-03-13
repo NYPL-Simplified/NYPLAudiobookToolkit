@@ -231,17 +231,18 @@ final class FindawayPlayer: NSObject, Player {
             locationBeforeNavigation: locationBeforeNavigation,
             destinationLocation: destinationLocation
         )
-        
-        // Seek operations are very cheap and move the playhead almost instantly.
-        // They can be performed repeatedly within a chapter without fail.
-        if isSeekOperation {
-            FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
-            self.delegates.allObjects.forEach({ (delegate) in
-                delegate.player(self, didBeginPlaybackOf: destinationLocation)
-            })
-        } else if self.isResumeDescription(destinationLocation) {
-            // Resuming playback from the last point is also practically free.
+    
+        // Resuming playback from the last point is practically free. We get notifications
+        // when it succeeds so we do not have to update the delegates.
+        if self.isResumeDescription(destinationLocation) {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
+        } else if isSeekOperation {
+            // Seek operations are very cheap and move the playhead almost instantly.
+            // They can be performed repeatedly within a chapter without fail.
+            FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
+            DispatchQueue.main.async { [weak self] in
+                self?.notifyDelegatesOfPlaybackFor(chapter: destinationLocation)
+            }
         } else {
             // This is the expensive path, so instead of making the request immediately
             // we queue it and trash the existing request if a new one comes in.
