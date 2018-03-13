@@ -67,59 +67,59 @@ import UIKit
     /// Cancel the current sleep timer. May be called
     /// when timer is not scheduled.
     public func cancel() {
-        self.queue.async {  [weak self] () -> Void in
-            self?.update(trigger: .never)
+        self.queue.sync {
+            self.update(trigger: .never)
         }
     }
 
     /// Start a timer for a specific amount of time.
     public func setTimerTo(trigger: SleepTimerTriggerAt) {
-        self.queue.async { [weak self] () -> Void in
-            self?.update(trigger: trigger)
+        self.queue.sync {
+            self.update(trigger: trigger)
         }
-    }
-    
-    private func update(trigger: SleepTimerTriggerAt) {
-        self.trigger = trigger
-        let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60}
-        switch self.trigger {
-        case .never, .endOfChapter:
-            self.timeToSleepIn(nil)
-        case .fifteenMinutes:
-            self.timeToSleepIn(minutes(15))
-        case .thirtyMinutes:
-            self.timeToSleepIn(minutes(30))
-        case .oneHour:
-            self.timeToSleepIn(minutes(60))
-        }
-    }
-    
-    private func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
-        var newTime: Date? = nil
-        if let minutesFromNow = minutesFromNow {
-            newTime = Date().addingTimeInterval(minutesFromNow)
-            self.scheduleTimerIfNeeded()
-        }
-        self.timeToSleep = newTime
     }
 
-    private func scheduleTimerIfNeeded() {
-        self.queue.asyncAfter(deadline: DispatchTime.now() + 1) { [weak self] () -> Void in
-            self?.checkTimerStateAndScheduleNextRun()
-        }
-    }
-    
-    private func checkTimerStateAndScheduleNextRun() {
-        if let tts = self.timeToSleep, self.trigger != .never {
-            let now = Date()
-            if now.compare(tts) == ComparisonResult.orderedDescending {
-                DispatchQueue.main.async { [weak self] () -> Void in
-                    self?.player.pause()
-                }
-                self.clearTriggers()
-            } else {
-                self.scheduleTimerIfNeeded()
+    private func update(trigger: SleepTimerTriggerAt) {
+        func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
+            var newTime: Date? = nil
+            if let minutesFromNow = minutesFromNow {
+                newTime = Date().addingTimeInterval(minutesFromNow)
+                scheduleTimerIfNeeded()
             }
+            self.timeToSleep = newTime
+        }
+
+        func scheduleTimerIfNeeded() {
+            self.queue.asyncAfter(deadline: DispatchTime.now() + 1) {
+                checkTimerStateAndScheduleNextRun()
+            }
+        }
+
+        func checkTimerStateAndScheduleNextRun() {
+            if let tts = self.timeToSleep, self.trigger != .never {
+                let now = Date()
+                if now.compare(tts) == ComparisonResult.orderedDescending {
+                    DispatchQueue.main.async { [weak self] () -> Void in
+                        self?.player.pause()
+                    }
+                    self.clearTriggers()
+                } else {
+                    scheduleTimerIfNeeded()
+                }
+            }
+        }
+
+        self.trigger = trigger
+        let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60 }
+        switch self.trigger {
+        case .never, .endOfChapter:
+            timeToSleepIn(nil)
+        case .fifteenMinutes:
+            timeToSleepIn(minutes(15))
+        case .thirtyMinutes:
+            timeToSleepIn(minutes(30))
+        case .oneHour:
+            timeToSleepIn(minutes(60))
         }
     }
 
