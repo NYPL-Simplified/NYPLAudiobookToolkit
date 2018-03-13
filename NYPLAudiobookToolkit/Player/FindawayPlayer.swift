@@ -54,12 +54,13 @@ final class FindawayPlayer: NSObject, Player {
     }
     
     private var willBeReadyAt: Date = Date()
-    private var debounceBufferTime: TimeInterval = 0.5
+    private var debounceBufferTime: TimeInterval = 0.2
     private var dispatchDeadline: DispatchTime {
         return DispatchTime.now() + self.debounceBufferTime
     }
 
     private var audioEngineDatabaseHasBeenVerified: Bool
+
     private var sessionKey: String {
         return self.spineElement.sessionKey
     }
@@ -76,22 +77,9 @@ final class FindawayPlayer: NSObject, Player {
     private var currentOffset: UInt {
         return FAEAudioEngine.shared()?.playbackEngine?.currentOffset ?? 0
     }
-
-    private var currentBookIsPlaying: Bool {
-        return self.isPlaying && self.bookIsLoaded
-    }
     
     private var chapterAtCursor: ChapterLocation {
         return self.cursor.currentElement.chapter
-    }
-
-    private var currentFindawayChapter: FAEChapterDescription? {
-        var chapter: FAEChapterDescription? = nil
-        if self.isPlaying {
-            // If there is no book playing the SDK will still return a loaded chapter, this chapter will have a blank audiobook ID and must not be used. Will cause undefined behavior.
-            chapter = FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
-        }
-        return chapter
     }
 
     var isPlaying: Bool {
@@ -99,7 +87,8 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private var bookIsLoaded: Bool {
-        guard let loadedAudiobookID = self.currentFindawayChapter?.audiobookID else { return false }
+        let chapter = FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
+        guard let loadedAudiobookID = chapter?.audiobookID else { return false }
         return loadedAudiobookID == self.audiobookID
     }
 
@@ -280,7 +269,7 @@ final class FindawayPlayer: NSObject, Player {
     }
     
     private func isSeekOperation(locationBeforeNavigation: ChapterLocation?, destinationLocation: ChapterLocation) -> Bool {
-        return self.currentBookIsPlaying && self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
+        return self.bookIsLoaded && self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
     }
 
     private func attemptQueuedPlayheadManipulation() {
