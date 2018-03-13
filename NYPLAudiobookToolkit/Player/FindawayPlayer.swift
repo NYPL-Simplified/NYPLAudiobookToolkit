@@ -296,6 +296,18 @@ final class FindawayPlayer: NSObject, Player {
     private func dispatchDeadline() -> DispatchTime {
         return DispatchTime.now() + self.debounceBufferTime
     }
+
+    private func notifyDelegatesOfPlaybackFor(chapter: ChapterLocation) {
+        self.delegates.allObjects.forEach { (delegate) in
+            delegate.player(self, didBeginPlaybackOf: chapter)
+        }
+    }
+
+    private func notifyDelegatesOfPauseFor(chapter: ChapterLocation) {
+        self.delegates.allObjects.forEach { (delegate) in
+            delegate.player(self, didStopPlaybackOf: chapter)
+        }
+    }
 }
 
 extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
@@ -337,12 +349,6 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
         }
     }
 
-    func notifyDelegatesOfPlaybackFor(chapter: ChapterLocation) {
-        self.delegates.allObjects.forEach { (delegate) in
-            delegate.player(self, didBeginPlaybackOf: chapter)
-        }
-    }
-
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
             if let currentChapter = self.currentChapterLocation {
@@ -350,12 +356,6 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)
                 }
             }
-        }
-    }
-
-    func notifyDelegatesOfPauseFor(chapter: ChapterLocation) {
-        self.delegates.allObjects.forEach { (delegate) in
-            delegate.player(self, didStopPlaybackOf: chapter)
         }
     }
 }
