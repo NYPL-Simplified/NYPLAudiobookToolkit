@@ -68,7 +68,7 @@ final class FindawayPlayer: NSObject, Player {
     private var cursor: Cursor<SpineElement>
     private let spineElement: FindawaySpineElement
     private var eventHandler: FindawayPlaybackNotificationHandler
-    private var queue = DispatchQueue(label: "com.nyplaudiobooktoolkit.FindawayPlayer")
+    private var queue = DispatchQueue(label: "org.nypl.labs.NYPLAudiobookToolkit.FindawayPlayer")
     public init(spineElement: FindawaySpineElement, eventHandler: FindawayPlaybackNotificationHandler, lifeCycleManager: AudiobookLifeCycleManager, cursor: Cursor<SpineElement>) {
         self.eventHandler = eventHandler
         self.spineElement = spineElement
