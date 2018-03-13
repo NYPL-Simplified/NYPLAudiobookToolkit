@@ -28,23 +28,22 @@ import UIKit
     var downloadProgress: Float { get }
     
     /// Implmenters of this should attempt to download all
-    /// spine elements.
+    /// spine elements in a serial order. Once the
+    /// implementer has begun requesting files, calling this
+    /// again should not fire more requests. If no request is
+    /// in progress, fetch should always start at the first
+    /// spine element.
     ///
+    /// Implementations of this should be non-blocking.
     /// Updates for the status of each download task will
     /// come through delegate methods.
     func fetch()
-    
-    /// Implmenters of this should attempt to download spine
-    /// elements at the requested index.
-    ///
-    /// Updates for the status of this download task will
-    /// come through delegate methods.
-    func fetchSpineAt(index: Int)
     
     
     /// Implmenters of this should attempt to delete all
     /// spine elements.
     ///
+    /// Implementations of this should be non-blocking.
     /// Updates for the status of each download task will
     /// come through delegate methods.
     func deleteAll()
@@ -61,7 +60,8 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         }
         return taskCompletedPercentage / Float(self.spine.count)
     }
-
+    
+    private var cursor: Cursor<SpineElement>?
     private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     
     public func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate) {
@@ -91,19 +91,23 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public func fetch() {
-        self.spine.forEach { (element) in
-            element.downloadTask.fetch()
+        // It is possible our cursor has become `nil` after
+        // all files were downloaded or if we hit an error
+        // while trying to execute a download task.
+        //
+        // If no cursor exists, then we should message
+        // every task to fetch and let them determine
+        // if a file exists or not.
+        if self.cursor == nil {
+            self.cursor = Cursor(data: self.spine)
         }
-    }
-    
-    public func fetchSpineAt(index: Int) {
-        let downloadTask = self.spine[index].downloadTask
-        downloadTask.fetch()
+        self.cursor?.currentElement.downloadTask.fetch()
     }
 }
 
 extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
+        self.cursor = nil
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
@@ -118,6 +122,8 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
     
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
+        self.cursor = self.cursor?.next()
+        self.cursor?.currentElement.downloadTask.fetch()
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesThatPlaybackIsReadyFor(spineElement)

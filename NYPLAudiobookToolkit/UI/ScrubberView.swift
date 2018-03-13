@@ -11,7 +11,6 @@ import PureLayout
 
 protocol ScrubberViewDelegate: class {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
-    func scrubberViewDidBeginScrubbing(_ scrubberView: ScrubberView)
 }
 
 struct ScrubberProgress: Equatable {
@@ -59,7 +58,7 @@ struct ScrubberUIState: Equatable {
             progressLocation = CGFloat(self.progress.offset / self.progress.duration) * (width - CGFloat(self.gripperRadius))
         }
         
-        // Somehow out offset is greater than our duration, and our location is greater than the width of the actual playing content
+        // Somehow our offset is greater than our duration, and our location is greater than the width of the actual playing content
         if progressLocation > width {
             progressLocation = width
         }
@@ -226,6 +225,10 @@ final class ScrubberView: UIView {
             return
         }
 
+        guard self.state.isScrubbing else {
+            return
+        }
+    
         self.state = ScrubberUIState(
             gripperRadius: 4,
             progressColor: UIColor.gray,
@@ -271,7 +274,6 @@ final class ScrubberView: UIView {
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.scrub(touch: touches.first)
-        self.delegate?.scrubberViewDidBeginScrubbing(self)
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
