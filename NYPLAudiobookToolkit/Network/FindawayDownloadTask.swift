@@ -35,7 +35,7 @@ final class FindawayDownloadTask: DownloadTask {
         didSet {
             guard self.readyToDownload else { return }
             guard self.retryAfterVerification else { return }
-            self.fetch()
+            self.attemptFetch()
         }
     }
     private var downloadRequest: FAEDownloadRequest
@@ -111,18 +111,22 @@ final class FindawayDownloadTask: DownloadTask {
      */
     public func fetch() {
         self.queue.sync {
-            guard self.readyToDownload else {
-                self.retryAfterVerification = true
-                return
-            }
+            self.attemptFetch()
+        }
+    }
 
-            let status = self.downloadStatus
-            if status == .notDownloaded {
-                FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: self.downloadRequest)
-                self.retryAfterVerification = false
-            } else if status == .downloaded {
-                self.delegate?.downloadTaskReadyForPlayback(self)
-            }
+    private func attemptFetch() {
+        guard self.readyToDownload else {
+            self.retryAfterVerification = true
+            return
+        }
+
+        let status = self.downloadStatus
+        if status == .notDownloaded {
+            FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: self.downloadRequest)
+            self.retryAfterVerification = false
+        } else if status == .downloaded {
+            self.delegate?.downloadTaskReadyForPlayback(self)
         }
     }
 
@@ -233,11 +237,9 @@ extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
     }
     
     func isTaskFor(_ chapter: FAEChapterDescription) -> Bool {
-        var isTask = false
-            isTask = self.downloadRequest.audiobookID == chapter.audiobookID &&
+        return self.downloadRequest.audiobookID == chapter.audiobookID &&
                 self.downloadRequest.chapterNumber == chapter.chapterNumber &&
                 self.downloadRequest.partNumber == chapter.partNumber
-        return isTask
     }
 }
 
