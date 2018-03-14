@@ -80,7 +80,7 @@ final class FindawayDownloadTask: DownloadTask {
     }
 
     convenience init(spineElement: FindawaySpineElement) {
-        var request = FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().first(where: { (existingRequest) -> Bool in
+      var request: FAEDownloadRequest! = FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().first(where: { (existingRequest) -> Bool in
             return existingRequest.audiobookID == spineElement.audiobookID
                 && existingRequest.chapterNumber == spineElement.chapterNumber
                 && existingRequest.chapterNumber == spineElement.partNumber
@@ -100,7 +100,7 @@ final class FindawayDownloadTask: DownloadTask {
         self.init(
             audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared,
             findawayDownloadNotificationHandler: DefaultFindawayDownloadNotificationHandler(),
-            downloadRequest: request!
+            downloadRequest: request
         )
     }
     
@@ -210,7 +210,7 @@ extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
                 sessionKey: self.downloadRequest.sessionKey,
                 licenseID: self.downloadRequest.licenseID,
                 restrictToWiFi: self.downloadRequest.restrictToWiFi
-            )!
+            )
             self.readyToDownload = true
         }
     }
