@@ -26,6 +26,7 @@ public final class AudiobookDetailViewController: UIViewController {
 
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
+        self.currentChapter = audiobookManager.currentChapterLocation
         super.init(nibName: nil, bundle: nil)
         self.audiobookManager.downloadDelegate = self
         self.audiobookManager.playbackDelegate = self
@@ -89,8 +90,11 @@ public final class AudiobookDetailViewController: UIViewController {
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
-        self.seekBar.autoPinEdge(.left, to: .left, of: self.coverView)
-        self.seekBar.autoPinEdge(.right, to: .right, of: self.coverView)
+        self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding * 2)
+        self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
+        if let currentChapter = self.currentChapter {
+            self.seekBar.setOffset(currentChapter.playheadOffset, duration: currentChapter.duration)
+        }
 
         self.view.addSubview(self.chapterTitleLabel)
         NSLayoutConstraint.autoSetPriority(.defaultLow) {
