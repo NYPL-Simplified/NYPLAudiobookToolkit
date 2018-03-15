@@ -22,11 +22,16 @@ class HumanReadableTimeInterval {
         if hours > 0 {
             timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
+        if self.isDecreasing {
+            timeString = "-\(timeString)"
+        }
         return timeString
     }()
 
     private let timeInterval: TimeInterval
-    init(timeInterval: TimeInterval) {
+    private let isDecreasing: Bool
+    init(timeInterval: TimeInterval, isDecreasing: Bool = false) {
         self.timeInterval = timeInterval
+        self.isDecreasing = isDecreasing
     }
 }
