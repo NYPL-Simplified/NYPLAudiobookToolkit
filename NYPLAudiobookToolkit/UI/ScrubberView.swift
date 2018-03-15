@@ -20,13 +20,21 @@ private func defaultTimeLabelWidth() -> CGFloat {
 struct ScrubberProgress: Equatable {
     let offset: TimeInterval
     let duration: TimeInterval
-    
-    var timeLeftText: String {
-        return HumanReadableTimeInterval(timeInterval: self.duration - self.offset, isDecreasing: true).value
+
+    var timeAsSentence: String? {
+        var humanReadableText: String?
+        if self.timeLeft > 0 {
+            humanReadableText = HumanReadableTimeRemaining(timeInterval: self.timeLeft).value
+        }
+        return humanReadableText
     }
-    
+
+    var timeLeftText: String {
+        return HumanReadableTimeStamp(timeInterval: self.timeLeft, isDecreasing: true).value
+    }
+
     var playheadText: String {
-        return HumanReadableTimeInterval(timeInterval: self.offset).value
+        return HumanReadableTimeStamp(timeInterval: self.offset).value
     }
     
     var labelWidth: CGFloat {
@@ -36,6 +44,11 @@ struct ScrubberProgress: Equatable {
             return defaultTimeLabelWidth()
         }
     }
+
+    var timeLeft: TimeInterval {
+        return self.duration - self.offset
+    }
+
     var succ: ScrubberProgress {
         let newOffset = self.offset <= self.duration ? self.offset + 1 : self.duration
         return ScrubberProgress(offset: newOffset, duration: self.duration)
@@ -94,6 +107,7 @@ final class ScrubberView: UIView {
     let gripper = UIView()
     let leftLabel = UILabel()
     let rightLabel = UILabel()
+    let middleLabel = UILabel()
     var barWidthConstraint: NSLayoutConstraint?
     var progressBarWidth: CGFloat {
         return self.progressBackground.bounds.size.width
@@ -141,6 +155,7 @@ final class ScrubberView: UIView {
     public func updateUIWith(_ state: ScrubberUIState) {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
+        self.middleLabel.text = self.state.progress.timeAsSentence
         self.setNeedsUpdateConstraints()
         if self.timer == nil && self.state.isScrubbing {
             self.timer = Timer.scheduledTimer(
@@ -173,16 +188,18 @@ final class ScrubberView: UIView {
         self.addSubview(self.progressBackground)
         self.addSubview(self.leftLabel)
         self.addSubview(self.rightLabel)
+        self.addSubview(self.middleLabel)
         self.progressBackground.backgroundColor = UIColor.darkGray
         self.progressBackground.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
+        self.progressBackground.autoPinEdge(.left, to: .left, of: self)
+        self.progressBackground.autoPinEdge(.right, to: .right, of: self)
         self.progressBackground.accessibilityIdentifier = "progress_background"
         self.progressBackground.setContentCompressionResistancePriority(UILayoutPriority.required, for: UILayoutConstraintAxis.horizontal)
         self.progressBackground.setContentHuggingPriority(.defaultLow, for: UILayoutConstraintAxis.horizontal)
 
         self.leftLabel.autoPinEdge(.left, to: .left, of: self)
-        self.leftLabel.autoPinEdge(.right, to: .left, of: self.progressBackground, withOffset: -2)
-        self.leftLabel.autoPinEdge(.top, to: .top, of: self.progressBackground)
-        self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self.progressBackground)
+        self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
+        self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         let leftLabelWidth = self.leftLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.leftLabel.numberOfLines = 1
         self.leftLabel.textAlignment = .left
@@ -193,9 +210,8 @@ final class ScrubberView: UIView {
         self.leftLabel.text = self.state.progress.playheadText
         
         self.rightLabel.autoPinEdge(.right, to: .right, of: self)
-        self.rightLabel.autoPinEdge(.left, to: .right, of: self.progressBackground, withOffset: 2)
-        self.rightLabel.autoPinEdge(.top, to: .top, of: self.progressBackground)
-        self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self.progressBackground)
+        self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
+        self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         let rightLabelWidth = self.rightLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.rightLabel.numberOfLines = 1
         self.rightLabel.textAlignment = .right
@@ -205,6 +221,16 @@ final class ScrubberView: UIView {
         self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
         self.rightLabel.text = self.state.progress.timeLeftText
         
+        self.middleLabel.autoPinEdge(.left, to: .right, of: self.leftLabel)
+        self.middleLabel.autoPinEdge(.right, to: .left, of: self.rightLabel)
+        self.middleLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
+        self.middleLabel.numberOfLines = 1
+        self.middleLabel.textAlignment = .center
+        self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
+        self.middleLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
+        self.middleLabel.font = UIFont.systemFont(ofSize: 16)
+        self.middleLabel.accessibilityIdentifier = "progress_rightLabel"
+
         self.labelWidthConstraints.append(leftLabelWidth)
         self.labelWidthConstraints.append(rightLabelWidth)
 
@@ -278,7 +304,6 @@ final class ScrubberView: UIView {
                     isScrubbing: false,
                     progress: self.state.progress.progressFromPrecentage(percentage)
                 )
-
             }
         }
     }
@@ -301,7 +326,7 @@ final class ScrubberView: UIView {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.scrub(touch: touches.first)
     }
-    
+
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.scrub(touch: touches.first)
     }
