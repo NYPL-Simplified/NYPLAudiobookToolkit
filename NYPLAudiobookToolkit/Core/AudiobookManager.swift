@@ -57,6 +57,7 @@ import AudioEngine
     var tableOfContents: AudiobookTableOfContents { get }
     var isPlaying: Bool { get }
     var sleepTimer: SleepTimer { get }
+    var currentChapterLocation: ChapterLocation? { get }
     func fetch()
     func skipForward()
     func skipBack()
@@ -81,6 +82,10 @@ public final class DefaultAudiobookManager: AudiobookManager {
             networkService: self.networkService,
             player: self.player
         )
+    }
+
+    public var currentChapterLocation: ChapterLocation? {
+        return self.player.currentChapterLocation
     }
 
     /// The SleepTimer may be used to schedule playback to stop at a specific
