@@ -109,9 +109,11 @@ final class ScrubberView: UIView {
     let rightLabel = UILabel()
     let middleLabel = UILabel()
     var barWidthConstraint: NSLayoutConstraint?
+
     var progressBarWidth: CGFloat {
         return self.progressBackground.bounds.size.width
     }
+
     var labelWidthConstraints: [NSLayoutConstraint] = []
     var state: ScrubberUIState = ScrubberUIState(
         gripperHeight: 26,
@@ -132,6 +134,7 @@ final class ScrubberView: UIView {
             progress: ScrubberProgress(offset: offset, duration: duration)
         )
     }
+
     var timer: Timer?
 
     public func play() {
