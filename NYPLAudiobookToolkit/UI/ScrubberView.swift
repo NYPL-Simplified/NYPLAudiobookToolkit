@@ -114,7 +114,7 @@ final class ScrubberView: UIView {
     }
     var labelWidthConstraints: [NSLayoutConstraint] = []
     var state: ScrubberUIState = ScrubberUIState(
-        gripperHeight: 22,
+        gripperHeight: 26,
         progressColor: UIColor.black,
         isScrubbing: false,
         progress: ScrubberProgress(offset: 0, duration: 0)
