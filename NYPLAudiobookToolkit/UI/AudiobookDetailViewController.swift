@@ -27,6 +27,7 @@ public final class AudiobookDetailViewController: UIViewController {
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         self.currentChapter = audiobookManager.currentChapterLocation
+        self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
         self.audiobookManager.downloadDelegate = self
         self.audiobookManager.playbackDelegate = self
@@ -39,6 +40,7 @@ public final class AudiobookDetailViewController: UIViewController {
     private let downloadCompleteText = "Title Downloaded!"
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
+    private let tintColor: UIColor
     private let playbackControlView = PlaybackControlView()
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
@@ -50,6 +52,7 @@ public final class AudiobookDetailViewController: UIViewController {
         imageView.contentMode = UIViewContentMode.scaleAspectFill
         return imageView
     }()
+
     private let chapterTitleLabel: UILabel = { () -> UILabel in
         let theLabel = UILabel()
         theLabel.numberOfLines = 1
@@ -61,11 +64,9 @@ public final class AudiobookDetailViewController: UIViewController {
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-        self.navigationController?.navigationBar.backIndicatorImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.barTintColor = self.backgroundColor
-        self.navigationItem.backBarButtonItem?.title = self.audiobookManager.metadata.title
+        self.navigationController?.navigationBar.tintColor = self.tintColor
+
         self.playbackControlView.backgroundColor = self.backgroundColor
         self.view.backgroundColor = self.backgroundColor
 
