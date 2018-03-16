@@ -174,8 +174,8 @@ final class ScrubberView: UIView {
         }
     }
 
-    init(trimColor: UIColor = UIColor.red) {
-        self.trimColor = trimColor
+    init(tintColor: UIColor = UIColor.red) {
+        self.trimColor = tintColor
         super.init(frame: CGRect.zero)
         self.setup()
     }
