@@ -204,7 +204,8 @@ class ViewController: UIViewController {
             language: "en"
         )
         
-        self.navigationItem.title = "The Heart of Henry Quantum"
+        self.navigationItem.title = "My Books"
+        
         guard let audiobook = AudiobookFactory.audiobook(unwrappedJSON) else { return }
         if (self.manager == nil) {
             self.manager = DefaultAudiobookManager(
