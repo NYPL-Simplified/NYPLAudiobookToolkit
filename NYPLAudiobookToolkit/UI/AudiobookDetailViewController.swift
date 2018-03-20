@@ -36,7 +36,6 @@ public final class AudiobookDetailViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private let downloadCompleteText = "Title Downloaded!"
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
     private let tintColor: UIColor
@@ -175,34 +174,8 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
 }
 
 extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) {
-        guard let currentChapter = self.currentChapter else { return }
-        if spineElement.chapter.number == currentChapter.number && spineElement.chapter.part == currentChapter.part {
-            self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
-            Timer.scheduledTimer(
-                timeInterval: 3,
-                target: self,
-                selector: #selector(AudiobookDetailViewController.postPlaybackReadyTimerFired(_:)),
-                userInfo: nil,
-                repeats: false
-            )
-        }
-    }
-    
-    @objc func postPlaybackReadyTimerFired(_ timer: Timer) {
-        if self.chapterInfoStack.subtitleText == self.downloadCompleteText  {
-            if let chapter = self.currentChapter {
-                self.chapterInfoStack.subtitleText = "Chapter \(chapter.number)"
-            } else {
-                self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
-            }
-        }
-    }
-
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) {
-        self.chapterInfoStack.subtitleText = "Downloading \(Int(spineElement.downloadTask.downloadProgress * 100))%"
-    }
-
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) { }
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) { }
     public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement) {
         let alertController = UIAlertController(
             title: "Error!",
