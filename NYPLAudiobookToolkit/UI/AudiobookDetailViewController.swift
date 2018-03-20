@@ -53,6 +53,7 @@ public final class AudiobookDetailViewController: UIViewController {
 
     private let toolbar = UIToolbar()
     private let chapterInfoStack = ChapterInfoStack()
+    private let toolbarHeight: CGFloat = 44
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.navigationBar.isTranslucent = false
@@ -115,14 +116,32 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
         self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
         self.toolbar.autoPinEdge(.right, to: .right, of: self.view)
+        self.toolbar.autoSetDimension(.height, toSize: self.toolbarHeight)
         self.toolbar.layer.borderWidth = 1
         self.toolbar.layer.borderColor = UIColor.white.cgColor
-        let speed = UIBarButtonItem(title: "Speed", style: .plain, target: nil, action: nil)
-        speed.setTitleTextAttributes([NSAttributedStringKey.foregroundColor : UIColor.darkText], for: .normal)
-        let sleepTimer = UIBarButtonItem(title: "Sleep Timer", style: .plain, target: nil, action: nil)
-        sleepTimer.setTitleTextAttributes([NSAttributedStringKey.foregroundColor : UIColor.darkText], for: .normal)
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        self.toolbar.setItems([flexibleSpace, speed, flexibleSpace, sleepTimer, flexibleSpace], animated: true)
+        var items: [UIBarButtonItem] = [flexibleSpace]
+        let speed = self.barButtonWith(
+            title: "Speed",
+            imageNamed:"speed",
+            target: self,
+            action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
+        )
+        if let speed = speed {
+            items.append(speed)
+        }
+        items.append(flexibleSpace)
+        let sleepTimer = self.barButtonWith(
+            title: "Sleep Timer",
+            imageNamed: "moon",
+            target: self,
+            action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
+        )
+        if let sleepTimer = sleepTimer {
+            items.append(sleepTimer)
+        }
+        items.append(flexibleSpace)
+        self.toolbar.setItems(items, animated: true)
 
     }
     
@@ -139,6 +158,14 @@ public final class AudiobookDetailViewController: UIViewController {
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
 
+    
+    @objc public func speedWasPressed(_ sender: Any) {
+    }
+
+    
+    @objc public func sleepTimerWasPressed(_ sender: Any) {
+    }
+
     @objc func coverArtWasPressed(_ sender: Any) {
         self.audiobookManager.fetch()
     }
@@ -151,6 +178,59 @@ public final class AudiobookDetailViewController: UIViewController {
     func updateControlsForPlaybackStop() {
         self.seekBar.pause()
         self.playbackControlView.showPlayButton()
+    }
+    
+    // `UIBarButtonItem`s do not allow for both an image and a title, despite its sybling `UITabBarItem` being
+    // able to support this feature. The mess you see below is to allow for bar button items that support
+    // both at the same time.
+    //
+    // Please forgive the hardcoded values. This was truly a last resort.
+    private func barButtonWith(title: String, imageNamed: String, target: Any?, action: Selector) -> UIBarButtonItem? {
+        guard let image = UIImage(named: imageNamed, in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) else {
+            return nil
+        }
+        let view = UIView()
+        let label = UILabel()
+
+        let viewHeight: CGFloat = self.toolbarHeight
+        let labelHeight: CGFloat = 16
+        view.addSubview(label)
+        label.text = title
+        label.textColor = UIColor.darkText
+        label.font = UIFont.systemFont(ofSize: 12)
+
+        // Find the width of the label for the text provided
+        let labelSize = label.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: labelHeight))
+        
+        // Place the label in its view
+        let labelPoint = CGPoint(x: 0, y: viewHeight - labelHeight)
+        let labelFrame = CGRect(origin: labelPoint, size: labelSize)
+    
+        let imageView = UIImageView(image: image)
+        view.addSubview(imageView)
+        let imageHeight: CGFloat = 24
+        
+        // Place the image in the middle of the text
+        let imageXValue = (labelSize.width / 2) - (imageHeight / 2)
+        
+        // Place the image above the text
+        let imageYValye = viewHeight - (labelHeight + imageHeight)
+        let imageViewFrame = CGRect(
+            x: imageXValue,
+            y: imageYValye,
+            width: imageHeight,
+            height: imageHeight
+        )
+        imageView.contentMode = .scaleAspectFit
+        imageView.frame = imageViewFrame
+        label.frame = labelFrame
+        view.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: labelFrame.width,
+            height: viewHeight
+        )
+        return UIBarButtonItem(customView: view)
     }
 }
 
@@ -219,3 +299,4 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         }
     }
 }
+
