@@ -23,7 +23,6 @@ public final class AudiobookDetailViewController: UIViewController {
 
     private let audiobookManager: AudiobookManager
     private var currentChapter: ChapterLocation?
-
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         self.currentChapter = audiobookManager.currentChapterLocation
@@ -53,14 +52,7 @@ public final class AudiobookDetailViewController: UIViewController {
         return imageView
     }()
 
-    private let chapterTitleLabel: UILabel = { () -> UILabel in
-        let theLabel = UILabel()
-        theLabel.numberOfLines = 1
-        theLabel.textAlignment = NSTextAlignment.center
-        theLabel.font = UIFont.systemFont(ofSize: 18)
-        theLabel.accessibilityIdentifier = "chapter_label"
-        return theLabel
-    }()
+    private let chapterInfoStack = ChapterInfoStack()
 
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -83,8 +75,15 @@ public final class AudiobookDetailViewController: UIViewController {
         )
         self.navigationItem.rightBarButtonItem = bbi
     
+        self.view.addSubview(self.chapterInfoStack)
+        self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
+        self.chapterInfoStack.autoPinEdge(.left, to: .left, of: self.view)
+        self.chapterInfoStack.autoPinEdge(.right, to: .right, of: self.view)
+        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
+        self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
+
         self.view.addSubview(self.coverView)
-        self.coverView.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
+        self.coverView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
         self.coverView.autoSetDimensions(to: CGSize(width: 266, height: 266))
         
@@ -98,17 +97,9 @@ public final class AudiobookDetailViewController: UIViewController {
             self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
 
-        self.view.addSubview(self.chapterTitleLabel)
-        NSLayoutConstraint.autoSetPriority(.defaultLow) {
-            self.chapterTitleLabel.autoSetDimension(.height, toSize: 0, relation: .equal)
-        }
-        self.chapterTitleLabel.autoPinEdge(.top, to: .bottom, of: seekBar, withOffset: self.padding)
-        self.chapterTitleLabel.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding)
-        self.chapterTitleLabel.autoPinEdge(.right, to: .right, of: self.view, withOffset: -self.padding)
-
         self.view.addSubview(self.playbackControlView)
         self.playbackControlView.delegate = self
-        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.chapterTitleLabel, withOffset: self.padding)
+        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding)
         self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: self.padding)
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
@@ -173,7 +164,7 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) {
         guard let currentChapter = self.currentChapter else { return }
         if spineElement.chapter.number == currentChapter.number && spineElement.chapter.part == currentChapter.part {
-            self.chapterTitleLabel.text = self.downloadCompleteText
+            self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
             Timer.scheduledTimer(
                 timeInterval: 3,
                 target: self,
@@ -185,17 +176,17 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     }
     
     @objc func postPlaybackReadyTimerFired(_ timer: Timer) {
-        if self.chapterTitleLabel.text == self.downloadCompleteText  {
+        if self.chapterInfoStack.subtitleText == self.downloadCompleteText  {
             if let chapter = self.currentChapter {
-                self.chapterTitleLabel.text = "Chapter \(chapter.number)"
+                self.chapterInfoStack.subtitleText = "Chapter \(chapter.number)"
             } else {
-                self.chapterTitleLabel.text = ""
+                self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
             }
         }
     }
 
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) {
-        self.chapterTitleLabel.text = "Downloading \(Int(spineElement.downloadTask.downloadProgress * 100))%"
+        self.chapterInfoStack.subtitleText = "Downloading \(Int(spineElement.downloadTask.downloadProgress * 100))%"
     }
 
     public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement) {
@@ -220,7 +211,7 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
         self.currentChapter = chapter
-        self.chapterTitleLabel.text = "Chapter \(chapter.number)"
+        self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
         self.seekBar.setOffset(chapter.playheadOffset, duration: chapter.duration)
         if scrubbing {
             self.updateControlsForPlaybackStart()
