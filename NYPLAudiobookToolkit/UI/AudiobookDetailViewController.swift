@@ -230,6 +230,8 @@ public final class AudiobookDetailViewController: UIViewController {
             width: labelFrame.width,
             height: viewHeight
         )
+        view.isUserInteractionEnabled = true
+        view.addGestureRecognizer(UITapGestureRecognizer(target: target, action: action))
         return UIBarButtonItem(customView: view)
     }
 }
