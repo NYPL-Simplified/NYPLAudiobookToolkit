@@ -202,6 +202,7 @@ final class ScrubberView: UIView {
         self.leftLabel.numberOfLines = 1
         self.leftLabel.textAlignment = .left
         self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
+        self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
         self.leftLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
         self.leftLabel.font = UIFont.systemFont(ofSize: 12)
         self.leftLabel.accessibilityIdentifier = "progress_leftLabel"
@@ -215,6 +216,7 @@ final class ScrubberView: UIView {
         self.rightLabel.numberOfLines = 1
         self.rightLabel.textAlignment = .right
         self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
+        self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
         self.rightLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
         self.rightLabel.font = UIFont.systemFont(ofSize: 12)
         self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
@@ -227,6 +229,7 @@ final class ScrubberView: UIView {
         self.middleLabel.numberOfLines = 1
         self.middleLabel.textAlignment = .center
         self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
+        self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
         self.middleLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
         self.middleLabel.font = UIFont.boldSystemFont(ofSize: 16)
         self.middleLabel.accessibilityIdentifier = "progress_rightLabel"
