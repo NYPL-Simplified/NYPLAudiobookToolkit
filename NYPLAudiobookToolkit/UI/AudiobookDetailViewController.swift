@@ -81,14 +81,10 @@ public final class AudiobookDetailViewController: UIViewController {
         self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
         self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
 
-        self.view.addSubview(self.coverView)
-        self.coverView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack)
-        self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.coverView.autoSetDimensions(to: CGSize(width: 191, height: 191))
         
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
-        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
+        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding * 2)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
         if let currentChapter = self.currentChapter {
@@ -96,10 +92,15 @@ public final class AudiobookDetailViewController: UIViewController {
             self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
 
+        self.view.addSubview(self.coverView)
+        self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 2)
+        self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
+        self.coverView.autoSetDimensions(to: CGSize(width: 191, height: 191))
+
         self.view.addSubview(self.playbackControlView)
         self.view.addSubview(self.toolbar)
         self.playbackControlView.delegate = self
-        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding)
+        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
         self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -1, relation: .lessThanOrEqual)
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
