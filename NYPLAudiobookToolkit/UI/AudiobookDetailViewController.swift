@@ -95,6 +95,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
         if let currentChapter = self.currentChapter {
             self.seekBar.setOffset(currentChapter.playheadOffset, duration: currentChapter.duration)
+            self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
 
         self.view.addSubview(self.chapterTitleLabel)

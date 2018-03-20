@@ -21,14 +21,6 @@ struct ScrubberProgress: Equatable {
     let offset: TimeInterval
     let duration: TimeInterval
 
-    var timeAsSentence: String? {
-        var humanReadableText: String?
-        if self.timeLeft > 0 {
-            humanReadableText = HumanReadableTimeRemaining(timeInterval: self.timeLeft).value
-        }
-        return humanReadableText
-    }
-
     var timeLeftText: String {
         return HumanReadableTimeStamp(timeInterval: self.timeLeft, isDecreasing: true).value
     }
@@ -134,6 +126,10 @@ final class ScrubberView: UIView {
             progress: ScrubberProgress(offset: offset, duration: duration)
         )
     }
+    
+    public func setMiddle(text: String?) {
+        self.middleLabel.text = text
+    }
 
     var timer: Timer?
 
@@ -158,7 +154,6 @@ final class ScrubberView: UIView {
     public func updateUIWith(_ state: ScrubberUIState) {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
-        self.middleLabel.text = self.state.progress.timeAsSentence
         self.setNeedsUpdateConstraints()
         if self.timer == nil && self.state.isScrubbing {
             self.timer = Timer.scheduledTimer(
@@ -202,36 +197,38 @@ final class ScrubberView: UIView {
 
         self.leftLabel.autoPinEdge(.left, to: .left, of: self)
         self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
-        self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self)
+        self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self, withOffset: 0, relation: .greaterThanOrEqual)
         let leftLabelWidth = self.leftLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.leftLabel.numberOfLines = 1
         self.leftLabel.textAlignment = .left
         self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
         self.leftLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
-        self.leftLabel.font = UIFont.boldSystemFont(ofSize: 16)
+        self.leftLabel.font = UIFont.systemFont(ofSize: 12)
         self.leftLabel.accessibilityIdentifier = "progress_leftLabel"
         self.leftLabel.text = self.state.progress.playheadText
         
         self.rightLabel.autoPinEdge(.right, to: .right, of: self)
         self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
         self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self)
+        self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self, withOffset: 0, relation: .greaterThanOrEqual)
         let rightLabelWidth = self.rightLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.rightLabel.numberOfLines = 1
         self.rightLabel.textAlignment = .right
         self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
         self.rightLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
-        self.rightLabel.font = UIFont.boldSystemFont(ofSize: 16)
+        self.rightLabel.font = UIFont.systemFont(ofSize: 12)
         self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
         self.rightLabel.text = self.state.progress.timeLeftText
         
         self.middleLabel.autoPinEdge(.left, to: .right, of: self.leftLabel)
         self.middleLabel.autoPinEdge(.right, to: .left, of: self.rightLabel)
         self.middleLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
+        self.middleLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.middleLabel.numberOfLines = 1
         self.middleLabel.textAlignment = .center
         self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
         self.middleLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
-        self.middleLabel.font = UIFont.systemFont(ofSize: 16)
+        self.middleLabel.font = UIFont.boldSystemFont(ofSize: 16)
         self.middleLabel.accessibilityIdentifier = "progress_rightLabel"
 
         self.labelWidthConstraints.append(leftLabelWidth)
