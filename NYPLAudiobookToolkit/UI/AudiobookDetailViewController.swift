@@ -94,12 +94,13 @@ public final class AudiobookDetailViewController: UIViewController {
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
         if let currentChapter = self.currentChapter {
             self.seekBar.setOffset(currentChapter.playheadOffset, duration: currentChapter.duration)
+            self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
 
         self.view.addSubview(self.playbackControlView)
         self.playbackControlView.delegate = self
         self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding)
-        self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: self.padding)
+        self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
