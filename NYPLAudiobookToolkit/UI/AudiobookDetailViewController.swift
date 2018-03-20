@@ -52,8 +52,8 @@ public final class AudiobookDetailViewController: UIViewController {
         return imageView
     }()
 
+    private let toolbar = UIToolbar()
     private let chapterInfoStack = ChapterInfoStack()
-
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.navigationBar.isTranslucent = false
@@ -85,7 +85,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.view.addSubview(self.coverView)
         self.coverView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.coverView.autoSetDimensions(to: CGSize(width: 266, height: 266))
+        self.coverView.autoSetDimensions(to: CGSize(width: 191, height: 191))
         
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
@@ -98,9 +98,10 @@ public final class AudiobookDetailViewController: UIViewController {
         }
 
         self.view.addSubview(self.playbackControlView)
+        self.view.addSubview(self.toolbar)
         self.playbackControlView.delegate = self
         self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding)
-        self.playbackControlView.autoPin(toBottomLayoutGuideOf: self, withInset: 0, relation: .greaterThanOrEqual)
+        self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -1, relation: .lessThanOrEqual)
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
@@ -110,6 +111,19 @@ public final class AudiobookDetailViewController: UIViewController {
                 action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))
             )
         )
+
+        self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
+        self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
+        self.toolbar.autoPinEdge(.right, to: .right, of: self.view)
+        self.toolbar.layer.borderWidth = 1
+        self.toolbar.layer.borderColor = UIColor.white.cgColor
+        let speed = UIBarButtonItem(title: "Speed", style: .plain, target: nil, action: nil)
+        speed.setTitleTextAttributes([NSAttributedStringKey.foregroundColor : UIColor.darkText], for: .normal)
+        let sleepTimer = UIBarButtonItem(title: "Sleep Timer", style: .plain, target: nil, action: nil)
+        sleepTimer.setTitleTextAttributes([NSAttributedStringKey.foregroundColor : UIColor.darkText], for: .normal)
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        self.toolbar.setItems([flexibleSpace, speed, flexibleSpace, sleepTimer, flexibleSpace], animated: true)
+
     }
     
     override public func viewDidAppear(_ animated: Bool) {
