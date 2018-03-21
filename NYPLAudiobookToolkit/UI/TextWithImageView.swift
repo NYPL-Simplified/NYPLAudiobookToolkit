@@ -20,6 +20,15 @@ class TextOverImageView: UIView {
         }
     }
     
+    var subtext: String? {
+        get {
+            return self.subtextLabel.text
+        }
+        set(newText) {
+            self.subtextLabel.text = newText
+        }
+    }
+
     var image: UIImage? {
         get {
             return self.backgroundImageView.image
@@ -31,6 +40,7 @@ class TextOverImageView: UIView {
     
     private let backgroundImageView = UIImageView()
     private let textLabel = UILabel()
+    private let subtextLabel = UILabel()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -49,9 +59,18 @@ class TextOverImageView: UIView {
         self.backgroundImageView.autoPinEdgesToSuperviewEdges()
         self.addSubview(self.textLabel)
         self.textLabel.accessibilityIdentifier = "TextOverImageView.textLabel"
-        self.textLabel.autoCenterInSuperview()
+        self.textLabel.font = UIFont.systemFont(ofSize: 20)
         self.textLabel.textAlignment = .center
         self.textLabel.numberOfLines = 1
+        self.textLabel.autoCenterInSuperview()
+        self.textLabel.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        self.addSubview(self.subtextLabel)
+        self.subtextLabel.accessibilityIdentifier = "TextOverImageView.subtextLabel"
+        self.subtextLabel.font = UIFont.systemFont(ofSize: 12)
+        self.subtextLabel.textAlignment = .center
+        self.subtextLabel.numberOfLines = 1
+        self.subtextLabel.autoPinEdge(.top, to: .bottom, of: self.textLabel, withOffset: -6)
+        self.subtextLabel.autoAlignAxis(.vertical, toSameAxisOf: self.textLabel)
     }
     
     required init?(coder aDecoder: NSCoder) {

@@ -34,6 +34,7 @@ final class PlaybackControlView: UIView {
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         view.text = "15"
+        view.subtext = "sec"
         view.accessibilityIdentifier = "skip_back"
         return view
     }()
@@ -42,6 +43,7 @@ final class PlaybackControlView: UIView {
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         view.text = "15"
+        view.subtext = "sec"
         view.accessibilityIdentifier = "skip_forward"
         return view
     }()
@@ -83,6 +85,7 @@ final class PlaybackControlView: UIView {
         self.addSubview(self.playButton)
         self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
+        self.playButton.autoSetDimensions(to: CGSize(width: 56, height: 56))
         self.playButton.addGestureRecognizer(
             UITapGestureRecognizer(
                 target: self,
