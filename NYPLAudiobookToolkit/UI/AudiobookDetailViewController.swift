@@ -97,8 +97,8 @@ public final class AudiobookDetailViewController: UIViewController {
         self.view.addSubview(self.playbackControlView)
         self.view.addSubview(self.toolbar)
         self.playbackControlView.delegate = self
-        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
-        self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -1, relation: .lessThanOrEqual)
+        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding * 3)
+        self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
