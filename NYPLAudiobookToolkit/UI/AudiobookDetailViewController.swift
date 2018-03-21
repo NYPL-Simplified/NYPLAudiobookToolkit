@@ -88,10 +88,6 @@ public final class AudiobookDetailViewController: UIViewController {
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding * 2)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
-        if let currentChapter = self.currentChapter {
-            self.seekBar.setOffset(currentChapter.playheadOffset, duration: currentChapter.duration)
-            self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
-        }
 
         self.view.addSubview(self.coverView)
         self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 2)
@@ -143,8 +139,34 @@ public final class AudiobookDetailViewController: UIViewController {
         items.append(flexibleSpace)
         self.toolbar.setItems(items, animated: true)
 
+        if let currentChapter = self.currentChapter {
+            let timeLeftAfterCurrentChapter = self.timeLeftAfter(chapter: currentChapter)
+            self.seekBar.setOffset(
+                currentChapter.playheadOffset,
+                duration: currentChapter.duration,
+                timeLeftInBook: timeLeftAfterCurrentChapter
+            )
+            self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
+        }
     }
     
+    func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
+        let spine = self.audiobookManager.audiobook.spine
+        var addUpStuff = false
+        let timeLeftInChapter = chapter.duration - chapter.playheadOffset
+        let timeLeftAfterChapter = spine.reduce(timeLeftInChapter, { (result, element) -> TimeInterval in
+            if element.chapter.inSameChapter(other: currentChapter) {
+                addUpStuff = true
+            }
+            var newResult: TimeInterval = 0
+            if addUpStuff {
+                newResult = result + element.chapter.duration
+            }
+            return newResult
+        })
+        return timeLeftAfterChapter
+    }
+
     override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
@@ -282,7 +304,12 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
         self.currentChapter = chapter
         self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
-        self.seekBar.setOffset(chapter.playheadOffset, duration: chapter.duration)
+        let timeLeftAfterChapter = self.timeLeftAfter(chapter: chapter)
+        self.seekBar.setOffset(
+            chapter.playheadOffset,
+            duration: chapter.duration,
+            timeLeftInBook: timeLeftAfterChapter
+        )
         if scrubbing {
             self.updateControlsForPlaybackStart()
             self.seekBar.play()

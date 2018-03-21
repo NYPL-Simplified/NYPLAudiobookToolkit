@@ -64,8 +64,14 @@ struct ScrubberUIState: Equatable {
     let progressColor: UIColor
     let isScrubbing: Bool
     let progress: ScrubberProgress
+    let timeLeftInBook: TimeInterval
     var gripperWidth: CGFloat {
         return gripperHeight / 3
+    }
+    
+    var timeLeftInBookText: String {
+        let timeLeft = HumanReadableTimeStamp(timeInterval: self.timeLeftInBook).value
+        return "\(timeLeft) remaining"
     }
 
     public func progressLocationFor(_ width: CGFloat) -> CGFloat {
@@ -100,8 +106,14 @@ final class ScrubberView: UIView {
     let leftLabel = UILabel()
     let rightLabel = UILabel()
     let middleLabel = UILabel()
-    var barWidthConstraint: NSLayoutConstraint?
+    let topLabel = { () -> UILabel in
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textAlignment = .center
+        return label
+    }()
 
+    var barWidthConstraint: NSLayoutConstraint?
     var progressBarWidth: CGFloat {
         return self.progressBackground.bounds.size.width
     }
@@ -111,19 +123,21 @@ final class ScrubberView: UIView {
         gripperHeight: 26,
         progressColor: UIColor.black,
         isScrubbing: false,
-        progress: ScrubberProgress(offset: 0, duration: 0)
+        progress: ScrubberProgress(offset: 0, duration: 0),
+        timeLeftInBook: 0
     ) {
         didSet {
             self.updateUIWith(self.state)
         }
     }
     
-    public func setOffset(_ offset: TimeInterval, duration: TimeInterval) {
+    public func setOffset(_ offset: TimeInterval, duration: TimeInterval, timeLeftInBook: TimeInterval) {
         self.state = ScrubberUIState(
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: self.state.isScrubbing,
-            progress: ScrubberProgress(offset: offset, duration: duration)
+            progress: ScrubberProgress(offset: offset, duration: duration),
+            timeLeftInBook: timeLeftInBook
         )
     }
     
@@ -138,7 +152,8 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: true,
-            progress: self.state.progress
+            progress: self.state.progress,
+            timeLeftInBook: self.state.timeLeftInBook
         )
     }
 
@@ -147,13 +162,15 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: false,
-            progress: self.state.progress
+            progress: self.state.progress,
+            timeLeftInBook: self.state.timeLeftInBook
         )
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
+        self.topLabel.text = self.state.timeLeftInBookText
         self.setNeedsUpdateConstraints()
         if self.timer == nil && self.state.isScrubbing {
             self.timer = Timer.scheduledTimer(
@@ -182,7 +199,7 @@ final class ScrubberView: UIView {
     
     func setup () {
         self.accessibilityIdentifier = "scrubber_container"
-
+        self.addSubview(self.topLabel)
         self.addSubview(self.progressBackground)
         self.addSubview(self.leftLabel)
         self.addSubview(self.rightLabel)
@@ -244,9 +261,17 @@ final class ScrubberView: UIView {
         self.barWidthConstraint = self.progressBar.autoSetDimension(.width, toSize: CGFloat(self.state.gripperHeight))
         self.progressBar.accessibilityIdentifier = "progress_bar"
         
+        self.addSubview(self.topLabel)
+        self.topLabel.autoPinEdge(.top, to: .top, of: self)
+        self.topLabel.autoPinEdge(.left, to: .left, of: self)
+        self.topLabel.autoPinEdge(.right, to: .right, of: self)
+        self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
+        self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
+        self.topLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
+        
         self.addSubview(self.gripper)
         self.gripper.backgroundColor = self.state.progressColor
-        self.gripper.autoPinEdge(.top, to: .top, of: self)
+        self.gripper.autoPinEdge(.top, to: .bottom, of: self.topLabel)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBackground)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBar)
         self.gripper.autoPinEdge(.right, to: .right, of: self.progressBar)
@@ -257,9 +282,6 @@ final class ScrubberView: UIView {
             )
         )
         self.gripper.accessibilityIdentifier = "progress_grip"
-        
-        self.labelWidthConstraints.append(leftLabelWidth)
-        self.labelWidthConstraints.append(rightLabelWidth)
     }
     
     override func updateConstraints() {
@@ -288,7 +310,8 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: self.state.isScrubbing,
-            progress: self.state.progress.succ
+            progress: self.state.progress.succ,
+            timeLeftInBook: self.state.timeLeftInBook - 1
         )
     }
     
@@ -305,7 +328,8 @@ final class ScrubberView: UIView {
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
                     isScrubbing: false,
-                    progress: self.state.progress.progressFromPrecentage(percentage)
+                    progress: self.state.progress.progressFromPrecentage(percentage),
+                    timeLeftInBook: self.state.timeLeftInBook
                 )
             }
         }
@@ -320,7 +344,8 @@ final class ScrubberView: UIView {
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
                     isScrubbing: true,
-                    progress: self.state.progress.progressFromPrecentage(percentage)
+                    progress: self.state.progress.progressFromPrecentage(percentage),
+                    timeLeftInBook: self.state.timeLeftInBook
                 )
             }
         }
