@@ -66,7 +66,7 @@ struct ScrubberUIState: Equatable {
     let progress: ScrubberProgress
     let timeLeftInBook: TimeInterval
     var gripperWidth: CGFloat {
-        return gripperHeight / 3
+        return gripperHeight / 4
     }
     
     var timeLeftInBookText: String {
@@ -100,6 +100,7 @@ final class ScrubberView: UIView {
     var delegate: ScrubberViewDelegate?
     let trimColor: UIColor
     let barHeight = 16
+    let padding: CGFloat = 8
     var progressBar = UIView()
     let progressBackground = UIView()
     let gripper = UIView()
@@ -120,7 +121,7 @@ final class ScrubberView: UIView {
 
     var labelWidthConstraints: [NSLayoutConstraint] = []
     var state: ScrubberUIState = ScrubberUIState(
-        gripperHeight: 26,
+        gripperHeight: 36,
         progressColor: UIColor.black,
         isScrubbing: false,
         progress: ScrubberProgress(offset: 0, duration: 0),
@@ -201,6 +202,8 @@ final class ScrubberView: UIView {
         self.accessibilityIdentifier = "scrubber_container"
         self.addSubview(self.topLabel)
         self.addSubview(self.progressBackground)
+        self.addSubview(self.progressBar)
+        self.addSubview(self.gripper)
         self.addSubview(self.leftLabel)
         self.addSubview(self.rightLabel)
         self.addSubview(self.middleLabel)
@@ -213,8 +216,7 @@ final class ScrubberView: UIView {
         self.progressBackground.setContentHuggingPriority(.defaultLow, for: UILayoutConstraintAxis.horizontal)
 
         self.leftLabel.autoPinEdge(.left, to: .left, of: self)
-        self.leftLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
-        self.leftLabel.autoPinEdge(.bottom, to: .bottom, of: self, withOffset: 0, relation: .greaterThanOrEqual)
+        self.leftLabel.autoAlignAxis(.horizontal, toSameAxisOf: self.middleLabel)
         let leftLabelWidth = self.leftLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.leftLabel.numberOfLines = 1
         self.leftLabel.textAlignment = .left
@@ -226,9 +228,7 @@ final class ScrubberView: UIView {
         self.leftLabel.text = self.state.progress.playheadText
         
         self.rightLabel.autoPinEdge(.right, to: .right, of: self)
-        self.rightLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
-        self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self)
-        self.rightLabel.autoPinEdge(.bottom, to: .bottom, of: self, withOffset: 0, relation: .greaterThanOrEqual)
+        self.rightLabel.autoAlignAxis(.horizontal, toSameAxisOf: self.middleLabel)
         let rightLabelWidth = self.rightLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.rightLabel.numberOfLines = 1
         self.rightLabel.textAlignment = .right
@@ -241,7 +241,7 @@ final class ScrubberView: UIView {
         
         self.middleLabel.autoPinEdge(.left, to: .right, of: self.leftLabel)
         self.middleLabel.autoPinEdge(.right, to: .left, of: self.rightLabel)
-        self.middleLabel.autoPinEdge(.top, to: .bottom, of: self.progressBackground, withOffset: 6)
+        self.middleLabel.autoPinEdge(.top, to: .bottom, of: self.gripper, withOffset: self.padding / 2)
         self.middleLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.middleLabel.numberOfLines = 1
         self.middleLabel.textAlignment = .center
@@ -254,14 +254,12 @@ final class ScrubberView: UIView {
         self.labelWidthConstraints.append(leftLabelWidth)
         self.labelWidthConstraints.append(rightLabelWidth)
 
-        self.addSubview(self.progressBar)
         self.progressBar.backgroundColor = self.state.progressColor
         self.progressBar.autoPinEdge(.left, to: .left, of: self.progressBackground)
         self.progressBar.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
         self.barWidthConstraint = self.progressBar.autoSetDimension(.width, toSize: CGFloat(self.state.gripperHeight))
         self.progressBar.accessibilityIdentifier = "progress_bar"
-        
-        self.addSubview(self.topLabel)
+
         self.topLabel.autoPinEdge(.top, to: .top, of: self)
         self.topLabel.autoPinEdge(.left, to: .left, of: self)
         self.topLabel.autoPinEdge(.right, to: .right, of: self)
@@ -269,9 +267,8 @@ final class ScrubberView: UIView {
         self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
         self.topLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
         
-        self.addSubview(self.gripper)
         self.gripper.backgroundColor = self.state.progressColor
-        self.gripper.autoPinEdge(.top, to: .bottom, of: self.topLabel)
+        self.gripper.autoPinEdge(.top, to: .bottom, of: self.topLabel, withOffset: self.padding / 2)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBackground)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBar)
         self.gripper.autoPinEdge(.right, to: .right, of: self.progressBar)
