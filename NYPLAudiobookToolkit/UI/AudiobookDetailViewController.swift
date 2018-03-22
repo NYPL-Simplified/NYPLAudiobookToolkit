@@ -22,10 +22,13 @@ public final class AudiobookDetailViewController: UIViewController {
     }
 
     private let audiobookManager: AudiobookManager
-    private var currentChapter: ChapterLocation?
+    private var currentChapter: ChapterLocation? {
+        return audiobookManager.currentChapterLocation
+    }
+
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
-        self.currentChapter = audiobookManager.currentChapterLocation
+
         self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
         self.audiobookManager.downloadDelegate = self
@@ -155,12 +158,14 @@ public final class AudiobookDetailViewController: UIViewController {
         var addUpStuff = false
         let timeLeftInChapter = chapter.duration - chapter.playheadOffset
         let timeLeftAfterChapter = spine.reduce(timeLeftInChapter, { (result, element) -> TimeInterval in
-            if element.chapter.inSameChapter(other: currentChapter) {
-                addUpStuff = true
-            }
             var newResult: TimeInterval = 0
             if addUpStuff {
                 newResult = result + element.chapter.duration
+            }
+
+            if element.chapter.inSameChapter(other: self.currentChapter) {
+                newResult = timeLeftInChapter
+                addUpStuff = true
             }
             return newResult
         })
@@ -302,7 +307,6 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
     }
     
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
-        self.currentChapter = chapter
         self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
         let timeLeftAfterChapter = self.timeLeftAfter(chapter: chapter)
         self.seekBar.setOffset(
@@ -325,6 +329,17 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         scrubberView.pause()
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.updatePlaybackWith(chapter)
+        }
+    }
+
+    func scrubberViewDidRequestUpdate(_ scrubberView: ScrubberView) {
+        if let chapter = self.currentChapter {
+            let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
+            scrubberView.setOffset(
+                chapter.playheadOffset,
+                duration: chapter.duration,
+                timeLeftInBook: timeLeftInBook
+            )
         }
     }
 }

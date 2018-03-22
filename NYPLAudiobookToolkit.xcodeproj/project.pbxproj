@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
+		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
+		7B473A2F20642FAA0074D472 /* ScrubberUIStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */; };
 		7B4F1B2020361547003F047B /* Cursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4F1B1F20361546003F047B /* Cursor.swift */; };
 		7B544196200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; };
 		7B54419B200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B54419A200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift */; };
@@ -123,6 +125,8 @@
 
 /* Begin PBXFileReference section */
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
+		7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberProgressTests.swift; sourceTree = "<group>"; };
+		7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberUIStateTests.swift; sourceTree = "<group>"; };
 		7B4F1B1F20361546003F047B /* Cursor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cursor.swift; sourceTree = "<group>"; };
 		7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NYPLAudiobookToolkit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NYPLAudiobookToolkit.h; sourceTree = "<group>"; };
@@ -288,6 +292,8 @@
 				7B78545E204DF12600F6589B /* SpineElementMock.swift */,
 				7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */,
 				7BBF4DFF2050856400700731 /* PlayerMock.swift */,
+				7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */,
+				7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */,
 			);
 			path = NYPLAudiobookToolkitTests;
 			sourceTree = "<group>";
@@ -621,12 +627,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B473A2F20642FAA0074D472 /* ScrubberUIStateTests.swift in Sources */,
 				7BBF4E002050856400700731 /* PlayerMock.swift in Sources */,
 				7B54419B200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift in Sources */,
 				7BBF4DFE2050850A00700731 /* SleepTimerTests.swift in Sources */,
 				7B78545B204DEE8500F6589B /* AudiobookNetworkServiceTest.swift in Sources */,
 				7B78545D204DEE9900F6589B /* DownloadTaskMock.swift in Sources */,
 				7B78545F204DF12600F6589B /* SpineElementMock.swift in Sources */,
+				7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */,
 				7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
