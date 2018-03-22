@@ -11,6 +11,7 @@ import PureLayout
 
 protocol ScrubberViewDelegate: class {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
+    func scrubberViewDidRequestUpdate(_ scrubberView: ScrubberView)
 }
 
 private func defaultTimeLabelWidth() -> CGFloat {
@@ -20,6 +21,7 @@ private func defaultTimeLabelWidth() -> CGFloat {
 struct ScrubberProgress: Equatable {
     let offset: TimeInterval
     let duration: TimeInterval
+    let timeLeftInBook: TimeInterval
 
     var timeLeftText: String {
         return HumanReadableTimeStamp(timeInterval: self.timeLeft, isDecreasing: true).value
@@ -28,7 +30,12 @@ struct ScrubberProgress: Equatable {
     var playheadText: String {
         return HumanReadableTimeStamp(timeInterval: self.offset).value
     }
-    
+
+    var timeLeftInBookText: String {
+        let timeLeft = HumanReadableTimeStamp(timeInterval: self.timeLeftInBook).value
+        return "\(timeLeft) remaining"
+    }
+
     var labelWidth: CGFloat {
         if self.duration >= 3600 {
             return 82
@@ -40,16 +47,14 @@ struct ScrubberProgress: Equatable {
     var timeLeft: TimeInterval {
         return self.duration - self.offset
     }
-
-    var succ: ScrubberProgress {
-        let newOffset = self.offset <= self.duration ? self.offset + 1 : self.duration
-        return ScrubberProgress(offset: newOffset, duration: self.duration)
-    }
     
     func progressFromPrecentage(_ percentage: Float) -> ScrubberProgress {
+        let newOffset = TimeInterval(Float(self.duration) * percentage)
+        let difference = self.offset - newOffset
         return ScrubberProgress(
-            offset: TimeInterval(Float(self.duration) * percentage),
-            duration: self.duration
+            offset: newOffset,
+            duration: self.duration,
+            timeLeftInBook: self.timeLeftInBook + difference
         )
     }
 
@@ -64,14 +69,8 @@ struct ScrubberUIState: Equatable {
     let progressColor: UIColor
     let isScrubbing: Bool
     let progress: ScrubberProgress
-    let timeLeftInBook: TimeInterval
     var gripperWidth: CGFloat {
         return gripperHeight / 4
-    }
-    
-    var timeLeftInBookText: String {
-        let timeLeft = HumanReadableTimeStamp(timeInterval: self.timeLeftInBook).value
-        return "\(timeLeft) remaining"
     }
 
     public func progressLocationFor(_ width: CGFloat) -> CGFloat {
@@ -124,8 +123,7 @@ final class ScrubberView: UIView {
         gripperHeight: 36,
         progressColor: UIColor.black,
         isScrubbing: false,
-        progress: ScrubberProgress(offset: 0, duration: 0),
-        timeLeftInBook: 0
+        progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0)
     ) {
         didSet {
             self.updateUIWith(self.state)
@@ -137,8 +135,7 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: self.state.isScrubbing,
-            progress: ScrubberProgress(offset: offset, duration: duration),
-            timeLeftInBook: timeLeftInBook
+            progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook)
         )
     }
     
@@ -153,8 +150,7 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: true,
-            progress: self.state.progress,
-            timeLeftInBook: self.state.timeLeftInBook
+            progress: self.state.progress
         )
     }
 
@@ -163,15 +159,14 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             isScrubbing: false,
-            progress: self.state.progress,
-            timeLeftInBook: self.state.timeLeftInBook
+            progress: self.state.progress
         )
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
-        self.topLabel.text = self.state.timeLeftInBookText
+        self.topLabel.text = self.state.progress.timeLeftInBookText
         self.setNeedsUpdateConstraints()
         if self.timer == nil && self.state.isScrubbing {
             self.timer = Timer.scheduledTimer(
@@ -302,14 +297,7 @@ final class ScrubberView: UIView {
         guard self.state.isScrubbing else {
             return
         }
-    
-        self.state = ScrubberUIState(
-            gripperHeight: self.state.gripperHeight,
-            progressColor: self.state.progressColor,
-            isScrubbing: self.state.isScrubbing,
-            progress: self.state.progress.succ,
-            timeLeftInBook: self.state.timeLeftInBook - 1
-        )
+        self.delegate?.scrubberViewDidRequestUpdate(self)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -325,8 +313,7 @@ final class ScrubberView: UIView {
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
                     isScrubbing: false,
-                    progress: self.state.progress.progressFromPrecentage(percentage),
-                    timeLeftInBook: self.state.timeLeftInBook
+                    progress: self.state.progress.progressFromPrecentage(percentage)
                 )
             }
         }
@@ -341,8 +328,7 @@ final class ScrubberView: UIView {
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
                     isScrubbing: true,
-                    progress: self.state.progress.progressFromPrecentage(percentage),
-                    timeLeftInBook: self.state.timeLeftInBook
+                    progress: self.state.progress.progressFromPrecentage(percentage)
                 )
             }
         }
