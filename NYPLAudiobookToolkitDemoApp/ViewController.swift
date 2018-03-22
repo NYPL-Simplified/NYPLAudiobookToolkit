@@ -20,13 +20,15 @@ class ViewController: UIViewController {
 //        }
 //        guard let json = possibleJson else { return }
         let json = """
+
+
 {
   "spine": [
     {
       "title": "Track 1",
       "findaway:sequence": 1,
       "href": null,
-      "duration": 41.346,
+      "duration": 3749.386,
       "findaway:part": 0,
       "type": "audio/mpeg"
     },
@@ -34,7 +36,7 @@ class ViewController: UIViewController {
       "title": "Track 2",
       "findaway:sequence": 2,
       "href": null,
-      "duration": 1736.598,
+      "duration": 3005.262,
       "findaway:part": 0,
       "type": "audio/mpeg"
     },
@@ -42,7 +44,7 @@ class ViewController: UIViewController {
       "title": "Track 3",
       "findaway:sequence": 3,
       "href": null,
-      "duration": 1424.39,
+      "duration": 3949.85,
       "findaway:part": 0,
       "type": "audio/mpeg"
     },
@@ -50,111 +52,7 @@ class ViewController: UIViewController {
       "title": "Track 4",
       "findaway:sequence": 4,
       "href": null,
-      "duration": 1144.604,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 5",
-      "findaway:sequence": 5,
-      "href": null,
-      "duration": 1776.638,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 6",
-      "findaway:sequence": 6,
-      "href": null,
-      "duration": 2720.23,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 7",
-      "findaway:sequence": 7,
-      "href": null,
-      "duration": 1295.378,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 8",
-      "findaway:sequence": 8,
-      "href": null,
-      "duration": 2422.114,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 9",
-      "findaway:sequence": 9,
-      "href": null,
-      "duration": 2797.84,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 10",
-      "findaway:sequence": 10,
-      "href": null,
-      "duration": 956.754,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 11",
-      "findaway:sequence": 11,
-      "href": null,
-      "duration": 1445.71,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 12",
-      "findaway:sequence": 12,
-      "href": null,
-      "duration": 1061.638,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 13",
-      "findaway:sequence": 13,
-      "href": null,
-      "duration": 1429.616,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 14",
-      "findaway:sequence": 14,
-      "href": null,
-      "duration": 1640.97,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 15",
-      "findaway:sequence": 15,
-      "href": null,
-      "duration": 242.43,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 16",
-      "findaway:sequence": 16,
-      "href": null,
-      "duration": 112.56,
-      "findaway:part": 0,
-      "type": "audio/mpeg"
-    },
-    {
-      "title": "Track 17",
-      "findaway:sequence": 17,
-      "href": null,
-      "duration": 64.486,
+      "duration": 2859.943,
       "findaway:part": 0,
       "type": "audio/mpeg"
     }
@@ -167,36 +65,44 @@ class ViewController: UIViewController {
   ],
   "links": [
     {
-      "href": "http://book-covers.nypl.org/scaled/300/Content%20Cafe/ISBN/9781508223368/cover.jpg",
+      "href": "http://book-covers.nypl.org/scaled/300/Content%20Cafe/ISBN/9780743585149/cover.jpg",
       "rel": "cover"
     }
   ],
   "metadata": {
     "language": "en",
-    "title": "Heart of Henry Quantum, The",
+    "title": "Star Trek: The Original Series: Vulcan's Soul #1: Exodus",
     "encrypted": {
       "findaway:accountId": "3M",
-      "findaway:checkoutId": "5a96c36b58a1100f6f0ca03f",
-      "findaway:sessionKey": "2cd932a0-fa32-4bf4-9b36-c5f7106ffa30",
-      "findaway:fulfillmentId": "123520",
-      "findaway:licenseId": "580f0f99aacbcc6845a7b7ed",
+      "findaway:checkoutId": "5ab415fa307372541b9ce044",
+      "findaway:sessionKey": "49fc2f9b-9d6a-4865-9e8e-22af3b44f145",
+      "findaway:fulfillmentId": "33732",
+      "findaway:licenseId": "579b6aabb692b15832c06860",
       "scheme": "http://librarysimplified.org/terms/drm/scheme/FAE"
     },
     "authors": [
-      "Pepper Harding"
+      "Susan Shwartz",
+      "Josepha Sherman"
     ],
-    "duration": 22313.302000000003,
-    "identifier": "urn:librarysimplified.org/terms/id/Bibliotheca%20ID/k6utn89",
+    "duration": 13564.440999999999,
+    "identifier": "urn:librarysimplified.org/terms/id/Bibliotheca%20ID/eb5ucz9",
     "@type": "http://bib.schema.org/Audiobook"
   }
 }
 """
         guard let data = json.data(using: String.Encoding.utf8) else { return }
         let possibleJson = try? JSONSerialization.jsonObject(with: data, options: [])
-        guard let unwrappedJSON = possibleJson else { return }
+        guard let unwrappedJSON = possibleJson as? [String: Any] else { return }
+        guard let JSONmetadata = unwrappedJSON["metadata"] as? [String: Any] else { return }
+        guard let title = JSONmetadata["title"] as? String else {
+            return
+        }
+        guard let authors = JSONmetadata["authors"] as? [String] else {
+            return
+        }
         let metadata = AudiobookMetadata(
-            title: "The Heart of Henry Quantum",
-            authors: ["Alexandre Dumas"],
+            title: title,
+            authors: authors,
             narrators: ["John Hodgeman"],
             publishers: ["Findaway"],
             published: Date(),
