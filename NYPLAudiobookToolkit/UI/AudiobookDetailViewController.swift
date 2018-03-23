@@ -120,26 +120,38 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace]
-        let speed = self.barButtonWith(
-            title: "Speed",
-            imageNamed:"speed",
-            target: self,
-            action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
-        )
+        var speed: UIBarButtonItem? = nil
+        if let image = UIImage(named: "speed", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) {
+            let imageView = UIImageView(image: image)
+            speed = self.barButtonWith(
+                title: "Speed",
+                iconView: imageView,
+                target: self,
+                action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
+            )
+        }
         if let speed = speed {
             items.append(speed)
         }
         items.append(flexibleSpace)
-        let sleepTimer = self.barButtonWith(
-            title: "Sleep Timer",
-            imageNamed: "moon",
-            target: self,
-            action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
-        )
+        var sleepTimer: UIBarButtonItem? = nil
+        if let image = UIImage(named: "moon", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) {
+            let imageView = UIImageView(image: image)
+            sleepTimer = self.barButtonWith(
+                title: "Sleep Timer",
+                iconView: imageView,
+                target: self,
+                action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
+            )
+        }
         if let sleepTimer = sleepTimer {
             items.append(sleepTimer)
         }
         items.append(flexibleSpace)
+        if let audioRouting = self.barButtonWith(title: "Output", iconView: AudioRoutingWrapperView(), target: nil, action: nil) {
+            items.append(audioRouting)
+            items.append(flexibleSpace)
+        }
         self.toolbar.setItems(items, animated: true)
 
         if let currentChapter = self.currentChapter {
@@ -212,15 +224,13 @@ public final class AudiobookDetailViewController: UIViewController {
     // both at the same time.
     //
     // Please forgive the hardcoded values. This was truly a last resort.
-    private func barButtonWith(title: String, imageNamed: String, target: Any?, action: Selector) -> UIBarButtonItem? {
-        guard let image = UIImage(named: imageNamed, in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) else {
-            return nil
-        }
+    private func barButtonWith(title: String, iconView: UIView, target: Any?, action: Selector?) -> UIBarButtonItem? {
         let view = UIView()
         let label = UILabel()
 
         let viewHeight: CGFloat = self.toolbarHeight
         let labelHeight: CGFloat = 16
+        label.sizeToFit()
         view.addSubview(label)
         label.text = title
         label.textColor = UIColor.darkText
@@ -232,9 +242,8 @@ public final class AudiobookDetailViewController: UIViewController {
         // Place the label in its view
         let labelPoint = CGPoint(x: 0, y: viewHeight - labelHeight)
         let labelFrame = CGRect(origin: labelPoint, size: labelSize)
-    
-        let imageView = UIImageView(image: image)
-        view.addSubview(imageView)
+        iconView.sizeToFit()
+        view.addSubview(iconView)
         let imageHeight: CGFloat = 24
         
         // Place the image in the middle of the text
@@ -248,8 +257,8 @@ public final class AudiobookDetailViewController: UIViewController {
             width: imageHeight,
             height: imageHeight
         )
-        imageView.contentMode = .scaleAspectFit
-        imageView.frame = imageViewFrame
+        iconView.contentMode = .scaleAspectFit
+        iconView.frame = imageViewFrame
         label.frame = labelFrame
         view.frame = CGRect(
             x: 0,
@@ -258,7 +267,9 @@ public final class AudiobookDetailViewController: UIViewController {
             height: viewHeight
         )
         view.isUserInteractionEnabled = true
-        view.addGestureRecognizer(UITapGestureRecognizer(target: target, action: action))
+        if let target = target, let action = action {
+            view.addGestureRecognizer(UITapGestureRecognizer(target: target, action: action))
+        }
         return UIBarButtonItem(customView: view)
     }
 }
