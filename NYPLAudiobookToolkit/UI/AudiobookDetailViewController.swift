@@ -9,6 +9,8 @@
 import UIKit
 import Foundation
 import PureLayout
+import AVKit
+import MediaPlayer
 
 public final class AudiobookDetailViewController: UIViewController {
     
@@ -120,25 +122,26 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace]
-        let speed = self.barButtonWith(
+        let speed =  UIBarButtonItem(
             title: "Speed",
-            imageNamed:"speed",
+            style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
         )
-        if let speed = speed {
-            items.append(speed)
-        }
+        speed.tintColor = UIColor.darkText
+        items.append(speed)
         items.append(flexibleSpace)
-        let sleepTimer = self.barButtonWith(
+        let sleepTimer = UIBarButtonItem(
             title: "Sleep Timer",
-            imageNamed: "moon",
+            style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
         )
-        if let sleepTimer = sleepTimer {
-            items.append(sleepTimer)
-        }
+        sleepTimer.tintColor = UIColor.darkText
+        items.append(sleepTimer)
+        items.append(flexibleSpace)
+        let audioRoutingItem = self.audioRoutingBarButtonItem()
+        items.append(audioRoutingItem)
         items.append(flexibleSpace)
         self.toolbar.setItems(items, animated: true)
 
@@ -207,58 +210,16 @@ public final class AudiobookDetailViewController: UIViewController {
         self.playbackControlView.showPlayButton()
     }
     
-    // `UIBarButtonItem`s do not allow for both an image and a title, despite its sybling `UITabBarItem` being
-    // able to support this feature. The mess you see below is to allow for bar button items that support
-    // both at the same time.
-    //
-    // Please forgive the hardcoded values. This was truly a last resort.
-    private func barButtonWith(title: String, imageNamed: String, target: Any?, action: Selector) -> UIBarButtonItem? {
-        guard let image = UIImage(named: imageNamed, in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) else {
-            return nil
+    func audioRoutingBarButtonItem() -> UIBarButtonItem {
+        var view: UIView! = nil
+        if #available(iOS 11.0, *) {
+            view = AVRoutePickerView()
+        } else {
+            let volumeView = MPVolumeView()
+            volumeView.showsVolumeSlider = false
+            volumeView.showsRouteButton = true
+            volumeView.sizeToFit()
         }
-        let view = UIView()
-        let label = UILabel()
-
-        let viewHeight: CGFloat = self.toolbarHeight
-        let labelHeight: CGFloat = 16
-        view.addSubview(label)
-        label.text = title
-        label.textColor = UIColor.darkText
-        label.font = UIFont.systemFont(ofSize: 12)
-
-        // Find the width of the label for the text provided
-        let labelSize = label.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: labelHeight))
-        
-        // Place the label in its view
-        let labelPoint = CGPoint(x: 0, y: viewHeight - labelHeight)
-        let labelFrame = CGRect(origin: labelPoint, size: labelSize)
-    
-        let imageView = UIImageView(image: image)
-        view.addSubview(imageView)
-        let imageHeight: CGFloat = 24
-        
-        // Place the image in the middle of the text
-        let imageXValue = (labelSize.width / 2) - (imageHeight / 2)
-        
-        // Place the image above the text
-        let imageYValye = viewHeight - (labelHeight + imageHeight)
-        let imageViewFrame = CGRect(
-            x: imageXValue,
-            y: imageYValye,
-            width: imageHeight,
-            height: imageHeight
-        )
-        imageView.contentMode = .scaleAspectFit
-        imageView.frame = imageViewFrame
-        label.frame = labelFrame
-        view.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: labelFrame.width,
-            height: viewHeight
-        )
-        view.isUserInteractionEnabled = true
-        view.addGestureRecognizer(UITapGestureRecognizer(target: target, action: action))
         return UIBarButtonItem(customView: view)
     }
 }
