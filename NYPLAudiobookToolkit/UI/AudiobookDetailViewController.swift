@@ -9,6 +9,8 @@
 import UIKit
 import Foundation
 import PureLayout
+import AVKit
+import MediaPlayer
 
 public final class AudiobookDetailViewController: UIViewController {
     
@@ -120,35 +122,25 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace]
-        var speed: UIBarButtonItem? = nil
-        if let image = UIImage(named: "speed", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) {
-          let view = UIImageView(image: image)
-          view.contentMode = .scaleAspectFit
-          view.frame.size = CGSize(width: 28, height: 28)
-          speed = UIBarButtonItem(
-            customView: view
-          )
-        }
-        if let speed = speed {
-            items.append(speed)
-        }
+        let speed =  UIBarButtonItem(
+            title: "Speed",
+            style: .plain,
+            target: self,
+            action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
+        )
+        speed.tintColor = UIColor.darkText
+        items.append(speed)
         items.append(flexibleSpace)
-        var sleepTimer: UIBarButtonItem? = nil
-        if let image = UIImage(named: "moon", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil) {
-            let view = UIImageView(image: image)
-            view.contentMode = .scaleAspectFit
-            view.frame =
-            sleepTimer = UIBarButtonItem(
-              customView: view
-            )
-        }
-        if let sleepTimer = sleepTimer {
-            items.append(sleepTimer)
-        }
+        let sleepTimer = UIBarButtonItem(
+            title: "Sleep Timer",
+            style: .plain,
+            target: self,
+            action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
+        )
+        sleepTimer.tintColor = UIColor.darkText
+        items.append(sleepTimer)
         items.append(flexibleSpace)
-      
-        let audioRouting = AudioRoutingWrapperView()
-        let audioRoutingItem = UIBarButtonItem(customView: audioRouting)
+        let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.append(audioRoutingItem)
         items.append(flexibleSpace)
         self.toolbar.setItems(items, animated: true)
@@ -216,6 +208,19 @@ public final class AudiobookDetailViewController: UIViewController {
     func updateControlsForPlaybackStop() {
         self.seekBar.pause()
         self.playbackControlView.showPlayButton()
+    }
+    
+    func audioRoutingBarButtonItem() -> UIBarButtonItem {
+        var view: UIView! = nil
+        if #available(iOS 11.0, *) {
+            view = AVRoutePickerView()
+        } else {
+            let volumeView = MPVolumeView()
+            volumeView.showsVolumeSlider = false
+            volumeView.showsRouteButton = true
+            volumeView.sizeToFit()
+        }
+        return UIBarButtonItem(customView: view)
     }
 }
 
