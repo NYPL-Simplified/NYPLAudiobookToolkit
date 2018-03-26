@@ -261,15 +261,20 @@ public final class AudiobookDetailViewController: UIViewController {
                 items.remove(at: self.sleepTimerBarButtonIndex)
                 items.insert(UIBarButtonItem(customView: button), at: self.sleepTimerBarButtonIndex)
                 self.toolbar.setItems(items, animated: true)
+                if !self.audiobookManager.isPlaying {
+                    self.audiobookManager.play()
+                }
             }
         } else {
             items.remove(at: self.sleepTimerBarButtonIndex)
-            items.insert(UIBarButtonItem(
+            let barButtonItem = UIBarButtonItem(
                 title: "Sleep Timer",
                 style: .plain,
                 target: self,
                 action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
-            ), at: self.sleepTimerBarButtonIndex)
+            )
+            barButtonItem.tintColor = UIColor.darkText
+            items.insert(barButtonItem, at: self.sleepTimerBarButtonIndex)
             self.toolbar.setItems(items, animated: true)
             timer.invalidate()
         }
