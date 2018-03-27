@@ -45,6 +45,9 @@ public final class AudiobookDetailViewController: UIViewController {
     private let seekBar = ScrubberView()
     private let tintColor: UIColor
     private let playbackControlView = PlaybackControlView()
+    private let speedBarButtonIndex = 1
+    private let sleepTimerBarButtonIndex = 3
+    private let audioRoutingBarButtonIndex = 5
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -59,6 +62,8 @@ public final class AudiobookDetailViewController: UIViewController {
     private let toolbar = UIToolbar()
     private let chapterInfoStack = ChapterInfoStack()
     private let toolbarHeight: CGFloat = 44
+    private var sleepCountdownTimer: Timer?
+    private var sleepCountdownButton: UIButton?
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.navigationBar.isTranslucent = false
@@ -121,7 +126,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.layer.borderWidth = 1
         self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        var items: [UIBarButtonItem] = [flexibleSpace]
+        var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace]
         let speed =  UIBarButtonItem(
             title: "Speed",
             style: .plain,
@@ -129,8 +134,8 @@ public final class AudiobookDetailViewController: UIViewController {
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
         )
         speed.tintColor = UIColor.darkText
-        items.append(speed)
-        items.append(flexibleSpace)
+        items.insert(speed, at: self.speedBarButtonIndex)
+
         let sleepTimer = UIBarButtonItem(
             title: "Sleep Timer",
             style: .plain,
@@ -138,11 +143,10 @@ public final class AudiobookDetailViewController: UIViewController {
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
         )
         sleepTimer.tintColor = UIColor.darkText
-        items.append(sleepTimer)
-        items.append(flexibleSpace)
+        items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
+
         let audioRoutingItem = self.audioRoutingBarButtonItem()
-        items.append(audioRoutingItem)
-        items.append(flexibleSpace)
+        items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
         self.toolbar.setItems(items, animated: true)
 
         if let currentChapter = self.currentChapter {
@@ -190,10 +194,90 @@ public final class AudiobookDetailViewController: UIViewController {
 
     
     @objc public func speedWasPressed(_ sender: Any) {
+        
     }
 
     
     @objc public func sleepTimerWasPressed(_ sender: Any) {
+        func alertFromsleepTimer(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
+            let handler = { (_ action: UIAlertAction) -> Void in
+                sleepTimer.setTimerTo(trigger: trigger)
+                self.sleepTimerButtonShouldUpdate()
+            }
+            var action: UIAlertAction! = nil
+            switch trigger {
+            case .endOfChapter:
+                action = UIAlertAction(title: "End of Chapter", style: .default, handler: handler)
+            case .oneHour:
+                action = UIAlertAction(title: "60", style: .default, handler: handler)
+            case .thirtyMinutes:
+                action = UIAlertAction(title: "30", style: .default, handler: handler)
+            case .fifteenMinutes:
+                action = UIAlertAction(title: "15", style: .default, handler: handler)
+            case .never:
+                action = UIAlertAction(title: "Off", style: .default, handler: handler)
+            }
+            return action
+        }
+        
+        let actionSheet = UIAlertController(title: "Set Your Sleep Timer", message: nil, preferredStyle: .actionSheet)
+        let triggers: [SleepTimerTriggerAt] = [.never, .fifteenMinutes, .thirtyMinutes, .oneHour, .endOfChapter]
+        triggers.forEach { (trigger)  in
+            let alert = alertFromsleepTimer(trigger: trigger, sleepTimer: self.audiobookManager.sleepTimer)
+            actionSheet.addAction(alert)
+        }
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        self.present(actionSheet, animated: true, completion: nil)
+    }
+    
+    func sleepTimerButtonShouldUpdate() {
+        if self.sleepCountdownTimer == nil && self.audiobookManager.sleepTimer.isScheduled {
+            self.sleepCountdownTimer = Timer.scheduledTimer(
+                timeInterval: 1,
+                target: self,
+                selector: #selector(AudiobookDetailViewController.updateStateForSleepTimerButton(_:)),
+                userInfo: nil,
+                repeats: true
+            )
+        }
+
+    }
+
+    @objc func updateStateForSleepTimerButton(_ timer: Timer) {
+        guard var items = self.toolbar.items else {
+            return
+        }
+        if self.audiobookManager.sleepTimer.isScheduled {
+            let title = HumanReadableTimeStamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining, isDecreasing: true).value
+            if let countDownButton = self.sleepCountdownButton {
+                countDownButton.setTitle(title, for: .normal)
+            } else {
+                let button = UIButton()
+                button.setTitle(title, for: .normal)
+                button.setTitleColor(self.tintColor, for: .normal)
+                button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0)
+                button.addTarget(self, action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:)), for: .touchUpInside)
+                self.sleepCountdownButton = button
+                items.remove(at: self.sleepTimerBarButtonIndex)
+                items.insert(UIBarButtonItem(customView: button), at: self.sleepTimerBarButtonIndex)
+                self.toolbar.setItems(items, animated: true)
+                if !self.audiobookManager.isPlaying {
+                    self.audiobookManager.play()
+                }
+            }
+        } else {
+            items.remove(at: self.sleepTimerBarButtonIndex)
+            let barButtonItem = UIBarButtonItem(
+                title: "Sleep Timer",
+                style: .plain,
+                target: self,
+                action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
+            )
+            barButtonItem.tintColor = UIColor.darkText
+            items.insert(barButtonItem, at: self.sleepTimerBarButtonIndex)
+            self.toolbar.setItems(items, animated: true)
+            timer.invalidate()
+        }
     }
 
     @objc func coverArtWasPressed(_ sender: Any) {
