@@ -126,7 +126,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.layer.borderWidth = 1
         self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace]
+        var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
         let speed =  UIBarButtonItem(
             title: "Speed",
             style: .plain,
@@ -248,7 +248,10 @@ public final class AudiobookDetailViewController: UIViewController {
             return
         }
         if self.audiobookManager.sleepTimer.isScheduled {
-            let title = HumanReadableTimeStamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining, isDecreasing: true).value
+            let title = HumanReadableTimeStamp(
+                timeInterval: self.audiobookManager.sleepTimer.timeRemaining,
+                isDecreasing: true
+            ).value
             if let countDownButton = self.sleepCountdownButton {
                 countDownButton.setTitle(title, for: .normal)
             } else {
