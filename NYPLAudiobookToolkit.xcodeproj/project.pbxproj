@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
+		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
+		7B473A2F20642FAA0074D472 /* ScrubberUIStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */; };
 		7B4F1B2020361547003F047B /* Cursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4F1B1F20361546003F047B /* Cursor.swift */; };
 		7B544196200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; };
 		7B54419B200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B54419A200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift */; };
@@ -42,6 +44,7 @@
 		7B7B370D20227A7500030A1E /* FindawayPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B370C20227A7500030A1E /* FindawayPlayer.swift */; };
 		7B7B370F20227A8200030A1E /* OpenAccessPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */; };
 		7B7B37112028FC7D00030A1E /* FindawayPlaybackNotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B37102028FC7C00030A1E /* FindawayPlaybackNotificationHandler.swift */; };
+		7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */; };
 		7BAFF98A201256F100DCA92A /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441F0200EAAA20047B6C6 /* PureLayout.framework */; };
 		7BAFF98B201256F100DCA92A /* PureLayout.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441F0200EAAA20047B6C6 /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BAFF98C20125D1900DCA92A /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; };
@@ -55,9 +58,11 @@
 		7BD759BF20168995004CE65F /* AudiobookTableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759BE20168995004CE65F /* AudiobookTableOfContents.swift */; };
 		7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C220169084004CE65F /* FindawayDownloadTask.swift */; };
 		7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C92017CEA3004CE65F /* DownloadTask.swift */; };
-		7BDD33AF204461A000CC8807 /* HumanReadableTimeInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */; };
+		7BDD33AF204461A000CC8807 /* HumanReadableTimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimeStamp.swift */; };
 		7BDD33B12044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B02044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift */; };
 		7BDD33B320470A7100CC8807 /* HumanReadablePercentage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */; };
+		7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */; };
+		7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,6 +126,8 @@
 
 /* Begin PBXFileReference section */
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
+		7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberProgressTests.swift; sourceTree = "<group>"; };
+		7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberUIStateTests.swift; sourceTree = "<group>"; };
 		7B4F1B1F20361546003F047B /* Cursor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cursor.swift; sourceTree = "<group>"; };
 		7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NYPLAudiobookToolkit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NYPLAudiobookToolkit.h; sourceTree = "<group>"; };
@@ -160,6 +167,7 @@
 		7B7B370C20227A7500030A1E /* FindawayPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayPlayer.swift; sourceTree = "<group>"; };
 		7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAccessPlayer.swift; sourceTree = "<group>"; };
 		7B7B37102028FC7C00030A1E /* FindawayPlaybackNotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayPlaybackNotificationHandler.swift; sourceTree = "<group>"; };
+		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
 		7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerTests.swift; sourceTree = "<group>"; };
 		7BBF4DFF2050856400700731 /* PlayerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerMock.swift; sourceTree = "<group>"; };
@@ -170,9 +178,11 @@
 		7BD759C220169084004CE65F /* FindawayDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadTask.swift; sourceTree = "<group>"; };
 		7BD759C92017CEA3004CE65F /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
 		7BD759CB20191980004CE65F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeInterval.swift; sourceTree = "<group>"; };
+		7BDD33AE204461A000CC8807 /* HumanReadableTimeStamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeStamp.swift; sourceTree = "<group>"; };
 		7BDD33B02044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadNotificationHandler.swift; sourceTree = "<group>"; };
 		7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePercentage.swift; sourceTree = "<group>"; };
+		7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterInfoStack.swift; sourceTree = "<group>"; };
+		7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeRemaining.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -229,6 +239,7 @@
 				7BD759B4201279BB004CE65F /* TextWithImageView.swift */,
 				7BD759BC20163B71004CE65F /* PlaybackControlView.swift */,
 				7B6C1BD1203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift */,
+				7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -283,6 +294,8 @@
 				7B78545E204DF12600F6589B /* SpineElementMock.swift */,
 				7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */,
 				7BBF4DFF2050856400700731 /* PlayerMock.swift */,
+				7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */,
+				7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */,
 			);
 			path = NYPLAudiobookToolkitTests;
 			sourceTree = "<group>";
@@ -350,8 +363,10 @@
 				7B5441DC200EA82C0047B6C6 /* Audiobook.swift */,
 				7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */,
 				7B4F1B1F20361546003F047B /* Cursor.swift */,
-				7BDD33AE204461A000CC8807 /* HumanReadableTimeInterval.swift */,
+				7BDD33AE204461A000CC8807 /* HumanReadableTimeStamp.swift */,
 				7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */,
+				7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */,
+				7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -585,7 +600,9 @@
 			files = (
 				7B7B370D20227A7500030A1E /* FindawayPlayer.swift in Sources */,
 				7B5441E4200EA82C0047B6C6 /* AudiobookDetailViewController.swift in Sources */,
+				7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */,
 				7B6C1BD0203F1CDA00EB791E /* AudiobookNetworkService.swift in Sources */,
+				7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */,
 				7B7B370F20227A8200030A1E /* OpenAccessPlayer.swift in Sources */,
 				7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */,
 				7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */,
@@ -601,7 +618,8 @@
 				7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */,
 				7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */,
 				7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */,
-				7BDD33AF204461A000CC8807 /* HumanReadableTimeInterval.swift in Sources */,
+				7BDD33AF204461A000CC8807 /* HumanReadableTimeStamp.swift in Sources */,
+				7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */,
 				7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */,
 				7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */,
 				7B7B37112028FC7D00030A1E /* FindawayPlaybackNotificationHandler.swift in Sources */,
@@ -613,12 +631,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B473A2F20642FAA0074D472 /* ScrubberUIStateTests.swift in Sources */,
 				7BBF4E002050856400700731 /* PlayerMock.swift in Sources */,
 				7B54419B200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.swift in Sources */,
 				7BBF4DFE2050850A00700731 /* SleepTimerTests.swift in Sources */,
 				7B78545B204DEE8500F6589B /* AudiobookNetworkServiceTest.swift in Sources */,
 				7B78545D204DEE9900F6589B /* DownloadTaskMock.swift in Sources */,
 				7B78545F204DF12600F6589B /* SpineElementMock.swift in Sources */,
+				7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */,
 				7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

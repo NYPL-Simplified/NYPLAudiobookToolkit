@@ -12,7 +12,7 @@ import UIKit
 /// into a human readable string. The format will be
 /// HH:MM:SS if the TimeInterval is longer than 1 hour,
 /// otherwise it will be MM:SS.
-class HumanReadableTimeInterval {
+class HumanReadableTimeStamp {
     lazy var value: String = {
         let interval = Int(self.timeInterval)
         let seconds = interval % 60
@@ -22,11 +22,16 @@ class HumanReadableTimeInterval {
         if hours > 0 {
             timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
+        if self.isDecreasing {
+            timeString = "-\(timeString)"
+        }
         return timeString
     }()
 
     private let timeInterval: TimeInterval
-    init(timeInterval: TimeInterval) {
+    private let isDecreasing: Bool
+    init(timeInterval: TimeInterval, isDecreasing: Bool = false) {
         self.timeInterval = timeInterval
+        self.isDecreasing = isDecreasing
     }
 }

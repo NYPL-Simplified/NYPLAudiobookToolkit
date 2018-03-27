@@ -34,6 +34,7 @@ final class PlaybackControlView: UIView {
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         view.text = "15"
+        view.subtext = "sec"
         view.accessibilityIdentifier = "skip_back"
         return view
     }()
@@ -42,6 +43,7 @@ final class PlaybackControlView: UIView {
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
         view.text = "15"
+        view.subtext = "sec"
         view.accessibilityIdentifier = "skip_forward"
         return view
     }()
@@ -64,30 +66,10 @@ final class PlaybackControlView: UIView {
         imageView.isUserInteractionEnabled = true
         return imageView
     }()
-    
-    private let audioRouteButton: UIView = { () -> UIView in
-        var view: UIView!
-        if #available(iOS 11.0, *) {
-            view = AVRoutePickerView()
-        } else {
-            let volumeView = MPVolumeView(forAutoLayout: ())
-            volumeView.showsVolumeSlider = false
-            volumeView.showsRouteButton = true
-            volumeView.sizeToFit()
-            view = volumeView
-        }
-        return view
-    }()
 
     override public init(frame: CGRect) {
         super.init(frame: frame)
         self.setup()
-    }
-    
-    override var backgroundColor: UIColor? {
-        didSet {
-            self.audioRouteButton.backgroundColor = self.backgroundColor
-        }
     }
 
     public init() {
@@ -103,7 +85,7 @@ final class PlaybackControlView: UIView {
         self.addSubview(self.playButton)
         self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
-        self.playButton.autoPinEdge(.top, to: .top, of: self)
+        self.playButton.autoSetDimensions(to: CGSize(width: 56, height: 56))
         self.playButton.addGestureRecognizer(
             UITapGestureRecognizer(
                 target: self,
@@ -116,6 +98,8 @@ final class PlaybackControlView: UIView {
         self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.padding)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self, withOffset: 0)
         self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
+        self.skipBackView.autoPinEdge(.top, to: .top, of: self)
+        self.skipBackView.autoPinEdge(.bottom, to: .bottom, of: self)
         self.skipBackView.addGestureRecognizer(
             UITapGestureRecognizer(
                 target: self,
@@ -127,6 +111,8 @@ final class PlaybackControlView: UIView {
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
         self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.padding)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self, withOffset: 0)
+        self.skipForwardView.autoPinEdge(.top, to: .top, of: self)
+        self.skipForwardView.autoPinEdge(.bottom, to: .bottom, of: self)
         self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipForwardView.addGestureRecognizer(
             UITapGestureRecognizer(
@@ -134,12 +120,6 @@ final class PlaybackControlView: UIView {
                 action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:))
             )
         )
-        
-        self.addSubview(self.audioRouteButton)
-        self.audioRouteButton.autoSetDimensions(to: CGSize(width: 30, height: 30))
-        self.audioRouteButton.autoAlignAxis(.vertical, toSameAxisOf: self.playButton)
-        self.audioRouteButton.autoPinEdge(.top, to: .bottom, of: self.playButton, withOffset: self.padding)
-        self.audioRouteButton.autoPinEdge(.bottom, to: .bottom, of: self)
     }
     
     @objc public func playButtonWasTapped(_ sender: Any) {

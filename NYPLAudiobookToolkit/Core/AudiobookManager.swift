@@ -57,11 +57,13 @@ import AudioEngine
     var tableOfContents: AudiobookTableOfContents { get }
     var isPlaying: Bool { get }
     var sleepTimer: SleepTimer { get }
+    var currentChapterLocation: ChapterLocation? { get }
     func fetch()
     func skipForward()
     func skipBack()
     func play()
     func pause()
+    var playbackRate: PlaybackRate { get set }
     func updatePlaybackWith(_ chapter: ChapterLocation)
 }
 
@@ -83,6 +85,10 @@ public final class DefaultAudiobookManager: AudiobookManager {
         )
     }
 
+    public var currentChapterLocation: ChapterLocation? {
+        return self.player.currentChapterLocation
+    }
+
     /// The SleepTimer may be used to schedule playback to stop at a specific
     /// time. When a sleep timer is scheduled through the `setTimerTo:trigger`
     /// method, it must be retained so that it can properly pause the `player`.
@@ -92,6 +98,15 @@ public final class DefaultAudiobookManager: AudiobookManager {
         return SleepTimer(player: self.player)
     }()
 
+    public var playbackRate: PlaybackRate {
+        get {
+            return self.player.playbackRate
+        }
+        set(newRate) {
+            self.player.playbackRate = newRate
+        }
+    }
+    
     private let player: Player
     private let networkService: AudiobookNetworkService
     public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player, networkService: AudiobookNetworkService) {

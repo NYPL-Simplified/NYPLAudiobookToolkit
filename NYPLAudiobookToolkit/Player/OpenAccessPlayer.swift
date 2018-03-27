@@ -9,6 +9,8 @@
 import UIKit
 
 final class OpenAccessPlayer: NSObject, Player {
+    var playbackRate: PlaybackRate = .normalTime
+    
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
         return false
     }
