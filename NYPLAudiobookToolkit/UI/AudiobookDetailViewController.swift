@@ -48,6 +48,7 @@ public final class AudiobookDetailViewController: UIViewController {
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
     private let audioRoutingBarButtonIndex = 3
+    private let sleepTimerDefaultText = "☾"
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -62,7 +63,8 @@ public final class AudiobookDetailViewController: UIViewController {
     private let toolbar = UIToolbar()
     private let chapterInfoStack = ChapterInfoStack()
     private let toolbarHeight: CGFloat = 44
-    private var sleepCountdownTimer: Timer?
+    private weak var timer: Timer?
+    
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.navigationBar.isTranslucent = false
@@ -138,7 +140,7 @@ public final class AudiobookDetailViewController: UIViewController {
         let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
         let sleepTimer = UIBarButtonItem(
-            title: "☾",
+            title: self.sleepTimerDefaultText,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
@@ -156,6 +158,14 @@ public final class AudiobookDetailViewController: UIViewController {
             )
             self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
+        
+        self.timer = Timer.scheduledTimer(
+            timeInterval: 1,
+            target: self,
+            selector: #selector(AudiobookDetailViewController.updateTemporalUIElements(_:)),
+            userInfo: nil,
+            repeats: true
+        )
     }
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
@@ -221,7 +231,6 @@ public final class AudiobookDetailViewController: UIViewController {
         func alertFromsleepTimer(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 sleepTimer.setTimerTo(trigger: trigger)
-                self.sleepTimerButtonShouldUpdate()
             }
             var action: UIAlertAction! = nil
             switch trigger {
@@ -248,46 +257,16 @@ public final class AudiobookDetailViewController: UIViewController {
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         self.present(actionSheet, animated: true, completion: nil)
     }
-    
-    func sleepTimerButtonShouldUpdate() {
-        if self.sleepCountdownTimer == nil && self.audiobookManager.sleepTimer.isScheduled {
-            self.sleepCountdownTimer = Timer.scheduledTimer(
-                timeInterval: 1,
-                target: self,
-                selector: #selector(AudiobookDetailViewController.updateStateForSleepTimerButton(_:)),
-                userInfo: nil,
-                repeats: true
-            )
-        }
-
-    }
-
-    @objc func updateStateForSleepTimerButton(_ timer: Timer) {
-        guard let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] else {
-            return
-        }
-
-        if self.audiobookManager.sleepTimer.isScheduled {
-            let title = HumanReadableTimeStamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
-            barButtonItem.title = title
-        } else {
-           barButtonItem.title = "☾"
-            timer.invalidate()
-        }
-
-    }
 
     @objc func coverArtWasPressed(_ sender: Any) {
         self.audiobookManager.fetch()
     }
     
     func updateControlsForPlaybackStart() {
-        self.seekBar.play()
         self.playbackControlView.showPauseButton()
     }
 
     func updateControlsForPlaybackStop() {
-        self.seekBar.pause()
         self.playbackControlView.showPlayButton()
     }
     
@@ -302,6 +281,28 @@ public final class AudiobookDetailViewController: UIViewController {
             volumeView.sizeToFit()
         }
         return UIBarButtonItem(customView: view)
+    }
+    
+    @objc func updateTemporalUIElements(_ timer: Timer) {
+        if let chapter = self.currentChapter {
+            let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
+            self.seekBar.setOffset(
+                chapter.playheadOffset,
+                duration: chapter.duration,
+                timeLeftInBook: timeLeftInBook
+            )
+        }
+        
+        if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
+            if self.audiobookManager.sleepTimer.isScheduled {
+                let title = HumanReadableTimeStamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
+                barButtonItem.title = title
+            } else {
+                if self.sleepTimerDefaultText != barButtonItem.title {
+                    barButtonItem.title = self.sleepTimerDefaultText
+                }
+            }
+        }
     }
 }
 
@@ -358,30 +359,16 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
         )
         if scrubbing {
             self.updateControlsForPlaybackStart()
-            self.seekBar.play()
         } else {
             self.updateControlsForPlaybackStop()
-            self.seekBar.pause()
         }
     }
 }
 
 extension AudiobookDetailViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
-        scrubberView.pause()
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.updatePlaybackWith(chapter)
-        }
-    }
-
-    func scrubberViewDidRequestUpdate(_ scrubberView: ScrubberView) {
-        if let chapter = self.currentChapter {
-            let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
-            scrubberView.setOffset(
-                chapter.playheadOffset,
-                duration: chapter.duration,
-                timeLeftInBook: timeLeftInBook
-            )
         }
     }
 }

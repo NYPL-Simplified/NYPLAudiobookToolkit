@@ -59,6 +59,34 @@ class SleepTimerTests: XCTestCase {
         )
         wait(for: [expectTimeToDecrease], timeout: 4)
     }
+
+    func testIsAbleToSetDifferentTimes() {
+        let expectTimeToDecreaseFrom15Minutes = expectation(description: "time to decrease from 15 minutes")
+        let sleepTimer = SleepTimer(player: PlayerMock())
+        sleepTimer.setTimerTo(trigger: .fifteenMinutes)
+        XCTAssert(sleepTimer.isScheduled)
+        let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 58
+        self.asyncCheckFor(
+            sleepTimer: sleepTimer,
+            untilTime: fourteenMinutesAndFiftyEightSeconds,
+            theExpectation: expectTimeToDecreaseFrom15Minutes
+        )
+        wait(for: [expectTimeToDecreaseFrom15Minutes], timeout: 4)
+        sleepTimer.setTimerTo(trigger: .never)
+        XCTAssertFalse(sleepTimer.isScheduled)
+        XCTAssertEqual(sleepTimer.timeRemaining, 0)
+        
+        sleepTimer.setTimerTo(trigger: .oneHour)
+        XCTAssert(sleepTimer.isScheduled)
+        let expectTimeToDecreaseFrom59Minutes = expectation(description: "time to decrease from 15 minutes")
+        let fiftyNineMinutesAndFiftyEightSeconds: TimeInterval = (60 * 59) + 58
+        self.asyncCheckFor(
+            sleepTimer: sleepTimer,
+            untilTime: fiftyNineMinutesAndFiftyEightSeconds,
+            theExpectation: expectTimeToDecreaseFrom59Minutes
+        )
+        wait(for: [expectTimeToDecreaseFrom59Minutes], timeout: 4)
+    }
     
     func asyncCheckFor(sleepTimer: SleepTimer, untilTime time: TimeInterval, theExpectation: XCTestExpectation) {
         let tts = sleepTimer.timeRemaining
