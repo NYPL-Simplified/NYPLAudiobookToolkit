@@ -90,6 +90,23 @@ final class FindawayPlayer: NSObject, Player {
     public func removeDelegate(_ delegate: PlayerDelegate) {
         self.delegates.remove(delegate)
     }
+    
+    var playbackRate: PlaybackRate {
+        get {
+            let rawValue = FAEAudioEngine.shared()?.playbackEngine?.currentRate
+            if let value = rawValue {
+                return PlaybackRate(rawValue: Int(value * 100))!
+            } else {
+                return .normalTime
+            }
+        }
+
+        set(newRate) {
+            self.queue.sync {
+                FAEAudioEngine.shared()?.playbackEngine?.currentRate = PlaybackRate.convert(rate: newRate)
+            }
+        }
+    }
 
     func skipForward() {
         self.queue.async { [weak self] in
