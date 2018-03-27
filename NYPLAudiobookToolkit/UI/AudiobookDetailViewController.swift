@@ -63,7 +63,6 @@ public final class AudiobookDetailViewController: UIViewController {
     private let chapterInfoStack = ChapterInfoStack()
     private let toolbarHeight: CGFloat = 44
     private var sleepCountdownTimer: Timer?
-    private var sleepCountdownButton: UIButton?
     override public func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.navigationBar.isTranslucent = false
