@@ -63,6 +63,7 @@ import AudioEngine
     func skipBack()
     func play()
     func pause()
+    var playbackRate: PlaybackRate { get set }
     func updatePlaybackWith(_ chapter: ChapterLocation)
 }
 
@@ -97,6 +98,15 @@ public final class DefaultAudiobookManager: AudiobookManager {
         return SleepTimer(player: self.player)
     }()
 
+    public var playbackRate: PlaybackRate {
+        get {
+            return self.player.playbackRate
+        }
+        set(newRate) {
+            self.player.playbackRate = newRate
+        }
+    }
+    
     private let player: Player
     private let networkService: AudiobookNetworkService
     public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player, networkService: AudiobookNetworkService) {

@@ -128,12 +128,12 @@ public final class AudiobookDetailViewController: UIViewController {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
         let speed =  UIBarButtonItem(
-            title: "Speed",
+            title: HumanReadablePlaybackRate(rate: self.audiobookManager.playbackRate).value,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
         )
-        speed.tintColor = UIColor.darkText
+        speed.tintColor = self.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
         let sleepTimer = UIBarButtonItem(
@@ -142,7 +142,7 @@ public final class AudiobookDetailViewController: UIViewController {
             target: self,
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
         )
-        sleepTimer.tintColor = UIColor.darkText
+        sleepTimer.tintColor = self.tintColor
         items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
 
         let audioRoutingItem = self.audioRoutingBarButtonItem()
@@ -194,9 +194,30 @@ public final class AudiobookDetailViewController: UIViewController {
 
     
     @objc public func speedWasPressed(_ sender: Any) {
+        func alertFrom(rate: PlaybackRate, manager: AudiobookManager) -> UIAlertAction {
+            let handler = { (_ action: UIAlertAction) -> Void in
+                manager.playbackRate = rate
+                self.speedButtonShouldUpdate(rate: rate)
+            }
+            let title = HumanReadablePlaybackRate(rate: rate).value
+            return UIAlertAction(title: title, style: .default, handler: handler)
+        }
         
+        let actionSheet = UIAlertController(title: "Set Your Play Speed", message: nil, preferredStyle: .actionSheet)
+        let triggers: [PlaybackRate] = [.threeQuartersTime, .normalTime, .oneAndAQuarterTime, .oneAndAHalfTime, .doubleTime ]
+        triggers.forEach { (trigger)  in
+            let alert = alertFrom(rate: trigger, manager: self.audiobookManager)
+            actionSheet.addAction(alert)
+        }
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        self.present(actionSheet, animated: true, completion: nil)
     }
 
+    func speedButtonShouldUpdate(rate: PlaybackRate) {
+        if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
+            buttonItem.title = HumanReadablePlaybackRate(rate: rate).value
+        }
+    }
     
     @objc public func sleepTimerWasPressed(_ sender: Any) {
         func alertFromsleepTimer(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
@@ -276,7 +297,7 @@ public final class AudiobookDetailViewController: UIViewController {
                 target: self,
                 action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
             )
-            barButtonItem.tintColor = UIColor.darkText
+            barButtonItem.tintColor = self.tintColor
             items.insert(barButtonItem, at: self.sleepTimerBarButtonIndex)
             self.toolbar.setItems(items, animated: true)
             timer.invalidate()

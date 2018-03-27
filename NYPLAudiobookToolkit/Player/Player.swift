@@ -8,6 +8,17 @@
 
 import Foundation
 
+@objc public enum PlaybackRate: Int {
+    case threeQuartersTime = 75
+    case normalTime = 100
+    case oneAndAQuarterTime = 125
+    case oneAndAHalfTime = 150
+    case doubleTime = 200
+    
+    static func convert(rate: PlaybackRate) -> Float {
+        return Float(rate.rawValue) * 0.01
+    }
+}
 
 /// Receive updates from player as events happen
 @objc public protocol PlayerDelegate: class {
@@ -25,26 +36,14 @@ import Foundation
     func skipBack()
     var isPlaying: Bool { get }
     var currentChapterLocation: ChapterLocation? { get }
+    var playbackRate: PlaybackRate { get set }
     func jumpToLocation(_ location: ChapterLocation)
+
     func registerDelegate(_ delegate: PlayerDelegate)
     func removeDelegate(_ delegate: PlayerDelegate)
 }
 
-/// *EXPERIMENTAL AND LIKELY TO CHANGE*
-/// This protocol is supposed to represent how to issue complex commands to the player.
-/// IE: stop and seek to 3:00
-/// IE: stop and skip to Chapter 3
-///
-/// This protocol is supposed to represent metadata associated with a chapter.
-/// It is intended to be used as a way to seek through the track.
-///
-/// The reason this is still experimental is that it likely to duplicate
-/// functionality needed by the table of contents. This object will
-/// likely need information about seeking between chapters and skipping to
-/// new chapters as well.
-///
-/// This is also likely to change as the interface for doing this with
-/// AVPlayer & FAEPlaybackEngine are quite different.
+/// This class represents a location in a book.
 @objc public final class ChapterLocation: NSObject {
     let title: String?
     let number: UInt
