@@ -48,6 +48,7 @@ public final class AudiobookDetailViewController: UIViewController {
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
     private let audioRoutingBarButtonIndex = 3
+    private let sleepTimerDefaultText = "☾"
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -139,7 +140,7 @@ public final class AudiobookDetailViewController: UIViewController {
         let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
         let sleepTimer = UIBarButtonItem(
-            title: "☾",
+            title: self.sleepTimerDefaultText,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
@@ -299,7 +300,9 @@ public final class AudiobookDetailViewController: UIViewController {
                 let title = HumanReadableTimeStamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
                 barButtonItem.title = title
             } else {
-                barButtonItem.title = "☾"
+                if self.sleepTimerDefaultText != barButtonItem.title {
+                    barButtonItem.title = self.sleepTimerDefaultText
+                }
             }
 
         }
