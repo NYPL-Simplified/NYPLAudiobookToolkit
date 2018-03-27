@@ -263,12 +263,10 @@ public final class AudiobookDetailViewController: UIViewController {
     }
     
     func updateControlsForPlaybackStart() {
-        self.seekBar.play()
         self.playbackControlView.showPauseButton()
     }
 
     func updateControlsForPlaybackStop() {
-        self.seekBar.pause()
         self.playbackControlView.showPlayButton()
     }
     
@@ -304,7 +302,6 @@ public final class AudiobookDetailViewController: UIViewController {
                     barButtonItem.title = self.sleepTimerDefaultText
                 }
             }
-
         }
     }
 }
@@ -362,24 +359,17 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
         )
         if scrubbing {
             self.updateControlsForPlaybackStart()
-            self.seekBar.play()
         } else {
             self.updateControlsForPlaybackStop()
-            self.seekBar.pause()
         }
     }
 }
 
 extension AudiobookDetailViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
-        scrubberView.pause()
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.updatePlaybackWith(chapter)
         }
-    }
-
-    func scrubberViewDidRequestUpdate(_ scrubberView: ScrubberView) {
-
     }
 }
 

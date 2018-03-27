@@ -15,7 +15,6 @@ class ScrubberUIStateTests: XCTestCase {
         let state = ScrubberUIState(
             gripperHeight: 10,
             progressColor: UIColor.black,
-            isScrubbing: true,
             progress: ScrubberProgress(
                 offset: 5,
                 duration: 10,

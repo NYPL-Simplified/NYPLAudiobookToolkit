@@ -11,14 +11,13 @@ import PureLayout
 
 protocol ScrubberViewDelegate: class {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
-    func scrubberViewDidRequestUpdate(_ scrubberView: ScrubberView)
 }
 
 private func defaultTimeLabelWidth() -> CGFloat {
     return 60
 }
 
-struct ScrubberProgress: Equatable {
+struct ScrubberProgress {
     let offset: TimeInterval
     let duration: TimeInterval
     let timeLeftInBook: TimeInterval
@@ -57,17 +56,11 @@ struct ScrubberProgress: Equatable {
             timeLeftInBook: self.timeLeftInBook + difference
         )
     }
-
-    static func ==(lhs: ScrubberProgress, rhs: ScrubberProgress) -> Bool {
-        return lhs.offset == rhs.offset &&
-            lhs.duration == rhs.duration
-    }
 }
 
-struct ScrubberUIState: Equatable {
+struct ScrubberUIState {
     let gripperHeight: CGFloat
     let progressColor: UIColor
-    let isScrubbing: Bool
     let progress: ScrubberProgress
     var gripperWidth: CGFloat {
         return gripperHeight / 4
@@ -85,13 +78,6 @@ struct ScrubberUIState: Equatable {
         }
 
         return max(self.gripperWidth, progressLocation)
-    }
-
-    static func ==(lhs: ScrubberUIState, rhs: ScrubberUIState) -> Bool {
-        return lhs.gripperHeight == rhs.gripperHeight &&
-            lhs.progressColor == rhs.progressColor &&
-            lhs.progress == rhs.progress &&
-            lhs.isScrubbing == rhs.isScrubbing
     }
 }
 
@@ -122,7 +108,6 @@ final class ScrubberView: UIView {
     var state: ScrubberUIState = ScrubberUIState(
         gripperHeight: 36,
         progressColor: UIColor.black,
-        isScrubbing: false,
         progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0)
     ) {
         didSet {
@@ -134,33 +119,12 @@ final class ScrubberView: UIView {
         self.state = ScrubberUIState(
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
-            isScrubbing: self.state.isScrubbing,
             progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook)
         )
     }
     
     public func setMiddle(text: String?) {
         self.middleLabel.text = text
-    }
-
-    var timer: Timer?
-
-    public func play() {
-        self.state = ScrubberUIState(
-            gripperHeight: self.state.gripperHeight,
-            progressColor: self.state.progressColor,
-            isScrubbing: true,
-            progress: self.state.progress
-        )
-    }
-
-    public func pause() {
-        self.state = ScrubberUIState(
-            gripperHeight: self.state.gripperHeight,
-            progressColor: self.state.progressColor,
-            isScrubbing: false,
-            progress: self.state.progress
-        )
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
@@ -174,11 +138,6 @@ final class ScrubberView: UIView {
         self.trimColor = tintColor
         super.init(frame: CGRect.zero)
         self.setup()
-    }
-    
-    deinit {
-        self.timer?.invalidate()
-        self.timer = nil
     }
     
     func setup () {
@@ -266,7 +225,7 @@ final class ScrubberView: UIView {
     
     override func updateConstraints() {
         super.updateConstraints()
-        UIView.beginAnimations("layout", context: nil)
+        UIView.beginAnimations("moveScrubberViewProgressBar", context: nil)
         self.barWidthConstraint?.constant = self.state.progressLocationFor(self.progressBarWidth)
         self.progressBar.backgroundColor = self.state.progressColor
         self.gripper.backgroundColor = self.trimColor
@@ -288,22 +247,6 @@ final class ScrubberView: UIView {
                 self.state = ScrubberUIState(
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
-                    isScrubbing: false,
-                    progress: self.state.progress.progressFromPrecentage(percentage)
-                )
-            }
-        }
-    }
-    
-    func stopScrub(touch: UITouch?) {
-        if let touch = touch {
-            let position = touch.location(in: self.progressBackground)
-            if position.x > 0 && position.x < self.progressBarWidth {
-                let percentage = Float(position.x / self.progressBarWidth)
-                self.state = ScrubberUIState(
-                    gripperHeight: self.state.gripperHeight,
-                    progressColor: self.state.progressColor,
-                    isScrubbing: true,
                     progress: self.state.progress.progressFromPrecentage(percentage)
                 )
             }
@@ -319,12 +262,12 @@ final class ScrubberView: UIView {
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.stopScrub(touch: touches.first)
+        self.scrub(touch: touches.first)
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.stopScrub(touch: touches.first)
+        self.scrub(touch: touches.first)
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
 }
