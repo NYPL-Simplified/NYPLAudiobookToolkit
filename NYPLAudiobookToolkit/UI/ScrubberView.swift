@@ -168,18 +168,6 @@ final class ScrubberView: UIView {
         self.rightLabel.text = self.state.progress.timeLeftText
         self.topLabel.text = self.state.progress.timeLeftInBookText
         self.setNeedsUpdateConstraints()
-        if self.timer == nil && self.state.isScrubbing {
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 1,
-                target: self,
-                selector: #selector(ScrubberView.updateProgress(_:)),
-                userInfo: nil,
-                repeats: true
-            )
-        } else if !self.state.isScrubbing {
-            self.timer?.invalidate()
-            self.timer = nil
-        }
     }
 
     init(tintColor: UIColor = UIColor.red) {
@@ -286,18 +274,6 @@ final class ScrubberView: UIView {
             constraint.constant = self.state.progress.labelWidth
         }
         UIView.commitAnimations()
-    }
-    
-    @objc func updateProgress(_ timer: Timer) {
-        if self.state.progress.duration == 0 {
-            timer.invalidate()
-            return
-        }
-
-        guard self.state.isScrubbing else {
-            return
-        }
-        self.delegate?.scrubberViewDidRequestUpdate(self)
     }
     
     required init?(coder aDecoder: NSCoder) {
