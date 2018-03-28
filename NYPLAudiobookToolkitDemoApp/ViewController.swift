@@ -111,7 +111,6 @@ class ViewController: UIViewController {
         )
         
         self.navigationItem.title = "My Books"
-        
         guard let audiobook = AudiobookFactory.audiobook(unwrappedJSON) else { return }
         if (self.manager == nil) {
             self.manager = DefaultAudiobookManager(
@@ -149,9 +148,6 @@ class ViewController: UIViewController {
         
         let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             if (error == nil) {
-                // Success
-                let statusCode = (response as! HTTPURLResponse).statusCode
-                print("URL Session Task Succeeded: HTTP \(statusCode)")
                 guard let data = data else { return }
                 DispatchQueue.main.async {
                     completion(data)

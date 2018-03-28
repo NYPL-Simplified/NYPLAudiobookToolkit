@@ -51,20 +51,10 @@ import AudioEngine
 @objc public protocol AudiobookManager {
     weak var refreshDelegate: RefreshDelegate? { get set }
     weak var downloadDelegate: AudiobookManagerDownloadDelegate? { get set }
-    weak var playbackDelegate: AudiobookManagerPlaybackDelegate? { get set }
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
     var tableOfContents: AudiobookTableOfContents { get }
-    var isPlaying: Bool { get }
     var sleepTimer: SleepTimer { get }
-    var currentChapterLocation: ChapterLocation? { get }
-    func fetch()
-    func skipForward()
-    func skipBack()
-    func play()
-    func pause()
-    var playbackRate: PlaybackRate { get set }
-    func updatePlaybackWith(_ chapter: ChapterLocation)
 }
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
@@ -85,10 +75,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
         )
     }
 
-    public var currentChapterLocation: ChapterLocation? {
-        return self.player.currentChapterLocation
-    }
-
     /// The SleepTimer may be used to schedule playback to stop at a specific
     /// time. When a sleep timer is scheduled through the `setTimerTo:trigger`
     /// method, it must be retained so that it can properly pause the `player`.
@@ -97,15 +83,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
     public lazy var sleepTimer: SleepTimer = {
         return SleepTimer(player: self.player)
     }()
-
-    public var playbackRate: PlaybackRate {
-        get {
-            return self.player.playbackRate
-        }
-        set(newRate) {
-            self.player.playbackRate = newRate
-        }
-    }
     
     private let player: Player
     private let networkService: AudiobookNetworkService
@@ -114,8 +91,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
         self.audiobook = audiobook
         self.player = player
         self.networkService = networkService
-        
-        self.player.registerDelegate(self)
         self.networkService.registerDelegate(self)
     }
 
@@ -129,30 +104,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
     }
     
     weak public var refreshDelegate: RefreshDelegate?
-    
-    public func fetch() {
-        self.networkService.fetch()
-    }
-
-    public func play() {
-        self.player.play()
-    }
-    
-    public func pause() {
-        self.player.pause()
-    }
-
-    public func skipForward() {
-        self.player.skipForward()
-    }
-    
-    public func skipBack() {
-        self.player.skipBack()
-    }
-    
-    public func updatePlaybackWith(_ chapter: ChapterLocation) {
-        self.player.jumpToLocation(chapter)
-    }
 }
 
 extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
@@ -169,22 +120,4 @@ extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
     }
 
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
-}
-
-extension DefaultAudiobookManager: PlayerDelegate {
-    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        DispatchQueue.main.async { [weak self] in
-            if let strongSelf = self {
-                strongSelf.playbackDelegate?.audiobookManager(strongSelf, didBeginPlaybackOf: chapter)
-            }
-        }
-    }
-
-    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        DispatchQueue.main.async { [weak self] in
-            if let strongSelf = self {
-                strongSelf.playbackDelegate?.audiobookManager(strongSelf, didStopPlaybackOf: chapter)
-            }
-        }
-    }
 }

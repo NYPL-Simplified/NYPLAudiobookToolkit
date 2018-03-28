@@ -13,19 +13,10 @@ import AVKit
 import MediaPlayer
 
 public final class AudiobookDetailViewController: UIViewController {
-    
-    /// Light gray
-    public var backgroundColor = UIColor(red: 219/255, green: 220/255, blue: 223/255, alpha: 1) {
-        didSet {
-            self.view.backgroundColor = self.backgroundColor
-            self.navigationController?.navigationBar.barTintColor = self.backgroundColor
-            self.playbackControlView.backgroundColor = self.backgroundColor
-        }
-    }
 
     private let audiobookManager: AudiobookManager
     private var currentChapter: ChapterLocation? {
-        return audiobookManager.currentChapterLocation
+        return self.audiobookManager.audiobook.player.currentChapterLocation
     }
 
     public required init(audiobookManager: AudiobookManager) {
@@ -34,7 +25,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
         self.audiobookManager.downloadDelegate = self
-        self.audiobookManager.playbackDelegate = self
+        self.audiobookManager.audiobook.player.registerDelegate(self)
     }
 
     public required init?(coder aDecoder: NSCoder) {
@@ -136,7 +127,7 @@ public final class AudiobookDetailViewController: UIViewController {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
         let speed =  UIBarButtonItem(
-            title: HumanReadablePlaybackRate(rate: self.audiobookManager.playbackRate).value,
+            title: HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
@@ -209,9 +200,9 @@ public final class AudiobookDetailViewController: UIViewController {
 
     
     @objc public func speedWasPressed(_ sender: Any) {
-        func alertFrom(rate: PlaybackRate, manager: AudiobookManager) -> UIAlertAction {
+        func alertFrom(rate: PlaybackRate, player: Player) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
-                manager.playbackRate = rate
+                player.playbackRate = rate
                 self.speedButtonShouldUpdate(rate: rate)
             }
             let title = HumanReadablePlaybackRate(rate: rate).value
@@ -221,7 +212,7 @@ public final class AudiobookDetailViewController: UIViewController {
         let actionSheet = UIAlertController(title: "Set Your Play Speed", message: nil, preferredStyle: .actionSheet)
         let triggers: [PlaybackRate] = [.threeQuartersTime, .normalTime, .oneAndAQuarterTime, .oneAndAHalfTime, .doubleTime ]
         triggers.forEach { (trigger)  in
-            let alert = alertFrom(rate: trigger, manager: self.audiobookManager)
+            let alert = alertFrom(rate: trigger, player: self.audiobookManager.audiobook.player)
             actionSheet.addAction(alert)
         }
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -265,9 +256,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.present(actionSheet, animated: true, completion: nil)
     }
 
-    @objc func coverArtWasPressed(_ sender: Any) {
-        self.audiobookManager.fetch()
-    }
+    @objc func coverArtWasPressed(_ sender: Any) { }
     
     func updateControlsForPlaybackStart() {
         self.playbackControlView.showPauseButton()
@@ -317,20 +306,20 @@ public final class AudiobookDetailViewController: UIViewController {
 
 extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
-        self.audiobookManager.skipBack()
+        self.audiobookManager.audiobook.player.skipBack()
     }
     
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
-        self.audiobookManager.skipForward()
+        self.audiobookManager.audiobook.player.skipForward()
     }
     
     // Pausing happens almost instantly so we ask the manager to pause and pause the seek bar at the same time. However playback can take time to start up and we need to wait to move the seek bar until we here playback has began from the manager. This is because playing could require downloading the track.
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
-        if self.audiobookManager.isPlaying {
-            self.audiobookManager.pause()
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.audiobookManager.audiobook.player.pause()
             self.updateControlsForPlaybackStop()
         } else {
-            self.audiobookManager.play()
+            self.audiobookManager.audiobook.player.play()
         }
     }
 }
@@ -349,12 +338,12 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     }
 }
 
-extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterLocation) {
+extension AudiobookDetailViewController: PlayerDelegate {
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.updateUIWithChapter(chapter, scrubbing: true)
     }
-
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterLocation) {
+    
+    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.updateUIWithChapter(chapter, scrubbing: false)
     }
     
@@ -377,7 +366,7 @@ extension AudiobookDetailViewController: AudiobookManagerPlaybackDelegate {
 extension AudiobookDetailViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
         if let chapter = self.currentChapter?.chapterWith(offset) {
-            self.audiobookManager.updatePlaybackWith(chapter)
+            self.audiobookManager.audiobook.player.jumpToLocation(chapter)
         }
     }
 }
