@@ -100,20 +100,23 @@ public final class AudiobookDetailViewController: UIViewController {
         
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
-        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)
+        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 2)
+        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding, relation: .greaterThanOrEqual)
         self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding * 2)
         self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
 
         self.view.addSubview(self.coverView)
-        self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 2)
+        self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 2, relation: .greaterThanOrEqual)
+        self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 4, relation: .lessThanOrEqual)
+        self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
         self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        self.coverView.autoSetDimensions(to: CGSize(width: 191, height: 191))
 
         self.view.addSubview(self.playbackControlView)
         self.view.addSubview(self.toolbar)
+
         self.playbackControlView.delegate = self
-        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding * 3)
-        self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: 0, relation: .lessThanOrEqual)
+        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: (self.padding * 2), relation: .greaterThanOrEqual)
+        self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -(self.padding * 2))
         self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
         self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)

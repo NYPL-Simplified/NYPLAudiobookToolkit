@@ -15,7 +15,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let audiobookLifecycleManager = DefaultAudiobookLifecycleManager.shared
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        let lightBlack = UIColor(red: 54/255, green: 65/255, blue: 68/255, alpha: 1)
         self.audiobookLifecycleManager.didFinishLaunching()
         return true
     }
