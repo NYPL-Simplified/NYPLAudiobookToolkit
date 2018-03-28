@@ -275,7 +275,7 @@ public final class AudiobookDetailViewController: UIViewController {
     }
     
     func audioRoutingBarButtonItem() -> UIBarButtonItem {
-        var view: UIView! = nil
+        let view: UIView
         if #available(iOS 11.0, *) {
             view = AVRoutePickerView()
         } else {
@@ -283,7 +283,9 @@ public final class AudiobookDetailViewController: UIViewController {
             volumeView.showsVolumeSlider = false
             volumeView.showsRouteButton = true
             volumeView.sizeToFit()
+            view = volumeView
         }
+        view.tintColor = self.tintColor
         return UIBarButtonItem(customView: view)
     }
     
