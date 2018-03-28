@@ -70,9 +70,13 @@ public final class AudiobookDetailViewController: UIViewController {
         self.navigationController?.navigationBar.isTranslucent = false
         self.navigationController?.navigationBar.tintColor = self.tintColor
 
-        self.playbackControlView.backgroundColor = self.backgroundColor
-        self.view.backgroundColor = self.backgroundColor
-
+        let gradiant = CAGradientLayer()
+        gradiant.frame = self.view.bounds
+        let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
+        gradiant.colors = [ startColor, UIColor.white.cgColor]
+        gradiant.startPoint = CGPoint.zero
+        gradiant.endPoint = CGPoint(x: 1, y: 1)
+        self.view.layer.insertSublayer(gradiant, at: 0)
         let tocImage = UIImage(
             named: "table_of_contents",
             in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
