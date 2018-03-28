@@ -12,13 +12,6 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
 
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
         self.tableView.reloadData()
-        let progress = audiobookTableOfContents.downloadProgress
-        if progress < 1 {
-            let humanReadableProgress = HumanReadablePercentage(percentage: progress).value
-            self.title = "Downloading  % \(humanReadableProgress)"
-        } else {
-            self.title = "Table Of Contents"
-        }
     }
 
     let tableOfContents: AudiobookTableOfContents
@@ -34,7 +27,6 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
             barButtonSystemItem: .save,
             target: self, action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
         self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem ]
-        self.title = "Table Of Contents"
         self.tableOfContents.delegate = self
         self.tableView.dataSource = self.tableOfContents
         self.tableView.delegate = self.tableOfContents
