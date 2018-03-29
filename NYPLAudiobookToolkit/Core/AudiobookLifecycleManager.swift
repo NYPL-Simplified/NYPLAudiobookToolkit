@@ -8,7 +8,7 @@
 
 import UIKit
 import AudioEngine
-
+import AVFoundation
 
 /// Delegate to be notified when the state of the lifecycle manager has changed
 @objc protocol AudiobookLifecycleManagerDelegate: class {
@@ -79,6 +79,13 @@ extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
         FAEAudioEngine.shared()?.didFinishLaunching()
         FAELogEngine.setLogLevel(.verbose)
+
+        try? AVAudioSession.sharedInstance().setCategory(
+            AVAudioSessionCategoryPlayback
+        )
+        try? AVAudioSession.sharedInstance().setMode(
+            AVAudioSessionModeDefault
+        )
     }
     
     public func didEnterBackground () {

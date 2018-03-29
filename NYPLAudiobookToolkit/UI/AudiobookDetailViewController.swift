@@ -21,9 +21,9 @@ public final class AudiobookDetailViewController: UIViewController {
 
     public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
-
         self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
+        self.audiobookManager.timerDelegate = self
         self.audiobookManager.downloadDelegate = self
         self.audiobookManager.audiobook.player.registerDelegate(self)
     }
@@ -54,7 +54,6 @@ public final class AudiobookDetailViewController: UIViewController {
     private let toolbar = UIToolbar()
     private let chapterInfoStack = ChapterInfoStack()
     private let toolbarHeight: CGFloat = 44
-    private weak var timer: Timer?
     
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -156,14 +155,6 @@ public final class AudiobookDetailViewController: UIViewController {
             )
             self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
-        
-        self.timer = Timer.scheduledTimer(
-            timeInterval: 1,
-            target: self,
-            selector: #selector(AudiobookDetailViewController.updateTemporalUIElements(_:)),
-            userInfo: nil,
-            repeats: true
-        )
     }
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
@@ -281,7 +272,7 @@ public final class AudiobookDetailViewController: UIViewController {
         return UIBarButtonItem(customView: view)
     }
     
-    @objc func updateTemporalUIElements(_ timer: Timer) {
+    func updateTemporalUIElements() {
         if let chapter = self.currentChapter {
             let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
             self.seekBar.setOffset(
@@ -301,6 +292,12 @@ public final class AudiobookDetailViewController: UIViewController {
                 }
             }
         }
+    }
+}
+
+extension AudiobookDetailViewController: AudiobookManagerTimerDelegate {
+    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdate timer: Timer?) {
+        self.updateTemporalUIElements()
     }
 }
 
