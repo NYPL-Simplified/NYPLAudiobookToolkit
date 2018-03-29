@@ -40,11 +40,6 @@ import AudioEngine
     func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement)
 }
 
-@objc public protocol AudiobookManagerPlaybackDelegate {
-    func audiobookManager(_ audiobookManager: AudiobookManager, didBeginPlaybackOf chapter: ChapterLocation)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didStopPlaybackOf chapter: ChapterLocation)
-}
-
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
 /// It is intended to be used by the host app to initiate downloads, control playback,
 /// and manage the filesystem.
@@ -61,7 +56,6 @@ import AudioEngine
 /// to be used by the AudibookDetailViewController to respond to UI events.
 public final class DefaultAudiobookManager: AudiobookManager {
     public weak var downloadDelegate: AudiobookManagerDownloadDelegate?
-    public weak var playbackDelegate: AudiobookManagerPlaybackDelegate?
     public let metadata: AudiobookMetadata
     public let audiobook: Audiobook
     public var isPlaying: Bool {
