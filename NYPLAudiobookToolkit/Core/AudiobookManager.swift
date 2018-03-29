@@ -124,15 +124,15 @@ public final class DefaultAudiobookManager: AudiobookManager {
     @objc func timerDidTick1Second(_ timer: Timer) {
         self.timerDelegate?.audiobookManager(self, didUpdate: timer)
         if let chapter = self.player.currentChapterLocation {
-            var info = MPNowPlayingInfoCenter.default().nowPlayingInfo
+            var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
             if let title = chapter.title {
-                info?[MPMediaItemPropertyTitle] = title
+                info[MPMediaItemPropertyTitle] = title
             }
-            info?[MPMediaItemPropertyArtist] = self.metadata.title
-            info?[MPMediaItemPropertyAlbumTitle] = self.metadata.authors.joined(separator: ", ")
-            info?[MPNowPlayingInfoPropertyElapsedPlaybackTime] = chapter.playheadOffset
-            info?[MPMediaItemPropertyPlaybackDuration] = chapter.duration
-            info?[MPNowPlayingInfoPropertyPlaybackRate] = PlaybackRate.convert(
+            info[MPMediaItemPropertyArtist] = self.metadata.title
+            info[MPMediaItemPropertyAlbumTitle] = self.metadata.authors.joined(separator: ", ")
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = chapter.playheadOffset
+            info[MPMediaItemPropertyPlaybackDuration] = chapter.duration
+            info[MPNowPlayingInfoPropertyPlaybackRate] = PlaybackRate.convert(
                 rate: self.player.playbackRate
             )
             MPNowPlayingInfoCenter.default().nowPlayingInfo = info
@@ -188,10 +188,4 @@ extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
     }
 
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
-}
-
-protocol RemoteControlHandler {
-    func togglePlayback(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
-    func skipForward(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
-    func skipBack(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
 }
