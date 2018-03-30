@@ -11,6 +11,8 @@ import PureLayout
 
 protocol ScrubberViewDelegate: class {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
+    func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView)
+    func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView)
 }
 
 private func defaultTimeLabelWidth() -> CGFloat {
@@ -99,11 +101,20 @@ final class ScrubberView: UIView {
         return label
     }()
 
+    override var accessibilityLabel: String? {
+        get {
+            return
+        }
+        set(newLabel) {
+        }
+    }
+    
     var barWidthConstraint: NSLayoutConstraint?
     var progressBarWidth: CGFloat {
         return self.progressBackground.bounds.size.width
     }
 
+    
     var labelWidthConstraints: [NSLayoutConstraint] = []
     var state: ScrubberUIState = ScrubberUIState(
         gripperHeight: 36,
@@ -137,10 +148,11 @@ final class ScrubberView: UIView {
     init(tintColor: UIColor = UIColor.red) {
         self.trimColor = tintColor
         super.init(frame: CGRect.zero)
-        self.setup()
+        self.setupView()
+        self.setupAccessibility()
     }
     
-    func setup () {
+    func setupView () {
         self.accessibilityIdentifier = "scrubber_container"
         self.addSubview(self.topLabel)
         self.addSubview(self.progressBackground)
@@ -223,6 +235,18 @@ final class ScrubberView: UIView {
         self.gripper.accessibilityIdentifier = "progress_grip"
     }
     
+    func setupAccessibility() {
+        self.accessibilityTraits = UIAccessibilityTraitAdjustable
+    }
+    
+    override func accessibilityIncrement() {
+        self.delegate?.scrubberViewDidRequestAccessibilityDecrement(self)
+    }
+    
+    override func accessibilityDecrement() {
+        self.delegate?.scrubberViewDidRequestAccessibilityDecrement(self)
+    }
+    
     override func updateConstraints() {
         super.updateConstraints()
         UIView.beginAnimations("moveScrubberViewProgressBar", context: nil)
@@ -271,4 +295,3 @@ final class ScrubberView: UIView {
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
 }
-

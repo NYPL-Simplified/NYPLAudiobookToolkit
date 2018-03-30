@@ -78,16 +78,17 @@ public final class AudiobookDetailViewController: UIViewController {
             target: self,
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
+        bbi.accessibilityLabel = "Table Of Contents"
         self.navigationItem.rightBarButtonItem = bbi
     
         self.view.addSubview(self.chapterInfoStack)
         self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
         self.chapterInfoStack.autoPinEdge(.left, to: .left, of: self.view)
         self.chapterInfoStack.autoPinEdge(.right, to: .right, of: self.view)
-        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
-        self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
 
-        
+        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
+        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
+
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 2)
@@ -345,7 +346,7 @@ extension AudiobookDetailViewController: PlayerDelegate {
     }
     
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
-        self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
+        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
         let timeLeftAfterChapter = self.timeLeftAfter(chapter: chapter)
         self.seekBar.setOffset(
             chapter.playheadOffset,
@@ -365,6 +366,14 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.audiobook.player.jumpToLocation(chapter)
         }
+    }
+
+    func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {
+        self.audiobookManager.audiobook.player.skipForward()
+    }
+
+    func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView) {
+        self.audiobookManager.audiobook.player.skipBack()
     }
 }
 
