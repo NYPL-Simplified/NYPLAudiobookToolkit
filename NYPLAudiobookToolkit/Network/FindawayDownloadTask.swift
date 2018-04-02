@@ -27,17 +27,15 @@ final class FindawayDownloadTask: DownloadTask {
         )
     }
 
-    var key: String {
-        return "FAE.audioEngine/\(self.downloadRequest.audiobookID)/\(self.downloadRequest.partNumber)/\(self.downloadRequest.chapterNumber)"
-    }
-
-    private var timer: Timer?
+    let key: String
+    private let pollRate: TimeInterval = 0.5
+    private var pollAgainForPercentageAt: Date?
     private var retryAfterVerification = false
     private var readyToDownload: Bool {
         didSet {
             guard self.readyToDownload else { return }
             guard self.retryAfterVerification else { return }
-            self.fetch()
+            self.attemptFetch()
         }
     }
     private var downloadRequest: FAEDownloadRequest
@@ -65,14 +63,15 @@ final class FindawayDownloadTask: DownloadTask {
         
         return FAEAudioEngine.shared()?.downloadEngine?.currentDownloadRequests().isEmpty ?? false
     }
-
+    private let queue: DispatchQueue
     private var notifiedDownloadProgress: Float = nan("Download Progress has not started yet")
     private let notificationHandler: FindawayDownloadNotificationHandler
-    public init(audiobookLifeCycleManager: AudiobookLifeCycleManager, findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, downloadRequest: FAEDownloadRequest) {
+    public init(audiobookLifeCycleManager: AudiobookLifeCycleManager, findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, downloadRequest: FAEDownloadRequest, key: String) {
         self.downloadRequest = downloadRequest
         self.notificationHandler = findawayDownloadNotificationHandler
         self.readyToDownload = audiobookLifeCycleManager.audioEngineDatabaseHasBeenVerified
-
+        self.queue = DispatchQueue(label: "org.nypl.labs.NYPLAudiobookToolkit.FindawayDownloadTask/\(key)")
+        self.key = key
         self.notificationHandler.delegate = self
         if !self.readyToDownload {
             audiobookLifeCycleManager.registerDelegate(self)
@@ -100,13 +99,9 @@ final class FindawayDownloadTask: DownloadTask {
         self.init(
             audiobookLifeCycleManager: DefaultAudiobookLifecycleManager.shared,
             findawayDownloadNotificationHandler: DefaultFindawayDownloadNotificationHandler(),
-            downloadRequest: request
+            downloadRequest: request,
+            key: "FAE.audioEngine/\(request.audiobookID)/\(request.partNumber)/\(request.chapterNumber)"
         )
-    }
-    
-    deinit {
-        self.timer?.invalidate()
-        self.timer = nil
     }
 
     /**
@@ -115,32 +110,52 @@ final class FindawayDownloadTask: DownloadTask {
      events, then it will never even hit the network.
      */
     public func fetch() {
+        self.queue.sync {
+            self.attemptFetch()
+        }
+    }
+
+    private func attemptFetch() {
         guard self.readyToDownload else {
             self.retryAfterVerification = true
             return
         }
-        
+
         let status = self.downloadStatus
         if status == .notDownloaded {
-            self.requestDownload()
+            FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: self.downloadRequest)
+            self.retryAfterVerification = false
         } else if status == .downloaded {
             self.delegate?.downloadTaskReadyForPlayback(self)
         }
     }
 
-    private func requestDownload() {
-        FAEAudioEngine.shared()?.downloadEngine?.startDownload(with: self.downloadRequest)
-        self.retryAfterVerification = false
+    func nextScheduledPoll() -> DispatchTime {
+        return DispatchTime.now() + self.pollRate
     }
 
-    @objc func pollForDownloadPercentage(_ timer: Timer) {
-        self.notifyDelegate()
-    }
+    func pollForDownloadPercentage() {
+        func notifyDelegate() {
+            guard let pollAt =  self.pollAgainForPercentageAt else {
+                return
+            }
 
-    private func notifyDelegate() {
-        if self.notifiedDownloadProgress != self.downloadProgress {
-            self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
-            self.notifiedDownloadProgress = self.downloadProgress
+            if Date() > pollAt {
+                if self.notifiedDownloadProgress != self.downloadProgress {
+                    self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
+                    self.notifiedDownloadProgress = self.downloadProgress
+                }
+            }
+
+            if self.downloadStatus == .downloading {
+                self.pollForDownloadPercentage()
+            } else {
+                self.pollAgainForPercentageAt = nil
+            }
+        }
+
+        self.queue.asyncAfter(deadline: self.nextScheduledPoll()) {
+            notifyDelegate()
         }
     }
 
@@ -154,43 +169,47 @@ final class FindawayDownloadTask: DownloadTask {
     /// this object ought to wait until the new DownloadRequest is created
     /// and then attempt the `fetch` again.
     public func delete() {
-        FAEAudioEngine.shared()?.downloadEngine?.delete(
-            forAudiobookID: self.downloadRequest.audiobookID,
-            partNumber: self.downloadRequest.partNumber,
-            chapterNumber: self.downloadRequest.chapterNumber
-        )
-        self.readyToDownload = false
+        self.queue.sync {
+            FAEAudioEngine.shared()?.downloadEngine?.delete(
+                forAudiobookID: self.downloadRequest.audiobookID,
+                partNumber: self.downloadRequest.partNumber,
+                chapterNumber: self.downloadRequest.chapterNumber
+            )
+            self.readyToDownload = false
+        }
     }
 }
 
 extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didPauseDownloadFor chapterDescription: FAEChapterDescription) {
-        guard self.isTaskFor(chapterDescription) else { return }
-        self.timer?.invalidate()
+        self.queue.sync {
+            guard self.isTaskFor(chapterDescription) else { return }
+            self.pollAgainForPercentageAt = nil
+        }
     }
 
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didSucceedDownloadFor chapterDescription: FAEChapterDescription) {
-        guard self.isTaskFor(chapterDescription) else { return }
-        self.timer?.invalidate()
-        self.delegate?.downloadTaskReadyForPlayback(self)
+        self.queue.sync {
+            guard self.isTaskFor(chapterDescription) else { return }
+            self.pollAgainForPercentageAt = nil
+            self.delegate?.downloadTaskReadyForPlayback(self)
+        }
     }
     
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didStartDownloadFor chapterDescription: FAEChapterDescription) {
-        guard self.isTaskFor(chapterDescription) else { return }
-        guard self.timer != nil else { return }
-        self.timer = Timer.scheduledTimer(
-            timeInterval: 0.5,
-            target: self,
-            selector: #selector(FindawayDownloadTask.pollForDownloadPercentage(_:)),
-            userInfo: nil,
-            repeats: true
-        )
+        self.queue.sync {
+            guard self.isTaskFor(chapterDescription) else { return }
+            guard self.pollAgainForPercentageAt == nil else { return }
+            self.pollAgainForPercentageAt = Date().addingTimeInterval(self.pollRate)
+        }
     }
 
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didReceive error: NSError, for downloadRequestID: String) {
-        if self.downloadRequest.requestIdentifier == downloadRequestID {
-            self.timer?.invalidate()
-            self.delegate?.downloadTask(self, didReceive: error)
+        self.queue.sync {
+            if self.downloadRequest.requestIdentifier == downloadRequestID {
+                self.pollAgainForPercentageAt = nil
+                self.delegate?.downloadTask(self, didReceive: error)
+            }
         }
     }
 
@@ -200,31 +219,35 @@ extension FindawayDownloadTask: FindawayDownloadNotificationHandlerDelegate {
     /// As a result of this, once we have confirmed that a chapter has been removed,
     /// we instantiate a new FAEDownloadRequest for our asset.
     func findawayDownloadNotificationHandler(_ findawayDownloadNotificationHandler: FindawayDownloadNotificationHandler, didDeleteAudiobookFor chapterDescription: FAEChapterDescription) {
-        if self.isTaskFor(chapterDescription) {
-            self.delegate?.downloadTaskDidDeleteAsset(self)
-            self.downloadRequest = FAEDownloadRequest(
-                audiobookID: self.downloadRequest.audiobookID,
-                partNumber: self.downloadRequest.partNumber,
-                chapterNumber: self.downloadRequest.chapterNumber,
-                downloadType: self.downloadRequest.downloadType,
-                sessionKey: self.downloadRequest.sessionKey,
-                licenseID: self.downloadRequest.licenseID,
-                restrictToWiFi: self.downloadRequest.restrictToWiFi
-            )
-            self.readyToDownload = true
+        self.queue.sync {
+            if self.isTaskFor(chapterDescription) {
+                self.delegate?.downloadTaskDidDeleteAsset(self)
+                self.downloadRequest = FAEDownloadRequest(
+                    audiobookID: self.downloadRequest.audiobookID,
+                    partNumber: self.downloadRequest.partNumber,
+                    chapterNumber: self.downloadRequest.chapterNumber,
+                    downloadType: self.downloadRequest.downloadType,
+                    sessionKey: self.downloadRequest.sessionKey,
+                    licenseID: self.downloadRequest.licenseID,
+                    restrictToWiFi: self.downloadRequest.restrictToWiFi
+                )
+                self.readyToDownload = true
+            }
         }
     }
     
     func isTaskFor(_ chapter: FAEChapterDescription) -> Bool {
         return self.downloadRequest.audiobookID == chapter.audiobookID &&
-            self.downloadRequest.chapterNumber == chapter.chapterNumber &&
-            self.downloadRequest.partNumber == chapter.partNumber
+                self.downloadRequest.chapterNumber == chapter.chapterNumber &&
+                self.downloadRequest.partNumber == chapter.partNumber
     }
 }
 
 extension FindawayDownloadTask: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
-        self.readyToDownload = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
+        self.queue.sync {
+            self.readyToDownload = audiobookLifecycleManager.audioEngineDatabaseHasBeenVerified
+        }
     }
 }
 
