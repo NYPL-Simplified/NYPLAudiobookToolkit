@@ -40,6 +40,7 @@ public final class AudiobookDetailViewController: UIViewController {
     private let sleepTimerBarButtonIndex = 5
     private let audioRoutingBarButtonIndex = 3
     private let sleepTimerDefaultText = "☾"
+    private let sleepTimerDefaultAccessibilityLabel = "Sleep Timer"
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
@@ -78,16 +79,17 @@ public final class AudiobookDetailViewController: UIViewController {
             target: self,
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
+        bbi.accessibilityLabel = "Table Of Contents"
         self.navigationItem.rightBarButtonItem = bbi
     
         self.view.addSubview(self.chapterInfoStack)
         self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
         self.chapterInfoStack.autoPinEdge(.left, to: .left, of: self.view)
         self.chapterInfoStack.autoPinEdge(.right, to: .right, of: self.view)
-        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
-        self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
 
-        
+        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
+        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
+
         self.view.addSubview(self.seekBar)
         self.seekBar.delegate = self;
         self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 2)
@@ -125,35 +127,39 @@ public final class AudiobookDetailViewController: UIViewController {
         self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
+        let playbackSpeedText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value
         let speed =  UIBarButtonItem(
-            title: HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value,
+            title: playbackSpeedText,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
         )
+        speed.accessibilityLabel = "Playback speed \(playbackSpeedText)"
         speed.tintColor = self.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
-        
+
         let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
+        let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer)
         let sleepTimer = UIBarButtonItem(
-            title: self.sleepTimerDefaultText,
+            title: texts.title,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
         )
         sleepTimer.tintColor = self.tintColor
+        sleepTimer.accessibilityLabel = texts.accessibilityLabel
+
         items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
         self.toolbar.setItems(items, animated: true)
 
         if let currentChapter = self.currentChapter {
-            let timeLeftAfterCurrentChapter = self.timeLeftAfter(chapter: currentChapter)
             self.seekBar.setOffset(
                 currentChapter.playheadOffset,
                 duration: currentChapter.duration,
-                timeLeftInBook: timeLeftAfterCurrentChapter
+                timeLeftInBook: self.timeLeftAfter(chapter: currentChapter),
+                middleText: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)"
             )
-            self.seekBar.setMiddle(text: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)")
         }
     }
     
@@ -191,7 +197,7 @@ public final class AudiobookDetailViewController: UIViewController {
 
     
     @objc public func speedWasPressed(_ sender: Any) {
-        func alertFrom(rate: PlaybackRate, player: Player) -> UIAlertAction {
+        func actionFrom(rate: PlaybackRate, player: Player) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 player.playbackRate = rate
                 self.speedButtonShouldUpdate(rate: rate)
@@ -203,7 +209,7 @@ public final class AudiobookDetailViewController: UIViewController {
         let actionSheet = UIAlertController(title: "Set Your Play Speed", message: nil, preferredStyle: .actionSheet)
         let triggers: [PlaybackRate] = [.threeQuartersTime, .normalTime, .oneAndAQuarterTime, .oneAndAHalfTime, .doubleTime ]
         triggers.forEach { (trigger)  in
-            let alert = alertFrom(rate: trigger, player: self.audiobookManager.audiobook.player)
+            let alert = actionFrom(rate: trigger, player: self.audiobookManager.audiobook.player)
             actionSheet.addAction(alert)
         }
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -212,12 +218,14 @@ public final class AudiobookDetailViewController: UIViewController {
 
     func speedButtonShouldUpdate(rate: PlaybackRate) {
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
-            buttonItem.title = HumanReadablePlaybackRate(rate: rate).value
+            let playbackSpeedText = HumanReadablePlaybackRate(rate: rate).value
+            buttonItem.title = playbackSpeedText
+            buttonItem.accessibilityLabel = "Playback speed \(playbackSpeedText)"
         }
     }
     
     @objc public func sleepTimerWasPressed(_ sender: Any) {
-        func alertFromsleepTimer(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
+        func actionFrom(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 sleepTimer.setTimerTo(trigger: trigger)
             }
@@ -240,7 +248,7 @@ public final class AudiobookDetailViewController: UIViewController {
         let actionSheet = UIAlertController(title: "Set Your Sleep Timer", message: nil, preferredStyle: .actionSheet)
         let triggers: [SleepTimerTriggerAt] = [.never, .fifteenMinutes, .thirtyMinutes, .oneHour, .endOfChapter]
         triggers.forEach { (trigger)  in
-            let alert = alertFromsleepTimer(trigger: trigger, sleepTimer: self.audiobookManager.sleepTimer)
+            let alert = actionFrom(trigger: trigger, sleepTimer: self.audiobookManager.sleepTimer)
             actionSheet.addAction(alert)
         }
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -269,7 +277,11 @@ public final class AudiobookDetailViewController: UIViewController {
             view = volumeView
         }
         view.tintColor = self.tintColor
-        return UIBarButtonItem(customView: view)
+        let buttonItem = UIBarButtonItem(customView: view)
+        buttonItem.isAccessibilityElement = true
+        buttonItem.accessibilityLabel = "Airplay"
+        buttonItem.accessibilityTraits = UIAccessibilityTraitButton
+        return buttonItem
     }
     
     func updateTemporalUIElements() {
@@ -278,20 +290,30 @@ public final class AudiobookDetailViewController: UIViewController {
             self.seekBar.setOffset(
                 chapter.playheadOffset,
                 duration: chapter.duration,
-                timeLeftInBook: timeLeftInBook
+                timeLeftInBook: timeLeftInBook,
+                middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
             )
         }
-        
+
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
-            if self.audiobookManager.sleepTimer.isScheduled {
-                let title = HumanReadableTimeStamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
-                barButtonItem.title = title
-            } else {
-                if self.sleepTimerDefaultText != barButtonItem.title {
-                    barButtonItem.title = self.sleepTimerDefaultText
-                }
-            }
+            let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer)
+            barButtonItem.title = texts.title
+            barButtonItem.accessibilityLabel = texts.accessibilityLabel
         }
+    }
+    
+    func textsFor(sleepTimer: SleepTimer) -> (title: String, accessibilityLabel: String) {
+        let title: String
+        let accessibilityLabel: String
+        if sleepTimer.isScheduled {
+            title = HumanReadableTimestamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
+            let voiceOverTimeRemaining = VoiceOverTimestamp(timeInterval: sleepTimer.timeRemaining).value
+            accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
+        } else {
+            title = self.sleepTimerDefaultText
+            accessibilityLabel = self.sleepTimerDefaultAccessibilityLabel
+        }
+        return (title: title, accessibilityLabel: accessibilityLabel)
     }
 }
 
@@ -345,12 +367,13 @@ extension AudiobookDetailViewController: PlayerDelegate {
     }
     
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
-        self.chapterInfoStack.subtitleText = self.audiobookManager.metadata.authors.joined(separator: ", ")
+        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
         let timeLeftAfterChapter = self.timeLeftAfter(chapter: chapter)
         self.seekBar.setOffset(
             chapter.playheadOffset,
             duration: chapter.duration,
-            timeLeftInBook: timeLeftAfterChapter
+            timeLeftInBook: timeLeftAfterChapter,
+            middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
         )
         if scrubbing {
             self.updateControlsForPlaybackStart()
@@ -365,6 +388,14 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.audiobook.player.jumpToLocation(chapter)
         }
+    }
+
+    func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {
+        self.audiobookManager.audiobook.player.skipForward()
+    }
+
+    func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView) {
+        self.audiobookManager.audiobook.player.skipBack()
     }
 }
 

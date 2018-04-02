@@ -19,14 +19,13 @@ class ChapterInfoStack: UIView {
         }
     }
     
-    var subtitleText: String? {
-        get {
-            return self.bottomLabel.text
-        }
-        set(newText) {
-            self.bottomLabel.text = newText
+    var authors: [String] = [] {
+        didSet {
+            self.bottomLabel.text = self.authors.joined(separator: ", ")
+            self.bottomLabel.accessibilityLabel = self.authors.joined(separator: " and ")
         }
     }
+
     
     private let topLabel = UILabel()
     private let bottomLabel = UILabel()
@@ -44,8 +43,6 @@ class ChapterInfoStack: UIView {
     }
     
     private func setup() {
-        self.topLabel.accessibilityLabel = "ChapterInfoStack.top_label"
-        self.bottomLabel.accessibilityLabel = "ChapterInfoStack.bottom_label"
         self.addSubview(self.topLabel)
         self.addSubview(self.bottomLabel)
 

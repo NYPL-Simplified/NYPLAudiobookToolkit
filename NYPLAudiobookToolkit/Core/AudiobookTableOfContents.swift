@@ -91,7 +91,7 @@ extension AudiobookTableOfContents: UITableViewDataSource {
             let label = HumanReadablePercentage(percentage: progress).value
             return "Downloading \(label)%"
         } else {
-            let duration = HumanReadableTimeStamp(timeInterval: spineElement.chapter.duration).value
+            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
             return "Duration \(duration)"
         }
     }

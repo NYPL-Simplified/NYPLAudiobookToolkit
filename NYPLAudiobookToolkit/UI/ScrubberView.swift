@@ -11,6 +11,8 @@ import PureLayout
 
 protocol ScrubberViewDelegate: class {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
+    func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView)
+    func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView)
 }
 
 private func defaultTimeLabelWidth() -> CGFloat {
@@ -23,15 +25,15 @@ struct ScrubberProgress {
     let timeLeftInBook: TimeInterval
 
     var timeLeftText: String {
-        return HumanReadableTimeStamp(timeInterval: self.timeLeft, isDecreasing: true).value
+        return HumanReadableTimestamp(timeInterval: self.timeLeft, isDecreasing: true).value
     }
 
     var playheadText: String {
-        return HumanReadableTimeStamp(timeInterval: self.offset).value
+        return HumanReadableTimestamp(timeInterval: self.offset).value
     }
 
     var timeLeftInBookText: String {
-        let timeLeft = HumanReadableTimeStamp(timeInterval: self.timeLeftInBook).value
+        let timeLeft = HumanReadableTimestamp(timeInterval: self.timeLeftInBook).value
         return "\(timeLeft) remaining"
     }
 
@@ -62,6 +64,7 @@ struct ScrubberUIState {
     let gripperHeight: CGFloat
     let progressColor: UIColor
     let progress: ScrubberProgress
+    let middleText: String?
     var gripperWidth: CGFloat {
         return gripperHeight / 4
     }
@@ -99,48 +102,69 @@ final class ScrubberView: UIView {
         return label
     }()
 
+    override var accessibilityLabel: String? {
+        get {
+            let playheadVoiceOver = VoiceOverTimestamp(timeInterval: self.state.progress.offset).value
+            let durationVoiceOver = VoiceOverTimestamp(timeInterval: self.state.progress.duration).value
+            return "\(self.state.middleText ?? "") \(playheadVoiceOver) of \(durationVoiceOver) remaining"
+        }
+        set(newLabel) {
+            // throw an error?
+        }
+    }
+
+    override var isAccessibilityElement: Bool {
+        get {
+            return true
+        }
+        set(newValue) {
+            // throw an error?
+        }
+    }
+
     var barWidthConstraint: NSLayoutConstraint?
     var progressBarWidth: CGFloat {
         return self.progressBackground.bounds.size.width
     }
 
+    
     var labelWidthConstraints: [NSLayoutConstraint] = []
     var state: ScrubberUIState = ScrubberUIState(
         gripperHeight: 36,
         progressColor: UIColor.black,
-        progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0)
+        progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0),
+        middleText: ""
     ) {
         didSet {
             self.updateUIWith(self.state)
         }
     }
     
-    public func setOffset(_ offset: TimeInterval, duration: TimeInterval, timeLeftInBook: TimeInterval) {
+    public func setOffset(_ offset: TimeInterval, duration: TimeInterval, timeLeftInBook: TimeInterval, middleText: String?) {
         self.state = ScrubberUIState(
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
-            progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook)
+            progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook),
+            middleText: middleText
         )
-    }
-    
-    public func setMiddle(text: String?) {
-        self.middleLabel.text = text
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
         self.topLabel.text = self.state.progress.timeLeftInBookText
+        self.middleLabel.text = self.state.middleText
         self.setNeedsUpdateConstraints()
     }
 
     init(tintColor: UIColor = UIColor.red) {
         self.trimColor = tintColor
         super.init(frame: CGRect.zero)
-        self.setup()
+        self.setupView()
+        self.setupAccessibility()
     }
     
-    func setup () {
+    func setupView () {
         self.accessibilityIdentifier = "scrubber_container"
         self.addSubview(self.topLabel)
         self.addSubview(self.progressBackground)
@@ -223,6 +247,18 @@ final class ScrubberView: UIView {
         self.gripper.accessibilityIdentifier = "progress_grip"
     }
     
+    func setupAccessibility() {
+        self.accessibilityTraits = UIAccessibilityTraitAdjustable
+    }
+    
+    override func accessibilityIncrement() {
+        self.delegate?.scrubberViewDidRequestAccessibilityIncrement(self)
+    }
+    
+    override func accessibilityDecrement() {
+        self.delegate?.scrubberViewDidRequestAccessibilityDecrement(self)
+    }
+    
     override func updateConstraints() {
         super.updateConstraints()
         UIView.beginAnimations("moveScrubberViewProgressBar", context: nil)
@@ -247,7 +283,8 @@ final class ScrubberView: UIView {
                 self.state = ScrubberUIState(
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
-                    progress: self.state.progress.progressFromPrecentage(percentage)
+                    progress: self.state.progress.progressFromPrecentage(percentage),
+                    middleText: self.state.middleText
                 )
             }
         }
@@ -271,4 +308,3 @@ final class ScrubberView: UIView {
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
 }
-

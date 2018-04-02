@@ -23,10 +23,12 @@ final class PlaybackControlView: UIView {
     
     public func showPlayButton () {
         self.playButton.image = self.playImage
+        self.playButton.accessibilityLabel = "Play"
     }
     
     public func showPauseButton () {
         self.playButton.image = self.pauseImage
+        self.playButton.accessibilityLabel = "Pause"
     }
 
     private let padding = CGFloat(8)
@@ -36,6 +38,9 @@ final class PlaybackControlView: UIView {
         view.text = "15"
         view.subtext = "sec"
         view.accessibilityIdentifier = "skip_back"
+        view.accessibilityLabel = "Rewind 15 seconds"
+        view.accessibilityTraits = UIAccessibilityTraitButton
+        view.isAccessibilityElement = true
         return view
     }()
     
@@ -45,6 +50,9 @@ final class PlaybackControlView: UIView {
         view.text = "15"
         view.subtext = "sec"
         view.accessibilityIdentifier = "skip_forward"
+        view.accessibilityLabel = "Fast Forward 15 seconds"
+        view.accessibilityTraits = UIAccessibilityTraitButton
+        view.isAccessibilityElement = true
         return view
     }()
     
@@ -59,6 +67,7 @@ final class PlaybackControlView: UIView {
         in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
         compatibleWith: nil
     )
+    
     private let playButton: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
         imageView.accessibilityIdentifier = "play_button"
@@ -92,7 +101,10 @@ final class PlaybackControlView: UIView {
                 action: #selector(PlaybackControlView.playButtonWasTapped(_:))
             )
         )
-        
+        self.playButton.isAccessibilityElement = true
+        self.playButton.accessibilityLabel = "Play Button"
+        self.playButton.accessibilityTraits = UIAccessibilityTraitButton
+
         self.addSubview(self.skipBackView)
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
         self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.padding * 2)
