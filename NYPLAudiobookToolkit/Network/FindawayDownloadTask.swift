@@ -130,7 +130,7 @@ final class FindawayDownloadTask: DownloadTask {
         }
     }
 
-    func pollAt() -> DispatchTime {
+    func nextScheduledPoll() -> DispatchTime {
         return DispatchTime.now() + self.pollRate
     }
 
@@ -154,7 +154,7 @@ final class FindawayDownloadTask: DownloadTask {
             }
         }
 
-        self.queue.asyncAfter(deadline: self.pollAt()) {
+        self.queue.asyncAfter(deadline: self.nextScheduledPoll()) {
             notifyDelegate()
         }
     }
