@@ -59,7 +59,7 @@
 		7BD759C320169084004CE65F /* FindawayDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C220169084004CE65F /* FindawayDownloadTask.swift */; };
 		7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD759C92017CEA3004CE65F /* DownloadTask.swift */; };
 		7BD8E4FA206EB49D008ED3F1 /* VoiceOverTimestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD8E4F9206EB49D008ED3F1 /* VoiceOverTimestamp.swift */; };
-		7BDD33AF204461A000CC8807 /* HumanReadableTimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimeStamp.swift */; };
+		7BDD33AF204461A000CC8807 /* HumanReadableTimestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33AE204461A000CC8807 /* HumanReadableTimestamp.swift */; };
 		7BDD33B12044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B02044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift */; };
 		7BDD33B320470A7100CC8807 /* HumanReadablePercentage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */; };
 		7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */; };
@@ -180,7 +180,7 @@
 		7BD759C92017CEA3004CE65F /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
 		7BD759CB20191980004CE65F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		7BD8E4F9206EB49D008ED3F1 /* VoiceOverTimestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceOverTimestamp.swift; sourceTree = "<group>"; };
-		7BDD33AE204461A000CC8807 /* HumanReadableTimeStamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeStamp.swift; sourceTree = "<group>"; };
+		7BDD33AE204461A000CC8807 /* HumanReadableTimestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimestamp.swift; sourceTree = "<group>"; };
 		7BDD33B02044A1B300CC8807 /* FindawayDownloadNotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayDownloadNotificationHandler.swift; sourceTree = "<group>"; };
 		7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePercentage.swift; sourceTree = "<group>"; };
 		7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterInfoStack.swift; sourceTree = "<group>"; };
@@ -365,7 +365,7 @@
 				7B5441DC200EA82C0047B6C6 /* Audiobook.swift */,
 				7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */,
 				7B4F1B1F20361546003F047B /* Cursor.swift */,
-				7BDD33AE204461A000CC8807 /* HumanReadableTimeStamp.swift */,
+				7BDD33AE204461A000CC8807 /* HumanReadableTimestamp.swift */,
 				7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */,
 				7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */,
 				7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */,
@@ -621,7 +621,7 @@
 				7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */,
 				7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */,
 				7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */,
-				7BDD33AF204461A000CC8807 /* HumanReadableTimeStamp.swift in Sources */,
+				7BDD33AF204461A000CC8807 /* HumanReadableTimestamp.swift in Sources */,
 				7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */,
 				7BD759BD20163B71004CE65F /* PlaybackControlView.swift in Sources */,
 				7BD759CA2017CEA3004CE65F /* DownloadTask.swift in Sources */,

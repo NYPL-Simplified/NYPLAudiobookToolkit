@@ -15,8 +15,12 @@ class VoiceOverTimestamp: NSObject {
         let minutes = (interval / 60) % 60
         let hours = (interval / 3600)
         if hours > 0 {
+            return "\(hours) hours and \(minutes) minutes"
+        } else if minutes > 0 {
+            return "\(minutes) minutes"
+        } else {
+            return "\(seconds) seconds"
         }
-        return ""
     }()
     
     private let timeInterval: TimeInterval

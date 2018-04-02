@@ -25,15 +25,15 @@ struct ScrubberProgress {
     let timeLeftInBook: TimeInterval
 
     var timeLeftText: String {
-        return HumanReadableTimeStamp(timeInterval: self.timeLeft, isDecreasing: true).value
+        return HumanReadableTimestamp(timeInterval: self.timeLeft, isDecreasing: true).value
     }
 
     var playheadText: String {
-        return HumanReadableTimeStamp(timeInterval: self.offset).value
+        return HumanReadableTimestamp(timeInterval: self.offset).value
     }
 
     var timeLeftInBookText: String {
-        let timeLeft = HumanReadableTimeStamp(timeInterval: self.timeLeftInBook).value
+        let timeLeft = HumanReadableTimestamp(timeInterval: self.timeLeftInBook).value
         return "\(timeLeft) remaining"
     }
 
@@ -64,6 +64,7 @@ struct ScrubberUIState {
     let gripperHeight: CGFloat
     let progressColor: UIColor
     let progress: ScrubberProgress
+    let middleText: String?
     var gripperWidth: CGFloat {
         return gripperHeight / 4
     }
@@ -103,12 +104,24 @@ final class ScrubberView: UIView {
 
     override var accessibilityLabel: String? {
         get {
-            return
+            let playheadVoiceOver = VoiceOverTimestamp(timeInterval: self.state.progress.offset).value
+            let durationVoiceOver = VoiceOverTimestamp(timeInterval: self.state.progress.duration).value
+            return "\(self.state.middleText ?? "") \(playheadVoiceOver) of \(durationVoiceOver) remaining"
         }
         set(newLabel) {
+            // throw an error?
         }
     }
-    
+
+    override var isAccessibilityElement: Bool {
+        get {
+            return true
+        }
+        set(newValue) {
+            // throw an error?
+        }
+    }
+
     var barWidthConstraint: NSLayoutConstraint?
     var progressBarWidth: CGFloat {
         return self.progressBackground.bounds.size.width
@@ -119,29 +132,28 @@ final class ScrubberView: UIView {
     var state: ScrubberUIState = ScrubberUIState(
         gripperHeight: 36,
         progressColor: UIColor.black,
-        progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0)
+        progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0),
+        middleText: ""
     ) {
         didSet {
             self.updateUIWith(self.state)
         }
     }
     
-    public func setOffset(_ offset: TimeInterval, duration: TimeInterval, timeLeftInBook: TimeInterval) {
+    public func setOffset(_ offset: TimeInterval, duration: TimeInterval, timeLeftInBook: TimeInterval, middleText: String?) {
         self.state = ScrubberUIState(
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
-            progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook)
+            progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook),
+            middleText: middleText
         )
-    }
-    
-    public func setMiddle(text: String?) {
-        self.middleLabel.text = text
     }
 
     public func updateUIWith(_ state: ScrubberUIState) {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
         self.topLabel.text = self.state.progress.timeLeftInBookText
+        self.middleLabel.text = self.state.middleText
         self.setNeedsUpdateConstraints()
     }
 
@@ -240,7 +252,7 @@ final class ScrubberView: UIView {
     }
     
     override func accessibilityIncrement() {
-        self.delegate?.scrubberViewDidRequestAccessibilityDecrement(self)
+        self.delegate?.scrubberViewDidRequestAccessibilityIncrement(self)
     }
     
     override func accessibilityDecrement() {
@@ -271,7 +283,8 @@ final class ScrubberView: UIView {
                 self.state = ScrubberUIState(
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
-                    progress: self.state.progress.progressFromPrecentage(percentage)
+                    progress: self.state.progress.progressFromPrecentage(percentage),
+                    middleText: self.state.middleText
                 )
             }
         }
