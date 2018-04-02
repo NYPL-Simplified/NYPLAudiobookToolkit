@@ -140,24 +140,24 @@ public final class AudiobookDetailViewController: UIViewController {
 
         let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
+        let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer)
         let sleepTimer = UIBarButtonItem(
-            title: self.sleepTimerDefaultText,
+            title: texts.title,
             style: .plain,
             target: self,
             action: #selector(AudiobookDetailViewController.sleepTimerWasPressed(_:))
         )
         sleepTimer.tintColor = self.tintColor
-        sleepTimer.accessibilityLabel = self.sleepTimerDefaultAccessibilityLabel
+        sleepTimer.accessibilityLabel = texts.accessibilityLabel
 
         items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
         self.toolbar.setItems(items, animated: true)
 
         if let currentChapter = self.currentChapter {
-            let timeLeftAfterCurrentChapter = self.timeLeftAfter(chapter: currentChapter)
             self.seekBar.setOffset(
                 currentChapter.playheadOffset,
                 duration: currentChapter.duration,
-                timeLeftInBook: timeLeftAfterCurrentChapter,
+                timeLeftInBook: self.timeLeftAfter(chapter: currentChapter),
                 middleText: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)"
             )
         }
@@ -294,20 +294,26 @@ public final class AudiobookDetailViewController: UIViewController {
                 middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
             )
         }
-        
+
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
-            if self.audiobookManager.sleepTimer.isScheduled {
-                let title = HumanReadableTimestamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
-                barButtonItem.title = title
-                let voiceOverTimeRemaining = VoiceOverTimestamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
-                barButtonItem.accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
-            } else {
-                if self.sleepTimerDefaultText != barButtonItem.title {
-                    barButtonItem.title = self.sleepTimerDefaultText
-                    barButtonItem.accessibilityLabel = self.sleepTimerDefaultAccessibilityLabel
-                }
-            }
+            let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer)
+            barButtonItem.title = texts.title
+            barButtonItem.accessibilityLabel = texts.accessibilityLabel
         }
+    }
+    
+    func textsFor(sleepTimer: SleepTimer) -> (title: String, accessibilityLabel: String) {
+        let title: String
+        let accessibilityLabel: String
+        if sleepTimer.isScheduled {
+            title = HumanReadableTimestamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
+            let voiceOverTimeRemaining = VoiceOverTimestamp(timeInterval: sleepTimer.timeRemaining).value
+            accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
+        } else {
+            title = self.sleepTimerDefaultText
+            accessibilityLabel = self.sleepTimerDefaultAccessibilityLabel
+        }
+        return (title: title, accessibilityLabel: accessibilityLabel)
     }
 }
 
