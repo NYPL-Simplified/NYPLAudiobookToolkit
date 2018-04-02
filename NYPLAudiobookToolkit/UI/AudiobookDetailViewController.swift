@@ -166,7 +166,7 @@ public final class AudiobookDetailViewController: UIViewController {
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine
         var addUpStuff = false
-        let timeLeftInChapter = chapter.duration - chapter.playheadOffset
+        let timeLeftInChapter = chapter.timeRemaining
         let timeLeftAfterChapter = spine.reduce(timeLeftInChapter, { (result, element) -> TimeInterval in
             var newResult: TimeInterval = 0
             if addUpStuff {

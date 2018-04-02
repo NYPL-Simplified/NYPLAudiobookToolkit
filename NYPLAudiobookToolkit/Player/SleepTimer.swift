@@ -16,6 +16,12 @@ import UIKit
     case endOfChapter
 }
 
+enum TimerState {
+    case inactive
+    case playing(until: Date)
+    case paused(remaining: TimeInterval)
+}
+
 /// Class used to schedule timers to automatically pause
 /// the current playing audiobook. This class must be retained
 /// after the timer has been started in order to properly
@@ -43,34 +49,27 @@ import UIKit
             switch self.trigger {
             case .never:
                 break
-            case .endOfChapter:
-                let playHead = self.player.currentChapterLocation?.playheadOffset ?? 0
-                let duration = self.player.currentChapterLocation?.duration ?? 0
-                timeRemaining = duration - playHead
-            case .fifteenMinutes, .thirtyMinutes, .oneHour:
-                if let tts = self.timeToSleep {
-                    timeRemaining = abs(Date().timeIntervalSince(tts))
+            case .endOfChapter, .fifteenMinutes, .thirtyMinutes, .oneHour:
+                switch self.timerState {
+                case .paused(let remaining):
+                    timeRemaining = remaining
+                case .playing(let until):
+                    timeRemaining = abs(Date().timeIntervalSince(until))
+                case .inactive:
+                    break
                 }
             }
         }
         return timeRemaining
     }
+    
+    private var timerState: TimerState = .inactive
 
-    /// The time for us to pause the player, aka the bedtime.
-    private var timeToSleep: Date?
     
     /// The type of trigger, determines if the timer is active
     /// and if the pause will come from a specific time,
     /// or the conclusion of a chapter.
     private var trigger: SleepTimerTriggerAt = .never
-    
-    /// Cancel the current sleep timer. May be called
-    /// when timer is not scheduled.
-    public func cancel() {
-        self.queue.sync {
-            self.update(trigger: .never)
-        }
-    }
 
     /// Start a timer for a specific amount of time.
     public func setTimerTo(trigger: SleepTimerTriggerAt) {
@@ -81,12 +80,15 @@ import UIKit
 
     private func update(trigger: SleepTimerTriggerAt) {
         func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
-            var newTime: Date? = nil
-            if let minutesFromNow = minutesFromNow {
-                newTime = Date().addingTimeInterval(minutesFromNow)
-                scheduleTimerIfNeeded()
+            guard let minutesFromNow = minutesFromNow else {
+                return
             }
-            self.timeToSleep = newTime
+            if self.player.isPlaying {
+                self.timerState = .playing(until: Date().addingTimeInterval(minutesFromNow))
+            } else {
+                self.timerState = .paused(remaining: minutesFromNow)
+            }
+            scheduleTimerIfNeeded()
         }
 
         func scheduleTimerIfNeeded() {
@@ -96,24 +98,35 @@ import UIKit
         }
 
         func checkTimerStateAndScheduleNextRun() {
-            if let tts = self.timeToSleep, self.trigger != .never {
+            guard self.trigger != .never else {
+                return
+            }
+
+            switch self.timerState {
+            case .paused(_):
+                scheduleTimerIfNeeded()
+            case .playing(let until):
                 let now = Date()
-                if now.compare(tts) == ComparisonResult.orderedDescending {
+                if now.compare(until) == ComparisonResult.orderedDescending {
                     DispatchQueue.main.async { [weak self] () -> Void in
                         self?.player.pause()
                     }
-                    self.clearTriggers()
+                    self.clearState()
                 } else {
                     scheduleTimerIfNeeded()
                 }
+            default:
+                self.clearState()
             }
         }
 
         self.trigger = trigger
         let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60 }
         switch self.trigger {
-        case .never, .endOfChapter:
+        case .never:
             timeToSleepIn(nil)
+        case .endOfChapter:
+            timeToSleepIn(self.player.currentChapterLocation?.timeRemaining)
         case .fifteenMinutes:
             timeToSleepIn(minutes(15))
         case .thirtyMinutes:
@@ -123,9 +136,9 @@ import UIKit
         }
     }
 
-    private func clearTriggers() {
+    private func clearState() {
         self.trigger = .never
-        self.timeToSleep = nil
+        self.timerState = .inactive
     }
 
     init(player: Player) {
@@ -140,16 +153,24 @@ import UIKit
 }
 
 extension SleepTimer: PlayerDelegate {
-    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) { }
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
+        switch self.timerState {
+        case .paused(let remaining):
+            self.timerState = .playing(until: Date().addingTimeInterval(remaining))
+        default:
+            break
+        }
+    }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        if self.trigger == .endOfChapter {
-            DispatchQueue.main.async {
-                player.pause()
+        switch self.timerState {
+        case .playing(let until):
+            let timeLeft = Date().timeIntervalSince(until)
+            if timeLeft < 0 {
+                self.timerState = .paused(remaining: abs(timeLeft))
             }
-            self.queue.async { [weak self] in
-                self?.clearTriggers()
-            }
+        default:
+            break
         }
     }
 }
