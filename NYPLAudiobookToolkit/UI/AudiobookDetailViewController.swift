@@ -25,7 +25,6 @@ public final class AudiobookDetailViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         self.audiobookManager.timerDelegate = self
         self.audiobookManager.downloadDelegate = self
-        self.audiobookManager.audiobook.player.registerDelegate(self)
     }
 
     public required init?(coder aDecoder: NSCoder) {
@@ -350,11 +349,6 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
         alertController.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
         self.present(alertController, animated: false, completion: nil)
     }
-}
-
-extension AudiobookDetailViewController: PlayerDelegate {
-    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) { }
-    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
 }
 
 extension AudiobookDetailViewController: ScrubberViewDelegate {
