@@ -92,6 +92,16 @@ class SleepTimerTests: XCTestCase {
         wait(for: [expectTimeToDecreaseFrom59Minutes], timeout: 4)
     }
     
+    func testOnlyCountsDownWhilePlaying() {
+        let player = PlayerMock()
+        player.isPlaying = false
+        let sleepTimer = SleepTimer(player: player)
+        sleepTimer.setTimerTo(trigger: .fifteenMinutes)
+        XCTAssert(sleepTimer.isScheduled)
+        Thread.sleep(until: Date().addingTimeInterval(2))
+        XCTAssertEqual(sleepTimer.timeRemaining, 60 * 15)
+    }
+
     func asyncCheckFor(sleepTimer: SleepTimer, untilTime time: TimeInterval, theExpectation: XCTestExpectation) {
         let tts = sleepTimer.timeRemaining
         if  tts < time  && tts > 0{

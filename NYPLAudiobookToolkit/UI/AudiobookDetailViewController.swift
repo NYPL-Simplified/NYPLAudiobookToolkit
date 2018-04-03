@@ -359,11 +359,11 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
 
 extension AudiobookDetailViewController: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        self.updateUIWithChapter(chapter, scrubbing: true)
+//        self.updateUIWithChapter(chapter, scrubbing: true)
     }
     
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        self.updateUIWithChapter(chapter, scrubbing: false)
+//        self.updateUIWithChapter(chapter, scrubbing: false)
     }
     
     func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {

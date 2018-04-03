@@ -63,12 +63,19 @@ enum TimerState {
         return timeRemaining
     }
     
+    /// We only want to count down the sleep timer
+    /// while content is playing. This value keeps
+    /// track of weather the timer "playing" and
+    /// should be counting down until it terminates
+    /// playback, or if it is "paused" and should
+    /// record the time remaining in the timer
     private var timerState: TimerState = .inactive
 
-    
     /// The type of trigger, determines if the timer is active
     /// and if the pause will come from a specific time,
-    /// or the conclusion of a chapter.
+    /// or the conclusion of a chapter. This specifies
+    /// when the consumer would like the the timer to
+    /// stop playback.
     private var trigger: SleepTimerTriggerAt = .never
 
     /// Start a timer for a specific amount of time.
@@ -81,6 +88,7 @@ enum TimerState {
     private func update(trigger: SleepTimerTriggerAt) {
         func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
             guard let minutesFromNow = minutesFromNow else {
+                self.clearState()
                 return
             }
             if self.player.isPlaying {
@@ -157,6 +165,10 @@ extension SleepTimer: PlayerDelegate {
         switch self.timerState {
         case .paused(let remaining):
             self.timerState = .playing(until: Date().addingTimeInterval(remaining))
+        case .playing(_):
+            if self.trigger == .endOfChapter {
+                self.timerState = .playing(until: Date().addingTimeInterval(abs(chapter.timeRemaining)))
+            }
         default:
             break
         }
@@ -167,7 +179,17 @@ extension SleepTimer: PlayerDelegate {
         case .playing(let until):
             let timeLeft = Date().timeIntervalSince(until)
             if timeLeft < 0 {
-                self.timerState = .paused(remaining: abs(timeLeft))
+                let newState: TimerState
+                if self.trigger == .endOfChapter {
+                    // We need to special case .endOfChapter to ensure timeRemaining is
+                    // consistent with other timers on the screen.
+                    // The math should work out to the same values, but timeRemaining
+                    // ensures consistency.
+                    newState = .paused(remaining: abs(chapter.timeRemaining))
+                } else {
+                    newState = .paused(remaining: abs(timeLeft))
+                }
+                self.timerState = newState
             }
         default:
             break

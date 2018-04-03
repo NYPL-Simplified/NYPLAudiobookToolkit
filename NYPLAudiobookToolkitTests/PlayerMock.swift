@@ -9,7 +9,6 @@
 import UIKit
 import NYPLAudiobookToolkit
 
-typealias Callback = () -> Void
 class PlayerMock: Player {
     var playbackRate: PlaybackRate = .normalTime
     
@@ -22,7 +21,7 @@ class PlayerMock: Player {
     private var currentChapter: ChapterLocation?
     
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
-        return false
+        return currentChapter == location
     }
     
     func play() { }
