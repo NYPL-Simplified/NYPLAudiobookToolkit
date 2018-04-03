@@ -294,17 +294,15 @@ public final class AudiobookDetailViewController: UIViewController {
         let title: String
         let accessibilityLabel: String
         if sleepTimer.isScheduled {
+            let timeRemaining: TimeInterval
             if sleepTimer.trigger == .endOfChapter {
-                title = HumanReadableTimestamp(
-                    timeInterval: chapter.timeRemaining
-                ).value
+                timeRemaining = chapter.timeRemaining
             } else {
-                title = HumanReadableTimestamp(
-                    timeInterval: self.audiobookManager.sleepTimer.timeRemaining
-                ).value
+                timeRemaining = sleepTimer.timeRemaining
             }
+            title = HumanReadableTimestamp(timeInterval: timeRemaining).value
             let voiceOverTimeRemaining = VoiceOverTimestamp(
-                timeInterval: sleepTimer.timeRemaining
+                timeInterval: timeRemaining
             ).value
             accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
         } else {
