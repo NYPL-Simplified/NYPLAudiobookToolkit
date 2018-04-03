@@ -286,13 +286,15 @@ public final class AudiobookDetailViewController: UIViewController {
     
     func updateTemporalUIElements() {
         if let chapter = self.currentChapter {
-            let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
-            self.seekBar.setOffset(
-                chapter.playheadOffset,
-                duration: chapter.duration,
-                timeLeftInBook: timeLeftInBook,
-                middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
-            )
+            if !self.seekBar.scrubbing {
+                let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
+                self.seekBar.setOffset(
+                    chapter.playheadOffset,
+                    duration: chapter.duration,
+                    timeLeftInBook: timeLeftInBook,
+                    middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
+                )
+            }
         }
 
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
