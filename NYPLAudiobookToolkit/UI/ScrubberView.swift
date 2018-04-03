@@ -65,6 +65,7 @@ struct ScrubberUIState {
     let progressColor: UIColor
     let progress: ScrubberProgress
     let middleText: String?
+    let scrubbing: Bool
     var gripperWidth: CGFloat {
         return gripperHeight / 4
     }
@@ -101,6 +102,10 @@ final class ScrubberView: UIView {
         label.textAlignment = .center
         return label
     }()
+    
+    var scrubbing: Bool {
+        return self.state.scrubbing
+    }
 
     override var accessibilityLabel: String? {
         get {
@@ -133,7 +138,8 @@ final class ScrubberView: UIView {
         gripperHeight: 36,
         progressColor: UIColor.black,
         progress: ScrubberProgress(offset: 0, duration: 0, timeLeftInBook: 0),
-        middleText: ""
+        middleText: "",
+        scrubbing: false
     ) {
         didSet {
             self.updateUIWith(self.state)
@@ -145,7 +151,8 @@ final class ScrubberView: UIView {
             gripperHeight: self.state.gripperHeight,
             progressColor: self.state.progressColor,
             progress: ScrubberProgress(offset: offset, duration: duration, timeLeftInBook: timeLeftInBook),
-            middleText: middleText
+            middleText: middleText,
+            scrubbing: self.state.scrubbing
         )
     }
 
@@ -275,7 +282,7 @@ final class ScrubberView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func scrub(touch: UITouch?) {
+    func scrub(touch: UITouch?, currentlyScrubbing: Bool) {
         if let touch = touch {
             let position = touch.location(in: self.progressBackground)
             if position.x > 0 && position.x < self.progressBarWidth {
@@ -284,27 +291,28 @@ final class ScrubberView: UIView {
                     gripperHeight: self.state.gripperHeight,
                     progressColor: self.state.progressColor,
                     progress: self.state.progress.progressFromPrecentage(percentage),
-                    middleText: self.state.middleText
+                    middleText: self.state.middleText,
+                    scrubbing: currentlyScrubbing
                 )
             }
         }
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.scrub(touch: touches.first)
+        self.scrub(touch: touches.first, currentlyScrubbing: true)
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.scrub(touch: touches.first)
+        self.scrub(touch: touches.first, currentlyScrubbing: true)
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.scrub(touch: touches.first)
+        self.scrub(touch: touches.first, currentlyScrubbing: false)
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.scrub(touch: touches.first)
+        self.scrub(touch: touches.first, currentlyScrubbing: false)
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
     }
 }
