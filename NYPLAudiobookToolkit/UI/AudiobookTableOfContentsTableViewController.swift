@@ -8,6 +8,8 @@
 
 import UIKit
 
+let AudiobookTableOfContentsTableViewControllerCellIdentifier = "AudiobookTableOfContentsTableViewControllerCellIdentifier"
+
 class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
 
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
@@ -28,6 +30,10 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
             target: self, action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
         self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem ]
         self.tableOfContents.delegate = self
+        self.tableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: AudiobookTableOfContentsTableViewControllerCellIdentifier
+        )
         self.tableView.dataSource = self.tableOfContents
         self.tableView.delegate = self.tableOfContents
     }
