@@ -178,11 +178,15 @@ final class FindawayPlayer: NSObject, Player {
             // there is a next chapter for us to play.
             if let newCursor = self.cursor.next() {
                 self.cursor = newCursor
-                possibleDestinationLocation = self.chapterAtCursor.chapterWith(timeIntoNextChapter)
+                possibleDestinationLocation = self.chapterAtCursor.chapterWith(
+                    timeIntoNextChapter
+                )
             } else {
                 // If there is no next chapter, then we are at the end of the book
                 // and we skip to the end.
-                possibleDestinationLocation = self.chapterAtCursor.chapterWith(self.chapterAtCursor.duration)
+                possibleDestinationLocation = self.chapterAtCursor.chapterWith(
+                    self.chapterAtCursor.duration
+                )
             }
             return possibleDestinationLocation
         }

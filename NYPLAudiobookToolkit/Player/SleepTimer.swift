@@ -16,7 +16,7 @@ import UIKit
     case endOfChapter
 }
 
-enum TimerState {
+private enum TimerState {
     case inactive
     case playing(until: Date)
     case paused(remaining: TimeInterval)
@@ -76,7 +76,7 @@ enum TimerState {
     /// or the conclusion of a chapter. This specifies
     /// when the consumer would like the the timer to
     /// stop playback.
-    private var trigger: SleepTimerTriggerAt = .never
+    private(set) var trigger: SleepTimerTriggerAt = .never
 
     /// Start a timer for a specific amount of time.
     public func setTimerTo(trigger: SleepTimerTriggerAt) {

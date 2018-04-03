@@ -118,6 +118,7 @@ public final class AudiobookDetailViewController: UIViewController {
                 action: #selector(AudiobookDetailViewController.coverArtWasPressed(_:))
             )
         )
+        guard let chapter = self.currentChapter else { return }
 
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
         self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
@@ -140,7 +141,7 @@ public final class AudiobookDetailViewController: UIViewController {
 
         let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
-        let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer)
+        let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
         let sleepTimer = UIBarButtonItem(
             title: texts.title,
             style: .plain,
@@ -152,15 +153,12 @@ public final class AudiobookDetailViewController: UIViewController {
 
         items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
         self.toolbar.setItems(items, animated: true)
-
-        if let currentChapter = self.currentChapter {
-            self.seekBar.setOffset(
-                currentChapter.playheadOffset,
-                duration: currentChapter.duration,
-                timeLeftInBook: self.timeLeftAfter(chapter: currentChapter),
-                middleText: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)"
-            )
-        }
+        self.seekBar.setOffset(
+            chapter.playheadOffset,
+            duration: chapter.duration,
+            timeLeftInBook: self.timeLeftAfter(chapter: chapter),
+            middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
+        )
     }
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
@@ -180,14 +178,6 @@ public final class AudiobookDetailViewController: UIViewController {
             return newResult
         })
         return timeLeftAfterChapter
-    }
-
-    override public func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-    }
-
-    override public func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
@@ -257,14 +247,6 @@ public final class AudiobookDetailViewController: UIViewController {
 
     @objc func coverArtWasPressed(_ sender: Any) { }
     
-    func updateControlsForPlaybackStart() {
-        self.playbackControlView.showPauseButton()
-    }
-
-    func updateControlsForPlaybackStop() {
-        self.playbackControlView.showPlayButton()
-    }
-    
     func audioRoutingBarButtonItem() -> UIBarButtonItem {
         let view: UIView
         if #available(iOS 11.0, *) {
@@ -293,21 +275,37 @@ public final class AudiobookDetailViewController: UIViewController {
                 timeLeftInBook: timeLeftInBook,
                 middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
             )
+            
+            if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
+                let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
+                barButtonItem.title = texts.title
+                barButtonItem.accessibilityLabel = texts.accessibilityLabel
+            }
         }
-
-        if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
-            let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer)
-            barButtonItem.title = texts.title
-            barButtonItem.accessibilityLabel = texts.accessibilityLabel
+        
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.playbackControlView.showPauseButton()
+        } else {
+            self.playbackControlView.showPlayButton()
         }
     }
     
-    func textsFor(sleepTimer: SleepTimer) -> (title: String, accessibilityLabel: String) {
+    func textsFor(sleepTimer: SleepTimer, chapter: ChapterLocation) -> (title: String, accessibilityLabel: String) {
         let title: String
         let accessibilityLabel: String
         if sleepTimer.isScheduled {
-            title = HumanReadableTimestamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
-            let voiceOverTimeRemaining = VoiceOverTimestamp(timeInterval: sleepTimer.timeRemaining).value
+            if sleepTimer.trigger == .endOfChapter {
+                title = HumanReadableTimestamp(
+                    timeInterval: chapter.timeRemaining
+                ).value
+            } else {
+                title = HumanReadableTimestamp(
+                    timeInterval: self.audiobookManager.sleepTimer.timeRemaining
+                ).value
+            }
+            let voiceOverTimeRemaining = VoiceOverTimestamp(
+                timeInterval: sleepTimer.timeRemaining
+            ).value
             accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
         } else {
             title = self.sleepTimerDefaultText
@@ -336,7 +334,6 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.audiobook.player.isPlaying {
             self.audiobookManager.audiobook.player.pause()
-            self.updateControlsForPlaybackStop()
         } else {
             self.audiobookManager.audiobook.player.play()
         }
@@ -358,29 +355,8 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
 }
 
 extension AudiobookDetailViewController: PlayerDelegate {
-    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-//        self.updateUIWithChapter(chapter, scrubbing: true)
-    }
-    
-    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-//        self.updateUIWithChapter(chapter, scrubbing: false)
-    }
-    
-    func updateUIWithChapter(_ chapter: ChapterLocation, scrubbing: Bool) {
-        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
-        let timeLeftAfterChapter = self.timeLeftAfter(chapter: chapter)
-        self.seekBar.setOffset(
-            chapter.playheadOffset,
-            duration: chapter.duration,
-            timeLeftInBook: timeLeftAfterChapter,
-            middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
-        )
-        if scrubbing {
-            self.updateControlsForPlaybackStart()
-        } else {
-            self.updateControlsForPlaybackStop()
-        }
-    }
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) { }
+    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
 }
 
 extension AudiobookDetailViewController: ScrubberViewDelegate {
