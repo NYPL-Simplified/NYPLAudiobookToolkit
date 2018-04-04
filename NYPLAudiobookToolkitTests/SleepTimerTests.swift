@@ -23,7 +23,7 @@ class SleepTimerTests: XCTestCase {
         sleepTimer.setTimerTo(trigger: .thirtyMinutes)
         XCTAssertTrue(sleepTimer.isScheduled)
         XCTAssertNotEqual(sleepTimer.timeRemaining, 0)
-        sleepTimer.cancel()
+        sleepTimer.setTimerTo(trigger: .never)
         XCTAssertFalse(sleepTimer.isScheduled)
         XCTAssertEqual(sleepTimer.timeRemaining, 0)
     }
@@ -49,7 +49,9 @@ class SleepTimerTests: XCTestCase {
 
     func testTimeDecreases() {
         let expectTimeToDecrease = expectation(description: "time to decrease")
-        let sleepTimer = SleepTimer(player: PlayerMock())
+        let player = PlayerMock()
+        player.isPlaying = true
+        let sleepTimer = SleepTimer(player: player)
         sleepTimer.setTimerTo(trigger: .fifteenMinutes)
         let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 58
         self.asyncCheckFor(
@@ -62,7 +64,9 @@ class SleepTimerTests: XCTestCase {
 
     func testIsAbleToSetDifferentTimes() {
         let expectTimeToDecreaseFrom15Minutes = expectation(description: "time to decrease from 15 minutes")
-        let sleepTimer = SleepTimer(player: PlayerMock())
+        let player = PlayerMock()
+        player.isPlaying = true
+        let sleepTimer = SleepTimer(player: player)
         sleepTimer.setTimerTo(trigger: .fifteenMinutes)
         XCTAssert(sleepTimer.isScheduled)
         let fourteenMinutesAndFiftyEightSeconds: TimeInterval = (60 * 14) + 58
@@ -88,6 +92,16 @@ class SleepTimerTests: XCTestCase {
         wait(for: [expectTimeToDecreaseFrom59Minutes], timeout: 4)
     }
     
+    func testOnlyCountsDownWhilePlaying() {
+        let player = PlayerMock()
+        player.isPlaying = false
+        let sleepTimer = SleepTimer(player: player)
+        sleepTimer.setTimerTo(trigger: .fifteenMinutes)
+        XCTAssert(sleepTimer.isScheduled)
+        Thread.sleep(until: Date().addingTimeInterval(2))
+        XCTAssertEqual(sleepTimer.timeRemaining, 60 * 15)
+    }
+
     func asyncCheckFor(sleepTimer: SleepTimer, untilTime time: TimeInterval, theExpectation: XCTestExpectation) {
         let tts = sleepTimer.timeRemaining
         if  tts < time  && tts > 0{

@@ -19,7 +19,8 @@ class ScrubberUIStateTests: XCTestCase {
                 offset: 5,
                 duration: 10,
                 timeLeftInBook: 10
-            )
+            ),
+            middleText: "some Text"
         )
         let widthOfProgress = state.progressLocationFor(100)
         XCTAssertEqual(widthOfProgress, 50)

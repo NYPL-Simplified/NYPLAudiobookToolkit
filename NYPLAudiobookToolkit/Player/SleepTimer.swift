@@ -16,6 +16,12 @@ import UIKit
     case endOfChapter
 }
 
+private enum TimerState {
+    case inactive
+    case playing(until: Date)
+    case paused(remaining: TimeInterval)
+}
+
 /// Class used to schedule timers to automatically pause
 /// the current playing audiobook. This class must be retained
 /// after the timer has been started in order to properly
@@ -40,37 +46,32 @@ import UIKit
     public var timeRemaining: TimeInterval {
         var timeRemaining = TimeInterval(0)
         self.queue.sync {
-            switch self.trigger {
-            case .never:
+            switch self.timerState {
+            case .paused(let remaining):
+                timeRemaining = remaining
+            case .playing(let until):
+                timeRemaining = abs(Date().timeIntervalSince(until))
+            case .inactive:
                 break
-            case .endOfChapter:
-                let playHead = self.player.currentChapterLocation?.playheadOffset ?? 0
-                let duration = self.player.currentChapterLocation?.duration ?? 0
-                timeRemaining = duration - playHead
-            case .fifteenMinutes, .thirtyMinutes, .oneHour:
-                if let tts = self.timeToSleep {
-                    timeRemaining = abs(Date().timeIntervalSince(tts))
-                }
             }
         }
         return timeRemaining
     }
-
-    /// The time for us to pause the player, aka the bedtime.
-    private var timeToSleep: Date?
     
+    /// We only want to count down the sleep timer
+    /// while content is playing. This value keeps
+    /// track of whether the timer "playing" and
+    /// should be counting down until it terminates
+    /// playback, or if it is "paused" and should
+    /// record the time remaining in the timer
+    private var timerState: TimerState = .inactive
+
     /// The type of trigger, determines if the timer is active
     /// and if the pause will come from a specific time,
-    /// or the conclusion of a chapter.
-    private var trigger: SleepTimerTriggerAt = .never
-    
-    /// Cancel the current sleep timer. May be called
-    /// when timer is not scheduled.
-    public func cancel() {
-        self.queue.sync {
-            self.update(trigger: .never)
-        }
-    }
+    /// or the conclusion of a chapter. This specifies
+    /// when the consumer would like the the timer to
+    /// stop playback.
+    private(set) var trigger: SleepTimerTriggerAt = .never
 
     /// Start a timer for a specific amount of time.
     public func setTimerTo(trigger: SleepTimerTriggerAt) {
@@ -81,12 +82,16 @@ import UIKit
 
     private func update(trigger: SleepTimerTriggerAt) {
         func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
-            var newTime: Date? = nil
-            if let minutesFromNow = minutesFromNow {
-                newTime = Date().addingTimeInterval(minutesFromNow)
-                scheduleTimerIfNeeded()
+            guard let minutesFromNow = minutesFromNow else {
+                self.clearState()
+                return
             }
-            self.timeToSleep = newTime
+            if self.player.isPlaying {
+                self.timerState = .playing(until: Date().addingTimeInterval(minutesFromNow))
+            } else {
+                self.timerState = .paused(remaining: minutesFromNow)
+            }
+            scheduleTimerIfNeeded()
         }
 
         func scheduleTimerIfNeeded() {
@@ -96,24 +101,35 @@ import UIKit
         }
 
         func checkTimerStateAndScheduleNextRun() {
-            if let tts = self.timeToSleep, self.trigger != .never {
+            guard self.trigger != .never else {
+                return
+            }
+
+            switch self.timerState {
+            case .paused(_):
+                scheduleTimerIfNeeded()
+            case .playing(let until):
                 let now = Date()
-                if now.compare(tts) == ComparisonResult.orderedDescending {
+                if now.compare(until) == ComparisonResult.orderedDescending {
                     DispatchQueue.main.async { [weak self] () -> Void in
                         self?.player.pause()
                     }
-                    self.clearTriggers()
+                    self.clearState()
                 } else {
                     scheduleTimerIfNeeded()
                 }
+            default:
+                self.clearState()
             }
         }
 
         self.trigger = trigger
         let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60 }
         switch self.trigger {
-        case .never, .endOfChapter:
+        case .never:
             timeToSleepIn(nil)
+        case .endOfChapter:
+            timeToSleepIn(self.player.currentChapterLocation?.timeRemaining)
         case .fifteenMinutes:
             timeToSleepIn(minutes(15))
         case .thirtyMinutes:
@@ -123,9 +139,9 @@ import UIKit
         }
     }
 
-    private func clearTriggers() {
+    private func clearState() {
         self.trigger = .never
-        self.timeToSleep = nil
+        self.timerState = .inactive
     }
 
     init(player: Player) {
@@ -140,16 +156,38 @@ import UIKit
 }
 
 extension SleepTimer: PlayerDelegate {
-    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) { }
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
+        switch self.timerState {
+        case .paused(let remaining):
+            self.timerState = .playing(until: Date().addingTimeInterval(remaining))
+        case .playing(_):
+            if self.trigger == .endOfChapter {
+                self.timerState = .playing(until: Date().addingTimeInterval(abs(chapter.timeRemaining)))
+            }
+        default:
+            break
+        }
+    }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        if self.trigger == .endOfChapter {
-            DispatchQueue.main.async {
-                player.pause()
+        switch self.timerState {
+        case .playing(let until):
+            let timeLeft = Date().timeIntervalSince(until)
+            if timeLeft < 0 {
+                let newState: TimerState
+                if self.trigger == .endOfChapter {
+                    // We need to special case .endOfChapter to ensure timeRemaining is
+                    // consistent with other timers on the screen.
+                    // The math should work out to the same values, but timeRemaining
+                    // ensures consistency.
+                    newState = .paused(remaining: abs(chapter.timeRemaining))
+                } else {
+                    newState = .paused(remaining: abs(timeLeft))
+                }
+                self.timerState = newState
             }
-            self.queue.async { [weak self] in
-                self?.clearTriggers()
-            }
+        default:
+            break
         }
     }
 }
