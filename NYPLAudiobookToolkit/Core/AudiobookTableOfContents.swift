@@ -70,10 +70,12 @@ extension AudiobookTableOfContents: UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
+        let cell = UITableViewCell(style: .value1, reuseIdentifier: AudiobookTableOfContentsTableViewControllerCellIdentifier)
         let spineElement = self.networkService.spine[indexPath.row]
-        cell.textLabel?.text = spineElement.chapter.title
-        cell.detailTextLabel?.text = self.subtitleFor(spineElement)
+        let config = self.configFor(spineElement)
+        cell.textLabel?.text = config.title
+        cell.detailTextLabel?.text = config.detailLabel
+        cell.backgroundColor = config.backgroundColor
         cell.selectionStyle = .none
         let playingChapter = self.player.currentChapterLocation?.inSameChapter(other: spineElement.chapter) ?? false
         if playingChapter {
@@ -83,17 +85,24 @@ extension AudiobookTableOfContents: UITableViewDataSource {
         return cell
     }
     
-    func subtitleFor(_ spineElement: SpineElement) -> String {
+    func configFor(_ spineElement: SpineElement) -> (title: String?, detailLabel: String, backgroundColor: UIColor) {
         let progress = spineElement.downloadTask.downloadProgress
+        let title = spineElement.chapter.title
+        let detailLabel: String
+        let backgroundColor: UIColor
         if progress == 0 {
-            return "Not Downloaded"
+            detailLabel = "Not Downloaded"
+            backgroundColor = UIColor.lightGray
         } else if progress > 0 && progress < 1  {
             let label = HumanReadablePercentage(percentage: progress).value
-            return "Downloading \(label)%"
+            detailLabel = "Downloading \(label)%"
+            backgroundColor = UIColor.lightGray
         } else {
             let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
-            return "Duration \(duration)"
+            detailLabel = "Duration \(duration)"
+            backgroundColor = UIColor.white
         }
+        return (title: title, detailLabel: detailLabel, backgroundColor: backgroundColor)
     }
 }
 
