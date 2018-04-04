@@ -52,6 +52,10 @@ import Foundation
     let startOffset: TimeInterval
     let playheadOffset: TimeInterval
 
+    var timeRemaining: TimeInterval {
+        return self.duration - self.playheadOffset
+    }
+
     var secondsBeforeStart: TimeInterval? {
         var timeInterval: TimeInterval? = nil
         if self.playheadOffset < 0 {
