@@ -46,18 +46,13 @@ private enum TimerState {
     public var timeRemaining: TimeInterval {
         var timeRemaining = TimeInterval(0)
         self.queue.sync {
-            switch self.trigger {
-            case .never:
+            switch self.timerState {
+            case .paused(let remaining):
+                timeRemaining = remaining
+            case .playing(let until):
+                timeRemaining = abs(Date().timeIntervalSince(until))
+            case .inactive:
                 break
-            case .endOfChapter, .fifteenMinutes, .thirtyMinutes, .oneHour:
-                switch self.timerState {
-                case .paused(let remaining):
-                    timeRemaining = remaining
-                case .playing(let until):
-                    timeRemaining = abs(Date().timeIntervalSince(until))
-                case .inactive:
-                    break
-                }
             }
         }
         return timeRemaining
@@ -65,7 +60,7 @@ private enum TimerState {
     
     /// We only want to count down the sleep timer
     /// while content is playing. This value keeps
-    /// track of weather the timer "playing" and
+    /// track of whether the timer "playing" and
     /// should be counting down until it terminates
     /// playback, or if it is "paused" and should
     /// record the time remaining in the timer
