@@ -16,6 +16,30 @@
 /* some amount of localized time until playback pauses */
 "%@ until playback pauses" = "%@ until playback pauses";
 
+/* singular hours and minutes with formatting */
+"%d hour and %d minute" = "%1$d hour and %2$d minute";
+
+/* singular hours and plural minutes with formatting */
+"%d hour and %d minutes" = "%1$d hour and %2$d minutes";
+
+/* plural hours and singular minutes with formatting */
+"%d hours and %d minute" = "%1$d hours and %2$d minute";
+
+/* plural hours and minutes with formatting */
+"%d hours and %d minutes" = "%1$d hours and %2$d minutes";
+
+/* singular minutes */
+"%d minute" = "%d minute";
+
+/* plural minutes with formatting */
+"%d minutes" = "%d minutes";
+
+/* singular minutes */
+"%d second" = "%d second";
+
+/* plural seconds with formatting */
+"%d seconds" = "%d seconds";
+
 /* 0.75x */
 "0.75x" = "0.75x";
 
