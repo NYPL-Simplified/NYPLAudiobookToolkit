@@ -91,15 +91,17 @@ extension AudiobookTableOfContents: UITableViewDataSource {
         let detailLabel: String
         let backgroundColor: UIColor
         if progress == 0 {
-            detailLabel = "Not Downloaded"
+            detailLabel = NSLocalizedString("Not Downloaded", bundle: Bundle.audiobookToolkit()!, value: "Not Downloaded", comment: "Not Downloaded")
             backgroundColor = UIColor.lightGray
         } else if progress > 0 && progress < 1  {
-            let label = HumanReadablePercentage(percentage: progress).value
-            detailLabel = "Downloading \(label)%"
+            let percentage = HumanReadablePercentage(percentage: progress).value
+            let labelFormat = NSLocalizedString("Downloading %@", bundle: Bundle.audiobookToolkit()!, value: "Downloading %@", comment: "Downloading percentage")
+            detailLabel = String(format: labelFormat, percentage)
             backgroundColor = UIColor.lightGray
         } else {
             let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
-            detailLabel = "Duration \(duration)"
+            let labelFormat = NSLocalizedString("Duration %@", bundle: Bundle.audiobookToolkit()!, value: "Duration %@", comment: "Duration with timestamp format")
+            detailLabel = String(format: labelFormat, duration)
             backgroundColor = UIColor.white
         }
         return (title: title, detailLabel: detailLabel, backgroundColor: backgroundColor)

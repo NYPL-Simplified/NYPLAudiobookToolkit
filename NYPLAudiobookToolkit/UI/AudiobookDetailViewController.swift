@@ -133,8 +133,7 @@ public final class AudiobookDetailViewController: UIViewController {
             target: self,
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
         )
-        let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Used for voice over")
-        speed.accessibilityLabel = String(format: speedAccessibilityFormatString, playbackSpeedText)
+        speed.accessibilityLabel = self.playbackSpeedTextFor(speedText: playbackSpeedText)
         speed.tintColor = self.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
@@ -156,7 +155,7 @@ public final class AudiobookDetailViewController: UIViewController {
             chapter.playheadOffset,
             duration: chapter.duration,
             timeLeftInBook: self.timeLeftAfter(chapter: chapter),
-            middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
+            middleText: self.middleTextFor(chapter: chapter)
         )
     }
     
@@ -211,7 +210,7 @@ public final class AudiobookDetailViewController: UIViewController {
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
             let playbackSpeedText = HumanReadablePlaybackRate(rate: rate).value
             buttonItem.title = playbackSpeedText
-            buttonItem.accessibilityLabel = "Playback speed \(playbackSpeedText)"
+            buttonItem.accessibilityLabel = self.playbackSpeedTextFor(speedText: playbackSpeedText)
         }
     }
     
@@ -223,7 +222,8 @@ public final class AudiobookDetailViewController: UIViewController {
             var action: UIAlertAction! = nil
             switch trigger {
             case .endOfChapter:
-                action = UIAlertAction(title: "End of Chapter", style: .default, handler: handler)
+                let title = NSLocalizedString("End of Chapter", bundle: Bundle.audiobookToolkit()!, value: "End of Chapter", comment: "End of Chapter")
+                action = UIAlertAction(title: title, style: .default, handler: handler)
             case .oneHour:
                 action = UIAlertAction(title: "60", style: .default, handler: handler)
             case .thirtyMinutes:
@@ -231,12 +231,13 @@ public final class AudiobookDetailViewController: UIViewController {
             case .fifteenMinutes:
                 action = UIAlertAction(title: "15", style: .default, handler: handler)
             case .never:
-                action = UIAlertAction(title: "Off", style: .default, handler: handler)
+                let title = NSLocalizedString("Off", bundle: Bundle.audiobookToolkit()!, value: "Off", comment: "Off")
+                action = UIAlertAction(title: title, style: .default, handler: handler)
             }
             return action
         }
-        
-        let actionSheet = UIAlertController(title: "Set Your Sleep Timer", message: nil, preferredStyle: .actionSheet)
+        let title = NSLocalizedString("Set Your Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Set Your Sleep Timer", comment: "Set Your Sleep Timer")
+        let actionSheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         let triggers: [SleepTimerTriggerAt] = [.never, .fifteenMinutes, .thirtyMinutes, .oneHour, .endOfChapter]
         triggers.forEach { (trigger)  in
             let alert = actionFrom(trigger: trigger, sleepTimer: self.audiobookManager.sleepTimer)
@@ -316,10 +317,15 @@ public final class AudiobookDetailViewController: UIViewController {
         }
         return (title: title, accessibilityLabel: accessibilityLabel)
     }
-    
+
     func middleTextFor(chapter: ChapterLocation) -> String {
         let middleTextFormat = NSLocalizedString("Chapter %d of %d", bundle: Bundle.audiobookToolkit()!, value: "Chapter %d of %d", comment: "Chapter C of  L")
         return String(format: middleTextFormat, chapter.number, self.audiobookManager.audiobook.spine.count)
+    }
+
+    func playbackSpeedTextFor(speedText: String) -> String {
+        let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Used for voice over")
+        return String(format: speedAccessibilityFormatString, speedText)
     }
 }
 

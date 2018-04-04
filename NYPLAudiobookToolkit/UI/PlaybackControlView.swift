@@ -20,25 +20,25 @@ protocol PlaybackControlViewDelegate: class {
 
 final class PlaybackControlView: UIView {
     weak var delegate: PlaybackControlViewDelegate?
-    
+    var skipForwardValue: Int = 15
+    var skipBackValue: Int = 15
+
     public func showPlayButton () {
         self.playButton.image = self.playImage
-        self.playButton.accessibilityLabel = "Play"
+        self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
     }
     
     public func showPauseButton () {
         self.playButton.image = self.pauseImage
-        self.playButton.accessibilityLabel = "Pause"
+        self.playButton.accessibilityLabel = NSLocalizedString("Pause", bundle: Bundle.audiobookToolkit()!, value: "Pause", comment: "Pause")
     }
 
     private let padding = CGFloat(8)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)
-        view.text = "15"
-        view.subtext = "sec"
+        view.subtext = NSLocalizedString("sec", bundle: Bundle.audiobookToolkit()!, value: "sec", comment: "Abbreviations for seconds")
         view.accessibilityIdentifier = "skip_back"
-        view.accessibilityLabel = "Rewind 15 seconds"
         view.accessibilityTraits = UIAccessibilityTraitButton
         view.isAccessibilityElement = true
         return view
@@ -47,10 +47,8 @@ final class PlaybackControlView: UIView {
     private let skipForwardView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_forward", in: Bundle.audiobookToolkit(), compatibleWith: nil)
-        view.text = "15"
-        view.subtext = "sec"
+        view.subtext = NSLocalizedString("sec", bundle: Bundle.audiobookToolkit()!, value: "sec", comment: "Abbreviations for seconds")
         view.accessibilityIdentifier = "skip_forward"
-        view.accessibilityLabel = "Fast Forward 15 seconds"
         view.accessibilityTraits = UIAccessibilityTraitButton
         view.isAccessibilityElement = true
         return view
@@ -102,7 +100,7 @@ final class PlaybackControlView: UIView {
             )
         )
         self.playButton.isAccessibilityElement = true
-        self.playButton.accessibilityLabel = "Play Button"
+        self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
         self.playButton.accessibilityTraits = UIAccessibilityTraitButton
 
         self.addSubview(self.skipBackView)
@@ -132,6 +130,14 @@ final class PlaybackControlView: UIView {
                 action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:))
             )
         )
+
+        self.skipBackView.text = "\(self.skipBackValue)"
+        let skipBackFormat = NSLocalizedString("Rewind %d seconds", bundle: Bundle.audiobookToolkit()!, value: "Rewind %d seconds", comment: "Rewind a configurable number of seconds")
+        self.skipBackView.accessibilityLabel = String(format: skipBackFormat, self.skipBackValue)
+
+        self.skipForwardView.text = "\(self.skipForwardValue)"
+        let skipFrowardFormat = NSLocalizedString("Fast Forward %d seconds", bundle: Bundle.audiobookToolkit()!, value: "Fast Forward %d seconds", comment: "Fast forward a configurable number of seconds")
+        self.skipForwardView.accessibilityLabel = String(format: skipFrowardFormat, self.skipForwardValue)
     }
     
     @objc public func playButtonWasTapped(_ sender: Any) {
