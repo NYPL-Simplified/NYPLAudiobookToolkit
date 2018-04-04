@@ -40,10 +40,10 @@ public final class AudiobookDetailViewController: UIViewController {
     private let sleepTimerBarButtonIndex = 5
     private let audioRoutingBarButtonIndex = 3
     private let sleepTimerDefaultText = "☾"
-    private let sleepTimerDefaultAccessibilityLabel = "Sleep Timer"
+    private let sleepTimerDefaultAccessibilityLabel = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment:"Sleep Timer")
     private let coverView: UIImageView = { () -> UIImageView in
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "example_cover", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        imageView.image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         imageView.isUserInteractionEnabled = true
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
@@ -70,7 +70,7 @@ public final class AudiobookDetailViewController: UIViewController {
         self.view.layer.insertSublayer(gradiant, at: 0)
         let tocImage = UIImage(
             named: "table_of_contents",
-            in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+            in: Bundle.audiobookToolkit(),
             compatibleWith: nil
         )
         let bbi = UIBarButtonItem(
@@ -79,7 +79,6 @@ public final class AudiobookDetailViewController: UIViewController {
             target: self,
             action: #selector(AudiobookDetailViewController.tocWasPressed)
         )
-        bbi.accessibilityLabel = "Table Of Contents"
         self.navigationItem.rightBarButtonItem = bbi
     
         self.view.addSubview(self.chapterInfoStack)
@@ -134,7 +133,8 @@ public final class AudiobookDetailViewController: UIViewController {
             target: self,
             action: #selector(AudiobookDetailViewController.speedWasPressed(_:))
         )
-        speed.accessibilityLabel = "Playback speed \(playbackSpeedText)"
+        let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Used for voice over")
+        speed.accessibilityLabel = String(format: speedAccessibilityFormatString, playbackSpeedText)
         speed.tintColor = self.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
@@ -158,7 +158,7 @@ public final class AudiobookDetailViewController: UIViewController {
                 currentChapter.playheadOffset,
                 duration: currentChapter.duration,
                 timeLeftInBook: self.timeLeftAfter(chapter: currentChapter),
-                middleText: "Chapter \(currentChapter.number) of \(self.audiobookManager.audiobook.spine.count)"
+                middleText: self.middleTextFor(chapter: currentChapter)
             )
         }
     }
@@ -206,13 +206,15 @@ public final class AudiobookDetailViewController: UIViewController {
             return UIAlertAction(title: title, style: .default, handler: handler)
         }
         
-        let actionSheet = UIAlertController(title: "Set Your Play Speed", message: nil, preferredStyle: .actionSheet)
+        let actionSheetTitle = NSLocalizedString("Set Your Play Speed", bundle: Bundle.audiobookToolkit()!, value: "Set Your Play Speed", comment: "Set Your Play Speed")
+        let actionSheet = UIAlertController(title: actionSheetTitle, message: nil, preferredStyle: .actionSheet)
         let triggers: [PlaybackRate] = [.threeQuartersTime, .normalTime, .oneAndAQuarterTime, .oneAndAHalfTime, .doubleTime ]
         triggers.forEach { (trigger)  in
             let alert = actionFrom(rate: trigger, player: self.audiobookManager.audiobook.player)
             actionSheet.addAction(alert)
         }
-        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        let cancelActionTitle = NSLocalizedString("Cancel", bundle: Bundle.audiobookToolkit()!, value: "Cancel", comment: "Cancel")
+        actionSheet.addAction(UIAlertAction(title: cancelActionTitle, style: .cancel, handler: nil))
         self.present(actionSheet, animated: true, completion: nil)
     }
 
@@ -251,7 +253,8 @@ public final class AudiobookDetailViewController: UIViewController {
             let alert = actionFrom(trigger: trigger, sleepTimer: self.audiobookManager.sleepTimer)
             actionSheet.addAction(alert)
         }
-        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        let cancelActionTitle = NSLocalizedString("Cancel", bundle: Bundle.audiobookToolkit()!, value: "Cancel", comment: "Cancel")
+        actionSheet.addAction(UIAlertAction(title: cancelActionTitle, style: .cancel, handler: nil))
         self.present(actionSheet, animated: true, completion: nil)
     }
 
@@ -279,7 +282,7 @@ public final class AudiobookDetailViewController: UIViewController {
         view.tintColor = self.tintColor
         let buttonItem = UIBarButtonItem(customView: view)
         buttonItem.isAccessibilityElement = true
-        buttonItem.accessibilityLabel = "Airplay"
+        buttonItem.accessibilityLabel = NSLocalizedString("Airplay", bundle: Bundle.audiobookToolkit()!, value: "Airplay", comment: "Airplay")
         buttonItem.accessibilityTraits = UIAccessibilityTraitButton
         return buttonItem
     }
@@ -292,7 +295,7 @@ public final class AudiobookDetailViewController: UIViewController {
                     chapter.playheadOffset,
                     duration: chapter.duration,
                     timeLeftInBook: timeLeftInBook,
-                    middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
+                    middleText: self.middleTextFor(chapter: chapter)
                 )
             }
         }
@@ -310,12 +313,18 @@ public final class AudiobookDetailViewController: UIViewController {
         if sleepTimer.isScheduled {
             title = HumanReadableTimestamp(timeInterval: self.audiobookManager.sleepTimer.timeRemaining).value
             let voiceOverTimeRemaining = VoiceOverTimestamp(timeInterval: sleepTimer.timeRemaining).value
-            accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
+            let middleTextFormat = NSLocalizedString("%@ until playback pauses", bundle: Bundle.audiobookToolkit()!, value: "%@ until playback pauses", comment: "some amount of localized time until playback pauses")
+            accessibilityLabel = String(format: middleTextFormat, voiceOverTimeRemaining)
         } else {
             title = self.sleepTimerDefaultText
             accessibilityLabel = self.sleepTimerDefaultAccessibilityLabel
         }
         return (title: title, accessibilityLabel: accessibilityLabel)
+    }
+    
+    func middleTextFor(chapter: ChapterLocation) -> String {
+        let middleTextFormat = NSLocalizedString("Chapter %02d of %02d", bundle: Bundle.audiobookToolkit()!, value: "Chapter %02d of %02d", comment: "Chapter C of  L")
+        return String(format: middleTextFormat, chapter.number, self.audiobookManager.audiobook.spine.count)
     }
 }
 
@@ -338,7 +347,6 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         if self.audiobookManager.audiobook.player.isPlaying {
             self.audiobookManager.audiobook.player.pause()
-            self.updateControlsForPlaybackStop()
         } else {
             self.audiobookManager.audiobook.player.play()
         }
@@ -349,12 +357,14 @@ extension AudiobookDetailViewController: AudiobookManagerDownloadDelegate {
     public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) { }
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) { }
     public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement) {
+        let errorLocalizedText = NSLocalizedString("Error!", bundle: Bundle.audiobookToolkit()!, value: "Error!", comment: "Error!")
         let alertController = UIAlertController(
-            title: "Error!",
+            title: errorLocalizedText,
             message: error.localizedDescription,
             preferredStyle: .alert
         )
-        alertController.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        let okLocalizedText = NSLocalizedString("Ok", bundle: Bundle.audiobookToolkit()!, value: "Ok", comment: "Ok")
+        alertController.addAction(UIAlertAction(title: okLocalizedText, style: .cancel, handler: nil))
         self.present(alertController, animated: false, completion: nil)
     }
 }
@@ -375,7 +385,7 @@ extension AudiobookDetailViewController: PlayerDelegate {
             chapter.playheadOffset,
             duration: chapter.duration,
             timeLeftInBook: timeLeftAfterChapter,
-            middleText: "Chapter \(chapter.number) of \(self.audiobookManager.audiobook.spine.count)"
+            middleText: self.middleTextFor(chapter: chapter)
         )
         if scrubbing {
             self.updateControlsForPlaybackStart()

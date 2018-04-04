@@ -34,7 +34,7 @@ final class PlaybackControlView: UIView {
     private let padding = CGFloat(8)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
-        view.image = UIImage(named: "skip_back", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         view.text = "15"
         view.subtext = "sec"
         view.accessibilityIdentifier = "skip_back"
@@ -46,7 +46,7 @@ final class PlaybackControlView: UIView {
     
     private let skipForwardView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
-        view.image = UIImage(named: "skip_forward", in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"), compatibleWith: nil)
+        view.image = UIImage(named: "skip_forward", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         view.text = "15"
         view.subtext = "sec"
         view.accessibilityIdentifier = "skip_forward"
@@ -58,13 +58,13 @@ final class PlaybackControlView: UIView {
     
     private let playImage = UIImage(
         named: "play",
-        in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+        in: Bundle.audiobookToolkit(),
         compatibleWith: nil
     )
 
     private let pauseImage = UIImage(
         named: "pause",
-        in: Bundle(identifier: "NYPLAudiobooksToolkit.NYPLAudiobookToolkit"),
+        in: Bundle.audiobookToolkit(),
         compatibleWith: nil
     )
     

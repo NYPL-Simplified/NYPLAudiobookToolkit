@@ -10,18 +10,18 @@ import UIKit
 
 class HumanReadablePlaybackRate {
     lazy var value: String = {
-        var output: String! = nil
+        let output: String
         switch rate {
         case .threeQuartersTime:
-            output = "0.75x"
+            output = NSLocalizedString("0.75x", bundle: Bundle.audiobookToolkit()!, value: "0.75x", comment: "0.75x")
         case .normalTime:
-            output = "1x"
+            output = NSLocalizedString("1x", bundle: Bundle.audiobookToolkit()!, value: "1x", comment: "1x")
         case .oneAndAQuarterTime:
-            output = "1.25x"
+            output = NSLocalizedString("1.25x", bundle: Bundle.audiobookToolkit()!, value: "1.25x", comment: "1.25x")
         case .oneAndAHalfTime:
-            output = "1.50x"
+            output = NSLocalizedString("1.50x", bundle: Bundle.audiobookToolkit()!, value: "1.50x", comment: "1.50x")
         case .doubleTime:
-            output = "2x"
+            output = NSLocalizedString("2x", bundle: Bundle.audiobookToolkit()!, value: "2x", comment: "2x")
         }
         return output
     }()

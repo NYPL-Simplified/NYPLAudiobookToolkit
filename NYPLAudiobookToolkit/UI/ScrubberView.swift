@@ -25,7 +25,7 @@ struct ScrubberProgress {
     let timeLeftInBook: TimeInterval
 
     var timeLeftText: String {
-        return HumanReadableTimestamp(timeInterval: self.timeLeft, isDecreasing: true).value
+        return HumanReadableTimestamp(timeInterval: self.timeLeft).value
     }
 
     var playheadText: String {
@@ -34,7 +34,8 @@ struct ScrubberProgress {
 
     var timeLeftInBookText: String {
         let timeLeft = HumanReadableTimestamp(timeInterval: self.timeLeftInBook).value
-        return "\(timeLeft) remaining"
+        let formatString = NSLocalizedString("%@ remaining", bundle: Bundle.audiobookToolkit()!, value: "%@ remaining", comment: "what is left in a time value")
+        return String(format: formatString, timeLeft)
     }
 
     var labelWidth: CGFloat {
