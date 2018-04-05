@@ -309,7 +309,7 @@ public final class AudiobookDetailViewController: UIViewController {
             let voiceOverTimeRemaining = VoiceOverTimestamp(
                 timeInterval: timeRemaining
             ).value
-            let middleTextFormat = NSLocalizedString("%@ until playback pauses", bundle: Bundle.audiobookToolkit()!, value: "%@ until playback pauses", comment: "some amount of localized time until playback pauses")
+            let middleTextFormat = NSLocalizedString("%@ until playback pauses", bundle: Bundle.audiobookToolkit()!, value: "%@ until playback pauses", comment: "localized time until playback pauses, for voice over")
             accessibilityLabel = String(format: middleTextFormat, voiceOverTimeRemaining)
         } else {
             title = self.sleepTimerDefaultText
@@ -319,12 +319,12 @@ public final class AudiobookDetailViewController: UIViewController {
     }
 
     func middleTextFor(chapter: ChapterLocation) -> String {
-        let middleTextFormat = NSLocalizedString("Chapter %d of %d", bundle: Bundle.audiobookToolkit()!, value: "Chapter %d of %d", comment: "Chapter C of  L")
+        let middleTextFormat = NSLocalizedString("Chapter %d of %d", bundle: Bundle.audiobookToolkit()!, value: "Chapter %d of %d", comment: "Current chapter and the amount of chapters left in the book")
         return String(format: middleTextFormat, chapter.number, self.audiobookManager.audiobook.spine.count)
     }
 
     func playbackSpeedTextFor(speedText: String) -> String {
-        let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Used for voice over")
+        let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Playback speed with localized format, used for voice over")
         return String(format: speedAccessibilityFormatString, speedText)
     }
 }
