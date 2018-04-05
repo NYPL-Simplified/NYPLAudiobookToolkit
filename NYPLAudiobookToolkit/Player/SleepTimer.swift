@@ -16,10 +16,20 @@ import UIKit
     case endOfChapter
 }
 
+private enum TimerStopPoint {
+  case date(date: Date)
+  case endOfChapter
+}
+
+private enum TimerDurationLeft {
+  case timeInterval(timeInterval: TimeInterval)
+  case restOfChapter
+}
+
 private enum TimerState {
     case inactive
-    case playing(until: Date)
-    case paused(remaining: TimeInterval)
+    case playing(until: TimerStopPoint)
+    case paused(with: TimerDurationLeft)
 }
 
 /// Class used to schedule timers to automatically pause
@@ -34,28 +44,33 @@ private enum TimerState {
     private let queue = DispatchQueue(label: "com.nyplaudiobooktoolkit.SleepTimer")
     
     /// Flag to find out if the timer is currently scheduled.
-    public var isScheduled: Bool {
-        var value = false
-        self.queue.sync {
-            value = self.trigger != .never
+    public var isActive: Bool {
+        return self.queue.sync {
+            switch self.timerState {
+            case .inactive:
+                return false
+            case .playing,
+                 .paused:
+                return true
+            }
         }
-        return value
     }
 
     /// Time remaining until the book will be paused.
     public var timeRemaining: TimeInterval {
-        var timeRemaining = TimeInterval(0)
-        self.queue.sync {
+        return self.queue.sync {
             switch self.timerState {
-            case .paused(let remaining):
-                timeRemaining = remaining
-            case .playing(let until):
-                timeRemaining = abs(Date().timeIntervalSince(until))
             case .inactive:
-                break
+                return TimeInterval()
+            case .playing(until: .date(let date)):
+                return date.timeIntervalSinceNow
+            case .playing(until: .endOfChapter),
+                 .paused(with: .restOfChapter):
+                return self.player.currentChapterLocation?.timeRemaining ?? TimeInterval()
+            case .paused(with: .timeInterval(let timeInterval)):
+                return timeInterval
             }
         }
-        return timeRemaining
     }
     
     /// We only want to count down the sleep timer
@@ -64,14 +79,24 @@ private enum TimerState {
     /// should be counting down until it terminates
     /// playback, or if it is "paused" and should
     /// record the time remaining in the timer
-    private var timerState: TimerState = .inactive
+    private var timerState: TimerState = .inactive {
+        didSet {
+            switch self.timerState {
+            case .playing(until: .date):
+                self.scheduleTimer()
+            case .inactive,
+                 .paused,
+                 .playing(until: .endOfChapter):
+                break
+            }
+        }
+    }
 
-    /// The type of trigger, determines if the timer is active
-    /// and if the pause will come from a specific time,
-    /// or the conclusion of a chapter. This specifies
-    /// when the consumer would like the the timer to
-    /// stop playback.
-    private(set) var trigger: SleepTimerTriggerAt = .never
+    /// The timer should be scheduled whenever we are
+    /// in a `self.timerState == .playing(.date(_))`
+    /// state. This is handled automatically by the
+    /// setter for `timerState`.
+    private var timerScheduled: Bool = false
 
     /// Start a timer for a specific amount of time.
     public func setTimerTo(trigger: SleepTimerTriggerAt) {
@@ -80,68 +105,65 @@ private enum TimerState {
         }
     }
 
-    private func update(trigger: SleepTimerTriggerAt) {
-        func timeToSleepIn(_ minutesFromNow: TimeInterval?) {
-            guard let minutesFromNow = minutesFromNow else {
-                self.clearState()
-                return
-            }
-            if self.player.isPlaying {
-                self.timerState = .playing(until: Date().addingTimeInterval(minutesFromNow))
-            } else {
-                self.timerState = .paused(remaining: minutesFromNow)
-            }
-            scheduleTimerIfNeeded()
+    /// Should be called when the sleep timer has hit zero.
+    private func goToSleep() {
+        DispatchQueue.main.async { [weak self] () in
+            self?.player.pause()
         }
+        self.timerState = .inactive
+    }
 
-        func scheduleTimerIfNeeded() {
-            self.queue.asyncAfter(deadline: DispatchTime.now() + 1) {
-                checkTimerStateAndScheduleNextRun()
+    private func scheduleTimer() {
+        if !self.timerScheduled {
+            self.timerScheduled = true
+            self.queue.asyncAfter(deadline: DispatchTime.now() + 1) { [weak self] () in
+                self?.checkTimerStateAndScheduleNextRun()
             }
-        }
-
-        func checkTimerStateAndScheduleNextRun() {
-            guard self.trigger != .never else {
-                return
-            }
-
-            switch self.timerState {
-            case .paused(_):
-                scheduleTimerIfNeeded()
-            case .playing(let until):
-                let now = Date()
-                if now.compare(until) == ComparisonResult.orderedDescending {
-                    DispatchQueue.main.async { [weak self] () -> Void in
-                        self?.player.pause()
-                    }
-                    self.clearState()
-                } else {
-                    scheduleTimerIfNeeded()
-                }
-            default:
-                self.clearState()
-            }
-        }
-
-        self.trigger = trigger
-        let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60 }
-        switch self.trigger {
-        case .never:
-            timeToSleepIn(nil)
-        case .endOfChapter:
-            timeToSleepIn(self.player.currentChapterLocation?.timeRemaining)
-        case .fifteenMinutes:
-            timeToSleepIn(minutes(15))
-        case .thirtyMinutes:
-            timeToSleepIn(minutes(30))
-        case .oneHour:
-            timeToSleepIn(minutes(60))
         }
     }
 
-    private func clearState() {
-        self.trigger = .never
-        self.timerState = .inactive
+    private func checkTimerStateAndScheduleNextRun() {
+        self.timerScheduled = false
+        switch self.timerState {
+        case .inactive,
+             .paused,
+             .playing(until: .endOfChapter):
+            break
+        case .playing(until: .date(let date)):
+            if date.timeIntervalSinceNow > 0 {
+                scheduleTimer()
+            } else {
+                self.goToSleep()
+            }
+        }
+    }
+
+    private func update(trigger: SleepTimerTriggerAt) {
+        func sleepIn(secondsFromNow: TimeInterval) {
+            if self.player.isPlaying {
+                self.timerState = .playing(until: .date(date: Date(timeIntervalSinceNow: secondsFromNow)))
+            } else {
+                self.timerState = .paused(with: .timeInterval(timeInterval: secondsFromNow))
+            }
+        }
+
+        let minutes: (_ timeInterval: TimeInterval) -> TimeInterval = { $0 * 60 }
+        switch trigger {
+        case .never:
+            self.timerState = .inactive
+        case .fifteenMinutes:
+            sleepIn(secondsFromNow: minutes(15))
+        case .thirtyMinutes:
+            sleepIn(secondsFromNow: minutes(30))
+        case .oneHour:
+            sleepIn(secondsFromNow: minutes(60))
+        case .endOfChapter:
+            if self.player.isPlaying {
+                self.timerState = .playing(until: .endOfChapter)
+            } else {
+                self.timerState = .paused(with: .restOfChapter)
+            }
+        }
     }
 
     init(player: Player) {
@@ -157,37 +179,35 @@ private enum TimerState {
 
 extension SleepTimer: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        switch self.timerState {
-        case .paused(let remaining):
-            self.timerState = .playing(until: Date().addingTimeInterval(remaining))
-        case .playing(_):
-            if self.trigger == .endOfChapter {
-                self.timerState = .playing(until: Date().addingTimeInterval(abs(chapter.timeRemaining)))
+        self.queue.sync {
+            switch self.timerState {
+            case .inactive,
+                 .playing:
+                break
+            case .paused(with: .timeInterval(let timeInterval)):
+                self.timerState = .playing(until: .date(date: Date(timeIntervalSinceNow: timeInterval)))
+            case .paused(with: .restOfChapter):
+                self.timerState = .playing(until: .endOfChapter)
             }
-        default:
-            break
         }
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        switch self.timerState {
-        case .playing(let until):
-            let timeLeft = Date().timeIntervalSince(until)
-            if timeLeft < 0 {
-                let newState: TimerState
-                if self.trigger == .endOfChapter {
-                    // We need to special case .endOfChapter to ensure timeRemaining is
-                    // consistent with other timers on the screen.
-                    // The math should work out to the same values, but timeRemaining
-                    // ensures consistency.
-                    newState = .paused(remaining: abs(chapter.timeRemaining))
+        self.queue.sync {
+            switch self.timerState {
+            case .inactive,
+                 .paused:
+                break
+            case .playing(until: .date(let date)):
+                self.timerState = .paused(with: .timeInterval(timeInterval: date.timeIntervalSinceNow))
+            case .playing(until: .endOfChapter):
+                let chapterEnded = chapter.playheadOffset >= chapter.duration
+                if chapterEnded {
+                    self.goToSleep()
                 } else {
-                    newState = .paused(remaining: abs(timeLeft))
+                    self.timerState = .paused(with: .restOfChapter)
                 }
-                self.timerState = newState
             }
-        default:
-            break
         }
     }
 }

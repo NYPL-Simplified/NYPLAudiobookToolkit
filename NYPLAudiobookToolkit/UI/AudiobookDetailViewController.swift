@@ -294,16 +294,10 @@ public final class AudiobookDetailViewController: UIViewController {
     func textsFor(sleepTimer: SleepTimer, chapter: ChapterLocation) -> (title: String, accessibilityLabel: String) {
         let title: String
         let accessibilityLabel: String
-        if sleepTimer.isScheduled {
-            let timeRemaining: TimeInterval
-            if sleepTimer.trigger == .endOfChapter {
-                timeRemaining = chapter.timeRemaining
-            } else {
-                timeRemaining = sleepTimer.timeRemaining
-            }
-            title = HumanReadableTimestamp(timeInterval: timeRemaining).value
+        if sleepTimer.isActive {
+            title = HumanReadableTimestamp(timeInterval: sleepTimer.timeRemaining).value
             let voiceOverTimeRemaining = VoiceOverTimestamp(
-                timeInterval: timeRemaining
+                timeInterval: sleepTimer.timeRemaining
             ).value
             accessibilityLabel = "\(voiceOverTimeRemaining) until playback pauses"
         } else {
