@@ -1,0 +1,123 @@
+/* hours, minutes remaining */
+"%02d hr, %02d min remaining" = "%1$02d hr, %2$02d min remaining";
+
+/* minutes remaining */
+"%02d min remaining" = "%02d min remaining";
+
+/* Minutes and seconds */
+"%02d:%02d" = "%1$02d:%2$02d";
+
+/* Minutes, seconds and hours */
+"%02d:%02d:%02d" = "%1$02d:%2$02d:%3$02d";
+
+/* what is left in a time value */
+"%@ remaining" = "%@ remaining";
+
+/* some amount of localized time until playback pauses */
+"%@ until playback pauses" = "%@ until playback pauses";
+
+/* singular hours and minutes with formatting */
+"%d hour and %d minute" = "%1$d hour and %2$d minute";
+
+/* singular hours and plural minutes with formatting */
+"%d hour and %d minutes" = "%1$d hour and %2$d minutes";
+
+/* plural hours and singular minutes with formatting */
+"%d hours and %d minute" = "%1$d hours and %2$d minute";
+
+/* plural hours and minutes with formatting */
+"%d hours and %d minutes" = "%1$d hours and %2$d minutes";
+
+/* singular minutes */
+"%d minute" = "%d minute";
+
+/* plural minutes with formatting */
+"%d minutes" = "%d minutes";
+
+/* singular minutes */
+"%d second" = "%d second";
+
+/* plural seconds with formatting */
+"%d seconds" = "%d seconds";
+
+/* 0.75x */
+"0.75x" = "0.75x";
+
+/* 1.25x */
+"1.25x" = "1.25x";
+
+/* 1.50x */
+"1.50x" = "1.50x";
+
+/* 1x */
+"1x" = "1x";
+
+/* 2x */
+"2x" = "2x";
+
+/* Airplay */
+"Airplay" = "Airplay";
+
+/* Cancel */
+"Cancel" = "Cancel";
+
+/* Chapter C of  L */
+"Chapter %d of %d" = "Chapter %1$d of %2$d";
+
+/* Downloading percentage */
+"Downloading %@" = "Downloading %@";
+
+/* Duration with timestamp format */
+"Duration %@" = "Duration %@";
+
+/* End of Chapter */
+"End of Chapter" = "End of Chapter";
+
+/* Error! */
+"Error!" = "Error!";
+
+/* Fast forward a configurable number of seconds */
+"Fast Forward %d seconds" = "Fast Forward %d seconds";
+
+/* Less than 1 min remaining */
+"Less than 1 min remaining" = "Less than 1 min remaining";
+
+/*  */
+"Lorem ipsum" = "Lorem ipsum";
+
+/*  */
+"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum" = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
+
+/* Not Downloaded */
+"Not Downloaded" = "Not Downloaded";
+
+/* Off */
+"Off" = "Off";
+
+/* Ok */
+"Ok" = "Ok";
+
+/* Pause */
+"Pause" = "Pause";
+
+/* Play */
+"Play" = "Play";
+
+/* Used for voice over */
+"Playback speed %@" = "Playback speed %@";
+
+/* Rewind a configurable number of seconds */
+"Rewind %d seconds" = "Rewind %d seconds";
+
+/* Set Your Play Speed */
+"Set Your Play Speed" = "Set Your Play Speed";
+
+/* Set Your Sleep Timer */
+"Set Your Sleep Timer" = "Set Your Sleep Timer";
+
+/* Sleep Timer */
+"Sleep Timer" = "Sleep Timer";
+
+/* Abbreviations for seconds */
+"sec" = "sec";
+
