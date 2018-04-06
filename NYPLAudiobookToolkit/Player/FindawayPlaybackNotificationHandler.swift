@@ -52,6 +52,10 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
             name: NSNotification.Name.FAEPlaybackChapterFailed,
             object: nil
         )
+
+        // It has been observed that this notification does not come
+        // right away when the chapter completes, sometimes it takes
+        // multiple seconds to arrive.
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterDidComplete(_:)),

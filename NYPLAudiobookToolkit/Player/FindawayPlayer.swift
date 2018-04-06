@@ -157,8 +157,12 @@ final class FindawayPlayer: NSObject, Player {
     }
     
     private func performPause() {
-        self.resumePlaybackLocation = self.currentChapterLocation
-        FAEAudioEngine.shared()?.playbackEngine?.pause()
+        if self.isPlaying {
+            self.resumePlaybackLocation = self.currentChapterLocation
+            FAEAudioEngine.shared()?.playbackEngine?.pause()
+        } else {
+            FAEAudioEngine.shared()?.playbackEngine?.unload()
+        }
     }
     
     private func performJumpToLocation(_ location: ChapterLocation) {

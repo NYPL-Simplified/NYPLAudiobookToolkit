@@ -33,7 +33,10 @@ import Foundation
     /// this should only happen as a result of pause() being called.
     func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation)
 
-    /// Called when the playhead crosses a chapter boundary without direction
+    /// Called when the playhead crosses a chapter boundary without direction.
+    /// Depending on the underlying playback engine, this could come some time
+    /// after the next chapter has begun playing. This should arrive before
+    /// `player:didBeginPlaybackOf:` is called.
     func player(_ player: Player, didComplete chapter: ChapterLocation)
 }
 
