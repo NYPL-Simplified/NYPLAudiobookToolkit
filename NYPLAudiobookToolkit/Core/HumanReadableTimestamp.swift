@@ -18,20 +18,17 @@ class HumanReadableTimestamp {
         let seconds = interval % 60
         let minutes = (interval / 60) % 60
         let hours = (interval / 3600)
-        var timeString = String(format: "%02d:%02d", minutes, seconds)
+        let formatStringWithoutHours = NSLocalizedString("%02d:%02d", bundle: Bundle.audiobookToolkit()!, value: "%02d:%02d", comment: "Minutes and seconds")
+        var timeString = String(format: formatStringWithoutHours, minutes, seconds)
         if hours > 0 {
-            timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-        }
-        if self.isDecreasing {
-            timeString = "-\(timeString)"
+            let formatStringWithHours = NSLocalizedString("%02d:%02d:%02d", bundle: Bundle.audiobookToolkit()!, value: "%02d:%02d:%02d", comment: "Minutes, seconds and hours")
+            timeString = String(format: formatStringWithHours, hours, minutes, seconds)
         }
         return timeString
     }()
 
     private let timeInterval: TimeInterval
-    private let isDecreasing: Bool
-    init(timeInterval: TimeInterval, isDecreasing: Bool = false) {
+    init(timeInterval: TimeInterval) {
         self.timeInterval = timeInterval
-        self.isDecreasing = isDecreasing
     }
 }
