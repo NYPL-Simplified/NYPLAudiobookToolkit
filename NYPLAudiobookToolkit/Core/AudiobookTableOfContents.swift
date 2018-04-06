@@ -115,6 +115,8 @@ extension AudiobookTableOfContents: PlayerDelegate {
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
+
+    public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
 }
 
 extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {

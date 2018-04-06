@@ -210,6 +210,8 @@ extension SleepTimer: PlayerDelegate {
             }
         }
     }
+
+    public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
 }
 
 
