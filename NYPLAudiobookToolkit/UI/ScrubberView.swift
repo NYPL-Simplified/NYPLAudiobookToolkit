@@ -246,6 +246,7 @@ final class ScrubberView: UIView {
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBackground)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBar)
         self.gripper.autoPinEdge(.right, to: .right, of: self.progressBar)
+        self.gripper.layer.cornerRadius = 5
         self.gripper.autoSetDimensions(
             to: CGSize(
                 width: self.state.gripperWidth,
