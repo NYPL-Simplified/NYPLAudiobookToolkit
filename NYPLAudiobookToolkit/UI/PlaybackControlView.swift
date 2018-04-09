@@ -39,8 +39,6 @@ final class PlaybackControlView: UIView {
         view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         view.subtext = NSLocalizedString("sec", bundle: Bundle.audiobookToolkit()!, value: "sec", comment: "Abbreviations for seconds")
         view.accessibilityIdentifier = "skip_back"
-        view.accessibilityTraits = UIAccessibilityTraitButton
-        view.isAccessibilityElement = true
         return view
     }()
     
@@ -49,8 +47,6 @@ final class PlaybackControlView: UIView {
         view.image = UIImage(named: "skip_forward", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         view.subtext = NSLocalizedString("sec", bundle: Bundle.audiobookToolkit()!, value: "sec", comment: "Abbreviations for seconds")
         view.accessibilityIdentifier = "skip_forward"
-        view.accessibilityTraits = UIAccessibilityTraitButton
-        view.isAccessibilityElement = true
         return view
     }()
     
@@ -66,11 +62,9 @@ final class PlaybackControlView: UIView {
         compatibleWith: nil
     )
     
-    private let playButton: UIImageView = { () -> UIImageView in
-        let imageView = UIImageView()
+    private let playButton: ImageControlView = { () -> ImageControlView in
+        let imageView = ImageControlView()
         imageView.accessibilityIdentifier = "play_button"
-        imageView.contentMode = .scaleAspectFit
-        imageView.isUserInteractionEnabled = true
         return imageView
     }()
 
@@ -93,15 +87,8 @@ final class PlaybackControlView: UIView {
         self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
         self.playButton.autoSetDimensions(to: CGSize(width: 56, height: 56))
-        self.playButton.addGestureRecognizer(
-            UITapGestureRecognizer(
-                target: self,
-                action: #selector(PlaybackControlView.playButtonWasTapped(_:))
-            )
-        )
-        self.playButton.isAccessibilityElement = true
         self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
-        self.playButton.accessibilityTraits = UIAccessibilityTraitButton
+        self.playButton.addTarget(self, action: #selector(PlaybackControlView.playButtonWasTapped(_:)), for: .touchUpInside)
 
         self.addSubview(self.skipBackView)
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
@@ -110,12 +97,7 @@ final class PlaybackControlView: UIView {
         self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipBackView.autoPinEdge(.top, to: .top, of: self)
         self.skipBackView.autoPinEdge(.bottom, to: .bottom, of: self)
-        self.skipBackView.addGestureRecognizer(
-            UITapGestureRecognizer(
-                target: self,
-                action: #selector(PlaybackControlView.skipBackButtonWasTapped(_:))
-            )
-        )
+        self.skipBackView.addTarget(self, action: #selector(PlaybackControlView.skipBackButtonWasTapped(_:)), for: .touchUpInside)
 
         self.addSubview(self.skipForwardView)
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
@@ -124,12 +106,8 @@ final class PlaybackControlView: UIView {
         self.skipForwardView.autoPinEdge(.top, to: .top, of: self)
         self.skipForwardView.autoPinEdge(.bottom, to: .bottom, of: self)
         self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
-        self.skipForwardView.addGestureRecognizer(
-            UITapGestureRecognizer(
-                target: self,
-                action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:))
-            )
-        )
+        self.skipForwardView.addTarget(self, action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:)), for: .touchUpInside)
+
 
         self.skipBackView.text = "\(self.skipBackValue)"
         let skipBackFormat = NSLocalizedString("Rewind %d seconds", bundle: Bundle.audiobookToolkit()!, value: "Rewind %d seconds", comment: "Rewind a configurable number of seconds")

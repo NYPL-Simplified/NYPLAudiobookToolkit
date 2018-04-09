@@ -269,7 +269,7 @@ public final class AudiobookDetailViewController: UIViewController {
         return buttonItem
     }
     
-    func updateTemporalUIElements() {
+    func updateUI() {
         if let chapter = self.currentChapter {
             if !self.seekBar.scrubbing {
                 let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
@@ -325,17 +325,19 @@ public final class AudiobookDetailViewController: UIViewController {
 
 extension AudiobookDetailViewController: AudiobookManagerTimerDelegate {
     public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdate timer: Timer?) {
-        self.updateTemporalUIElements()
+        self.updateUI()
     }
 }
 
 extension AudiobookDetailViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.audiobookManager.audiobook.player.skipBack()
+        self.updateUI()
     }
     
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.audiobookManager.audiobook.player.skipForward()
+        self.updateUI()
     }
     
     // Pausing happens almost instantly so we ask the manager to pause and pause the seek bar at the same time. However playback can take time to start up and we need to wait to move the seek bar until we here playback has began from the manager. This is because playing could require downloading the track.
@@ -345,6 +347,7 @@ extension AudiobookDetailViewController: PlaybackControlViewDelegate {
         } else {
             self.audiobookManager.audiobook.player.play()
         }
+        self.updateUI()
     }
 }
 
@@ -369,6 +372,7 @@ extension AudiobookDetailViewController: ScrubberViewDelegate {
         if let chapter = self.currentChapter?.chapterWith(offset) {
             self.audiobookManager.audiobook.player.jumpToLocation(chapter)
         }
+        self.updateUI()
     }
 
     func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {
