@@ -12,6 +12,7 @@ import AudioEngine
 protocol FindawayPlaybackNotificationHandlerDelegate: class {
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
+    func audioEnginePlaybackFinished(_ notificationHandler: FindawayPlaybackNotificationHandler, for chapter: FAEChapterDescription)
 }
 
 protocol FindawayPlaybackNotificationHandler {
@@ -51,9 +52,13 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
             name: NSNotification.Name.FAEPlaybackChapterFailed,
             object: nil
         )
+
+        // It has been observed that this notification does not come
+        // right away when the chapter completes, sometimes it takes
+        // multiple seconds to arrive.
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterUpdate(_:)),
+            selector: #selector(DefaultFindawayPlaybackNotificationHandler.audioEngineChapterDidComplete(_:)),
             name: NSNotification.Name.FAEPlaybackChapterComplete,
             object: nil
         )
@@ -78,9 +83,15 @@ class DefaultFindawayPlaybackNotificationHandler: NSObject, FindawayPlaybackNoti
     @objc func audioEngineStreamingBegan(_ notification: NSNotification) {
     }
 
+    @objc func audioEngineChapterDidComplete(_ notification: NSNotification) {
+        if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
+            self.delegate?.audioEnginePlaybackFinished(self, for: chapter)
+        }
+    }
+
     @objc func audioEngineChapterUpdate(_ notification: NSNotification) {
     }
-    
+
     @objc func audioEngineChapterPlaybackStarted(_ notification: NSNotification) {
         if let chapter = notification.userInfo?[FAEChapterDescriptionUserInfoKey] as? FAEChapterDescription {
             self.delegate?.audioEnginePlaybackStarted(self, for: chapter)

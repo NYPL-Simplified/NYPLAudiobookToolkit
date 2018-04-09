@@ -17,13 +17,13 @@ import UIKit
 }
 
 private enum TimerStopPoint {
-  case date(date: Date)
-  case endOfChapter
+    case date(date: Date)
+    case endOfChapter(chapterLocation: ChapterLocation)
 }
 
 private enum TimerDurationLeft {
-  case timeInterval(timeInterval: TimeInterval)
-  case restOfChapter
+    case timeInterval(timeInterval: TimeInterval)
+    case restOfChapter(chapterLocation: ChapterLocation)
 }
 
 private enum TimerState {
@@ -158,10 +158,12 @@ private enum TimerState {
         case .oneHour:
             sleepIn(secondsFromNow: minutes(60))
         case .endOfChapter:
-            if self.player.isPlaying {
-                self.timerState = .playing(until: .endOfChapter)
-            } else {
-                self.timerState = .paused(with: .restOfChapter)
+            if let currentChapter = self.player.currentChapterLocation {
+                if self.player.isPlaying {
+                    self.timerState = .playing(until: .endOfChapter(chapterLocation: currentChapter))
+                } else {
+                    self.timerState = .paused(with: .restOfChapter(chapterLocation: currentChapter))
+                }
             }
         }
     }
@@ -187,7 +189,7 @@ extension SleepTimer: PlayerDelegate {
             case .paused(with: .timeInterval(let timeInterval)):
                 self.timerState = .playing(until: .date(date: Date(timeIntervalSinceNow: timeInterval)))
             case .paused(with: .restOfChapter):
-                self.timerState = .playing(until: .endOfChapter)
+                self.timerState = .playing(until: .endOfChapter(chapterLocation: chapter))
             }
         }
     }
@@ -201,11 +203,25 @@ extension SleepTimer: PlayerDelegate {
             case .playing(until: .date(let date)):
                 self.timerState = .paused(with: .timeInterval(timeInterval: date.timeIntervalSinceNow))
             case .playing(until: .endOfChapter):
-                let chapterEnded = chapter.playheadOffset >= chapter.duration
-                if chapterEnded {
-                    self.goToSleep()
-                } else {
-                    self.timerState = .paused(with: .restOfChapter)
+                self.timerState = .paused(with: .restOfChapter(chapterLocation: chapter))
+            }
+        }
+    }
+
+    public func player(_ player: Player, didComplete chapter: ChapterLocation) {
+        self.queue.sync {
+            switch self.timerState {
+            case .inactive,
+                 .paused:
+                break
+            case  .playing(let until):
+                switch until {
+                case .date:
+                    break
+                case .endOfChapter(let chapterToSleepAt):
+                    if chapterToSleepAt.inSameChapter(other: chapter) {
+                        self.goToSleep()
+                    }
                 }
             }
         }
