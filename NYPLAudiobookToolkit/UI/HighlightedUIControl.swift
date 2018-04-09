@@ -11,7 +11,7 @@ import UIKit
 class HighlightedUIControl: UIControl {
     override var isHighlighted: Bool {
         didSet {
-            UIView.animate(withDuration: 0.25) {
+            UIView.animate(withDuration: 0.6) {
                 self.alpha = self.isHighlighted ? 0.6 : 1.0
             }
         }
