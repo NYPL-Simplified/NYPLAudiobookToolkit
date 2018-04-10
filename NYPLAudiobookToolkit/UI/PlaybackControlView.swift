@@ -23,14 +23,18 @@ final class PlaybackControlView: UIView {
     var skipForwardValue: Int = 15
     var skipBackValue: Int = 15
 
-    public func showPlayButton () {
-        self.playButton.image = self.playImage
-        self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
+    public func showPlayButtonIfNeeded () {
+        if self.playButton.image != self.playImage  {
+            self.playButton.image = self.playImage
+            self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
+        }
     }
     
-    public func showPauseButton () {
-        self.playButton.image = self.pauseImage
-        self.playButton.accessibilityLabel = NSLocalizedString("Pause", bundle: Bundle.audiobookToolkit()!, value: "Pause", comment: "Pause")
+    public func showPauseButtonIfNeeded () {
+        if self.playButton.image != self.pauseImage {
+            self.playButton.image = self.pauseImage
+            self.playButton.accessibilityLabel = NSLocalizedString("Pause", bundle: Bundle.audiobookToolkit()!, value: "Pause", comment: "Pause")
+        }
     }
 
     private let padding = CGFloat(8)
