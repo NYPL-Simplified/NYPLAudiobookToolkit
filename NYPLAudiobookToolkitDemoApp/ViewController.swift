@@ -13,7 +13,7 @@ import NYPLAudiobookToolkit
 class ViewController: UIViewController {
 
     var manager: AudiobookManager?
-    var detailVC: AudiobookDetailViewController?
+    var detailVC: AudiobookPlayerViewController?
     override func viewDidAppear(_ animated: Bool) {
 //        self.loadAudiobook { (data) in
 //
@@ -120,7 +120,7 @@ class ViewController: UIViewController {
         }
         guard let theManager = self.manager else { return }
         if (self.detailVC == nil) {
-            self.detailVC = AudiobookDetailViewController(
+            self.detailVC = AudiobookPlayerViewController(
                 audiobookManager: theManager
             )
         }
