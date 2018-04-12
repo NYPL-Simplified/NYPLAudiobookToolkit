@@ -124,8 +124,8 @@ class ViewController: UIViewController {
                 audiobookManager: theManager
             )
         }
+      
         guard let vc = self.detailVC else { return }
-        
         self.navigationController?.pushViewController(vc, animated: true)
     }
 

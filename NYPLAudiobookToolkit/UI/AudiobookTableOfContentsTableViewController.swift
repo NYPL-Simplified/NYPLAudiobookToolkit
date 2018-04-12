@@ -10,7 +10,7 @@ import UIKit
 
 let AudiobookTableOfContentsTableViewControllerCellIdentifier = "AudiobookTableOfContentsTableViewControllerCellIdentifier"
 
-class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
+public class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
 
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
         self.tableView.reloadData()
@@ -38,7 +38,7 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
         self.tableView.delegate = self.tableOfContents
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -63,6 +63,7 @@ class AudiobookTableOfContentsTableViewController: UITableViewController, Audiob
                 handler: nil
             )
         )
+        confirmController.popoverPresentationController?.sourceView = self.view
         self.present(confirmController, animated: true, completion: nil)
     }
 

@@ -31,6 +31,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    private let gradiant = CAGradientLayer()
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
     private let tintColor: UIColor
@@ -60,13 +61,12 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.navigationController?.navigationBar.isTranslucent = false
         self.navigationController?.navigationBar.tintColor = self.tintColor
 
-        let gradiant = CAGradientLayer()
-        gradiant.frame = self.view.bounds
+        self.gradiant.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
-        gradiant.colors = [ startColor, UIColor.white.cgColor]
-        gradiant.startPoint = CGPoint.zero
-        gradiant.endPoint = CGPoint(x: 1, y: 1)
-        self.view.layer.insertSublayer(gradiant, at: 0)
+        self.gradiant.colors = [ startColor, UIColor.white.cgColor]
+        self.gradiant.startPoint = CGPoint.zero
+        self.gradiant.endPoint = CGPoint(x: 1, y: 1)
+        self.view.layer.insertSublayer(self.gradiant, at: 0)
         let tocImage = UIImage(
             named: "table_of_contents",
             in: Bundle.audiobookToolkit(),
@@ -158,6 +158,11 @@ public final class AudiobookPlayerViewController: UIViewController {
             middleText: self.middleTextFor(chapter: chapter)
         )
     }
+  
+    override public func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.gradiant.frame = self.view.bounds
+    }
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine
@@ -203,6 +208,8 @@ public final class AudiobookPlayerViewController: UIViewController {
         }
         let cancelActionTitle = NSLocalizedString("Cancel", bundle: Bundle.audiobookToolkit()!, value: "Cancel", comment: "Cancel")
         actionSheet.addAction(UIAlertAction(title: cancelActionTitle, style: .cancel, handler: nil))
+        actionSheet.popoverPresentationController?.barButtonItem = self.toolbar.items?[self.speedBarButtonIndex]
+        actionSheet.popoverPresentationController?.sourceView = self.view
         self.present(actionSheet, animated: true, completion: nil)
     }
 
@@ -245,6 +252,8 @@ public final class AudiobookPlayerViewController: UIViewController {
         }
         let cancelActionTitle = NSLocalizedString("Cancel", bundle: Bundle.audiobookToolkit()!, value: "Cancel", comment: "Cancel")
         actionSheet.addAction(UIAlertAction(title: cancelActionTitle, style: .cancel, handler: nil))
+        actionSheet.popoverPresentationController?.barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex]
+        actionSheet.popoverPresentationController?.sourceView = self.view
         self.present(actionSheet, animated: true, completion: nil)
     }
 
@@ -346,6 +355,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
         self.updateUI()
     }
 }
+
 extension AudiobookPlayerViewController: PlayerDelegate {
     // It may seem like we want to update the UI in these delegates, but we do not.
     // Sometimes the FindawayPlayer sends
@@ -381,7 +391,8 @@ extension AudiobookPlayerViewController: AudiobookManagerDownloadDelegate {
         )
         let okLocalizedText = NSLocalizedString("Ok", bundle: Bundle.audiobookToolkit()!, value: "Ok", comment: "Ok")
         alertController.addAction(UIAlertAction(title: okLocalizedText, style: .cancel, handler: nil))
-        self.present(alertController, animated: false, completion: nil)
+        alertController.popoverPresentationController?.sourceView = self.view
+        self.present(alertController, animated: true, completion: nil)
     }
 }
 
