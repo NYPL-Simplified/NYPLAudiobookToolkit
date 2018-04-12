@@ -78,7 +78,7 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
 extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
         FAEAudioEngine.shared()?.didFinishLaunching()
-        FAELogEngine.setLogLevel(.verbose)
+        FAELogEngine.setLogLevel(.none)
 
         try? AVAudioSession.sharedInstance().setCategory(
             AVAudioSessionCategoryPlayback
