@@ -126,11 +126,7 @@ class ViewController: UIViewController {
         }
       
         guard let vc = self.detailVC else { return }
-        let splitViewController = UISplitViewController()
-        let tableOfContents = AudiobookTableOfContentsTableViewController(tableOfContents: theManager.tableOfContents)
-        splitViewController.preferredDisplayMode = .allVisible
-        splitViewController.viewControllers = [vc, tableOfContents]
-        self.view.window?.rootViewController = splitViewController
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {
