@@ -132,9 +132,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
             info[MPMediaItemPropertyAlbumTitle] = self.metadata.authors.joined(separator: ", ")
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = chapter.playheadOffset
             info[MPMediaItemPropertyPlaybackDuration] = chapter.duration
-            info[MPNowPlayingInfoPropertyPlaybackRate] = PlaybackRate.convert(
-                rate: self.player.playbackRate
-            )
             MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         }
     }
