@@ -17,7 +17,8 @@ final class FindawayPlayer: NSObject, Player {
             duration: self.chapterAtCursor.duration,
             startOffset: 0,
             playheadOffset: TimeInterval(self.currentOffset),
-            title: self.chapterAtCursor.title
+            title: self.chapterAtCursor.title,
+            audiobookID: self.audiobookID
         )
     }
 
@@ -312,9 +313,10 @@ final class FindawayPlayer: NSObject, Player {
         return lhs?.inSameChapter(other: rhs) ?? false
     }
 
-    private func currentChapterIsAt(part: UInt, number: UInt) -> Bool {
+    private func currentChapterIsAt(part: UInt, number: UInt, audiobookID: String) -> Bool {
         guard let chapter = self.currentChapterLocation else { return false }
-        return chapter.part == part &&
+        return chapter.audiobookID == audiobookID &&
+            chapter.part == part &&
             chapter.number == number
     }
 
@@ -373,7 +375,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
 
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription) {
-            if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
+            if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
                 let cursorPredicate = { (spineElement: SpineElement) -> Bool in
                     return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
                 }
@@ -395,7 +397,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     }
 
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
-        if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber) {
+        if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
             if let currentChapter = self.currentChapterLocation {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)

@@ -58,13 +58,14 @@ import Foundation
 }
 
 /// This class represents a location in a book.
-@objc public final class ChapterLocation: NSObject {
+@objc public final class ChapterLocation: NSObject, Codable {
     let title: String?
     let number: UInt
     let part: UInt
     let duration: TimeInterval
     let startOffset: TimeInterval
     let playheadOffset: TimeInterval
+    let audiobookID: String
 
     var timeRemaining: TimeInterval {
         return self.duration - self.playheadOffset
@@ -88,15 +89,17 @@ import Foundation
     
     public func inSameChapter(other: ChapterLocation?) -> Bool {
         guard let rhs = other else { return false }
-        return self.number == rhs.number &&
+        return self.audiobookID == rhs.audiobookID &&
+            self.number == rhs.number &&
             self.part == rhs.part
     }
 
-    public init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval, title: String?) {
+    public init?(number: UInt, part: UInt, duration: TimeInterval, startOffset: TimeInterval, playheadOffset: TimeInterval, title: String?, audiobookID: String) {
         guard startOffset <= duration else {
             return nil
         }
         
+        self.audiobookID = audiobookID
         self.number = number
         self.part = part
         self.duration = duration
@@ -113,7 +116,8 @@ import Foundation
             duration: self.duration,
             startOffset: self.startOffset,
             playheadOffset: offset,
-            title: self.title
+            title: self.title,
+            audiobookID: self.audiobookID
         )
     }
     public override var description: String {
