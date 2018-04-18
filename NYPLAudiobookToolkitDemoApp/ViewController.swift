@@ -98,7 +98,7 @@ class ViewController: UIViewController, PlayheadStore {
     func pathFor(audiobookID: String) -> String? {
         let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
         let documentsURL = NSURL(fileURLWithPath: paths.first!, isDirectory: true)
-        let fullURL = documentsURL.appendingPathComponent(audiobookID)
+        let fullURL = documentsURL.appendingPathComponent("\(audiobookID).playhead")
         return fullURL?.path
     }
 }
