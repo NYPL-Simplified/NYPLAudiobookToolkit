@@ -77,19 +77,19 @@ import Foundation
 
 /// This class represents a location in a book.
 @objc public final class ChapterLocation: NSObject, Codable {
-    let title: String?
-    let number: UInt
-    let part: UInt
-    let duration: TimeInterval
-    let startOffset: TimeInterval
-    let playheadOffset: TimeInterval
-    let audiobookID: String
+    public let title: String?
+    public let number: UInt
+    public let part: UInt
+    public let duration: TimeInterval
+    public let startOffset: TimeInterval
+    public let playheadOffset: TimeInterval
+    public let audiobookID: String
 
-    var timeRemaining: TimeInterval {
+    public var timeRemaining: TimeInterval {
         return self.duration - self.playheadOffset
     }
 
-    var secondsBeforeStart: TimeInterval? {
+    public var secondsBeforeStart: TimeInterval? {
         var timeInterval: TimeInterval? = nil
         if self.playheadOffset < 0 {
             timeInterval = abs(self.playheadOffset)
@@ -97,7 +97,7 @@ import Foundation
         return timeInterval
     }
     
-    var timeIntoNextChapter: TimeInterval? {
+    public var timeIntoNextChapter: TimeInterval? {
         var timeInterval: TimeInterval? = nil
         if self.playheadOffset > self.duration {
             timeInterval = self.playheadOffset - self.duration
