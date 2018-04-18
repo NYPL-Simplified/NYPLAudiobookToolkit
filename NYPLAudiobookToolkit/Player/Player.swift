@@ -151,6 +151,12 @@ typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
 /// `skipForward` and `skipBack` methods. Using this utility
 /// allows player to share the logic for creating a new cursor
 /// that points to the new chapter.
+///
+/// - Parameters:
+///   - destination: The `ChapterLocation` we are navigating to. This destination has a playhead that may or may not be inside the chapter it represents.
+///   - cursor: The `Cursor` representing the spine for that book.
+/// - Returns:
+///  The `Playhead` where the location represents the chapter the playhead is located in, and a cursor that points to that chapter.
 func moveCursor(to destination: ChapterLocation, cursor: Cursor<SpineElement>) -> Playhead {
     let newPlayhead: Playhead
     // Check to see if our playback location is in the next chapter
@@ -185,7 +191,7 @@ private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: Cha
     // there is a next chapter for us to play.
     let newCursor: Cursor<SpineElement>
     if let nextCursor = cursor.next() {
-        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(
+        possibleDestinationLocation = chapterAt(cursor: nextCursor).chapterWith(
             timeIntoNextChapter
         )
         newCursor = nextCursor
@@ -211,7 +217,7 @@ private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: Chapte
         newCursor = prevCursor
         let durationOfChapter =  chapterAt(cursor: cursor).duration
         let playheadOffset = durationOfChapter - timeIntoPreviousChapter
-        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(max(0, playheadOffset))
+        possibleDestinationLocation = chapterAt(cursor: prevCursor).chapterWith(max(0, playheadOffset))
     } else {
         // If there is no previous chapter, we are at the start of the book
         // and skip to the beginning.
