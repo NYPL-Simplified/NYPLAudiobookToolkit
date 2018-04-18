@@ -44,14 +44,32 @@ import Foundation
 /// This does not specifically refer to AVPlayer, but could also be
 /// FAEPlaybackEngine, or another engine that handles DRM content.
 @objc public protocol Player {
-    func play()
-    func pause()
-    func skipForward()
-    func skipBack()
     var isPlaying: Bool { get }
     var currentChapterLocation: ChapterLocation? { get }
     var playbackRate: PlaybackRate { get set }
-    func jumpToLocation(_ location: ChapterLocation)
+    
+    /// Play at current playhead location
+    func play()
+    
+    /// Pause playback
+    func pause()
+    
+    /// Skip forward 15 seconds and start playback
+    func skipForward()
+
+    /// Skip back 15 seconds and start playback
+    func skipBack()
+    
+    /// Move playhead and immediately start playing
+    /// This method is useful for scenarios like a table of contents
+    /// where you select a new chapter and wish to immediately start
+    /// playback.
+    func playAtLocation(_ location: ChapterLocation)
+    
+    /// Move playhead but do not start playback. This is useful for
+    /// state restoration where we want to prepare for playback
+    /// at a specific point, but playback has not yet been requested.
+    func movePlayheadToLocation(_ location: ChapterLocation)
 
     func registerDelegate(_ delegate: PlayerDelegate)
     func removeDelegate(_ delegate: PlayerDelegate)
