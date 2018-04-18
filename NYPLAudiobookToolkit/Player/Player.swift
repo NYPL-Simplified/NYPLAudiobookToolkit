@@ -142,3 +142,81 @@ import Foundation
         return "ChapterLocation P \(self.part) CN \(self.number); PH \(self.playheadOffset) D \(self.duration)"
     }
 }
+
+typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
+
+/// Utility function for skipping around. It is difficult to determine
+/// which chapter we will land in when skipping around. For all players
+/// it is possible they will seek across chapter boundaries using the
+/// `skipForward` and `skipBack` methods. Using this utility
+/// allows player to share the logic for creating a new cursor
+/// that points to the new chapter.
+func moveCursor(to destination: ChapterLocation, cursor: Cursor<SpineElement>) -> Playhead {
+    let newPlayhead: Playhead
+    // Check to see if our playback location is in the next chapter
+    if let nextPlayhead = attemptToMove(cursor: cursor, forwardTo: destination) {
+        newPlayhead = nextPlayhead
+    // Check if playback location is in the previous chapter
+    } else if let prevPlayhead = attemptToMove(cursor: cursor, backTo: destination) {
+        newPlayhead = prevPlayhead
+    // We are already in the correct chapter. Pass the playhead on as is.
+    } else {
+        newPlayhead = (location: destination, cursor: cursor)
+    }
+
+    return newPlayhead
+}
+
+private func chapterAt(cursor: Cursor<SpineElement>) -> ChapterLocation {
+    return cursor.currentElement.chapter
+}
+
+private func playhead(location: ChapterLocation?, cursor: Cursor<SpineElement>?) -> Playhead? {
+    guard let location = location else { return nil }
+    guard let cursor = cursor else { return nil }
+    return (location: location, cursor: cursor)
+}
+
+private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: ChapterLocation) -> Playhead? {
+    // Only if the time points into the next chapter should we try to move the cursor forward.
+    guard let timeIntoNextChapter = location.timeIntoNextChapter else { return nil }
+    var possibleDestinationLocation: ChapterLocation?
+    // Attempt to move the cursor forward indicating
+    // there is a next chapter for us to play.
+    let newCursor: Cursor<SpineElement>
+    if let nextCursor = cursor.next() {
+        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(
+            timeIntoNextChapter
+        )
+        newCursor = nextCursor
+    } else {
+        // If there is no next chapter, then we are at the end of the book
+        // and we skip to the end.
+        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(
+            chapterAt(cursor: cursor).duration
+        )
+        newCursor = cursor
+    }
+    return playhead(location: possibleDestinationLocation, cursor: newCursor)
+}
+
+private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: ChapterLocation) -> Playhead?  {
+    // Only if the time points into the last chapter should we try to move the cursor back.
+    guard let timeIntoPreviousChapter = location.secondsBeforeStart else { return nil }
+    var possibleDestinationLocation: ChapterLocation?
+    // Attempt to move the cursor backwards indicating
+    // there is a previous chapter for us to play.
+    let newCursor: Cursor<SpineElement>
+    if let prevCursor = cursor.prev() {
+        newCursor = prevCursor
+        let durationOfChapter =  chapterAt(cursor: cursor).duration
+        let playheadOffset = durationOfChapter - timeIntoPreviousChapter
+        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(max(0, playheadOffset))
+    } else {
+        // If there is no previous chapter, we are at the start of the book
+        // and skip to the beginning.
+        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(0)
+        newCursor = cursor
+    }
+    return playhead(location: possibleDestinationLocation, cursor: newCursor)
+}

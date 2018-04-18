@@ -159,7 +159,7 @@ final class FindawayPlayer: NSObject, Player {
     
     func movePlayheadToLocation(_ location: ChapterLocation) {
         self.queue.async { [weak self] in
-            self?.queuedPlayheadManipulation = self?.updateCursorAndRequestPlaybackFor(location)
+            self?.queuedPlayheadManipulation = self?.updateCursorAndCreateManipulation(location)
         }
     }
 
@@ -194,7 +194,7 @@ final class FindawayPlayer: NSObject, Player {
     
     private func performJumpToLocation(_ location: ChapterLocation) {
         if self.readyForPlayback {
-            self.queuedPlayheadManipulation = self.updateCursorAndRequestPlaybackFor(location)
+            self.queuedPlayheadManipulation = self.updateCursorAndCreateManipulation(location)
             if let manipulation = self.queuedPlayheadManipulation {
                 self.movePlayhead(from: manipulation.previous, to: manipulation.destination)
             }
@@ -203,60 +203,11 @@ final class FindawayPlayer: NSObject, Player {
         }
     }
     
-    private func updateCursorAndRequestPlaybackFor(_ location: ChapterLocation) -> FindawayPlayheadManipulation? {
-        func attemptToMoveCursorForwardTo(location: ChapterLocation) -> ChapterLocation? {
-            // Only if the time points into the next chapter should we try to move the cursor forward.
-            guard let timeIntoNextChapter = location.timeIntoNextChapter else { return nil }
-            var possibleDestinationLocation: ChapterLocation?
-            // Attempt to move the cursor forward indicating
-            // there is a next chapter for us to play.
-            if let newCursor = self.cursor.next() {
-                self.cursor = newCursor
-                possibleDestinationLocation = self.chapterAtCursor.chapterWith(
-                    timeIntoNextChapter
-                )
-            } else {
-                // If there is no next chapter, then we are at the end of the book
-                // and we skip to the end.
-                possibleDestinationLocation = self.chapterAtCursor.chapterWith(
-                    self.chapterAtCursor.duration
-                )
-            }
-            return possibleDestinationLocation
-        }
-        
-        func attemptToMoveCursorBackTo(location: ChapterLocation) -> ChapterLocation? {
-            // Only if the time points into the last chapter should we try to move the cursor back.
-            guard let timeIntoPreviousChapter = location.secondsBeforeStart else { return nil }
-            var possibleDestinationLocation: ChapterLocation?
-            // Attempt to move the cursor backwards indicating
-            // there is a previous chapter for us to play.
-            if let newCursor = self.cursor.prev() {
-                self.cursor = newCursor
-                let durationOfChapter =  self.chapterAtCursor.duration
-                let playheadOffset = durationOfChapter - timeIntoPreviousChapter
-                possibleDestinationLocation = self.chapterAtCursor.chapterWith(max(0, playheadOffset))
-            } else {
-                // If there is no previous chapter, we are at the start of the book
-                // and skip to the beginning.
-                possibleDestinationLocation = self.chapterAtCursor.chapterWith(0)
-            }
-            return possibleDestinationLocation
-        }
-
-        var possibleDestinationLocation: ChapterLocation? = location
-        let locationBeforeNavigation = self.currentChapterLocation
-
-        // Check to see if our playback location is in the next chapter
-        if let nextChapter = attemptToMoveCursorForwardTo(location: location) {
-            possibleDestinationLocation = nextChapter
-        // Check if playback location is in the previous chapter
-        } else if let previousChapter = attemptToMoveCursorBackTo(location: location) {
-            possibleDestinationLocation = previousChapter
-        }
-        
-        guard let destinationLocation = possibleDestinationLocation else { return nil }
-        return (previous: locationBeforeNavigation, destination: destinationLocation)
+    func updateCursorAndCreateManipulation(_ location: ChapterLocation) -> FindawayPlayheadManipulation? {
+        let playheadBeforeManipulation = self.currentChapterLocation
+        let playhead = moveCursor(to: location, cursor: self.cursor)
+        self.cursor = playhead.cursor
+        return (previous: playheadBeforeManipulation, destination: playhead.location)
     }
 
     /// Method to determine which AudioEngine SDK should be called
