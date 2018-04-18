@@ -28,11 +28,11 @@ class AudiobookNetworkServiceTest: XCTestCase {
     
     func testDownloadProgressWithTwoSpineElements() {
         let task1 = DownloadTaskMock(progress: 0.50, key: "http://chap1", fetchClosure: nil)
-        let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start")!
+        let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start", audiobookID: "somebook")!
         let spine1 = SpineElementMock(key: task1.key, downloadTask: task1, chapter: chapter1)
 
         let task2 = DownloadTaskMock(progress: 0.25, key: "http://chap2", fetchClosure: nil)
-        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End")!
+        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End", audiobookID: "somebook")!
         let spine2 = SpineElementMock(key: task2.key, downloadTask: task2, chapter: chapter2)
 
         let service = DefaultAudiobookNetworkService(spine: [spine1, spine2])
@@ -53,11 +53,11 @@ class AudiobookNetworkServiceTest: XCTestCase {
         }
 
         let task1 = DownloadTaskMock(progress: 0, key: "http://chap1", fetchClosure: fetchClosureForTask1)
-        let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start")!
+        let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start", audiobookID: "somebook")!
         let spine1 = SpineElementMock(key: task1.key, downloadTask: task1, chapter: chapter1)
     
         let task2 = DownloadTaskMock(progress: 0, key: "http://chap2", fetchClosure: fetchClosureForTask2)
-        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End")!
+        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End", audiobookID: "somebook")!
         let spine2 = SpineElementMock(key: task2.key, downloadTask: task2, chapter: chapter2)
 
         let service = DefaultAudiobookNetworkService(spine: [spine1, spine2])
@@ -119,15 +119,15 @@ class AudiobookNetworkServiceTest: XCTestCase {
         }
 
         let task1 = DownloadTaskMock(progress: 0, key: "http://chap1", fetchClosure: fetchClosureForTask1)
-        let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start")!
+        let chapter1 = ChapterLocation(number: 1, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Start", audiobookID: "somebook")!
         let spine1 = SpineElementMock(key: task1.key, downloadTask: task1, chapter: chapter1)
         
         let task2 = DownloadTaskMock(progress: 0, key: "http://chap2", fetchClosure: fetchClosureForTask2)
-        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Middle")!
+        let chapter2 = ChapterLocation(number: 2, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The Middle", audiobookID: "somebook")!
         let spine2 = SpineElementMock(key: task2.key, downloadTask: task2, chapter: chapter2)
         
         let task3 = DownloadTaskMock(progress: 0, key: "http://chap2", fetchClosure: fetchClosureForTask3)
-        let chapter3 = ChapterLocation(number: 3, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End")!
+        let chapter3 = ChapterLocation(number: 3, part: 0, duration: 10, startOffset: 0, playheadOffset: 0, title: "The End", audiobookID: "somebook")!
         let spine3 = SpineElementMock(key: task3.key, downloadTask: task3, chapter: chapter3)
         
         let service = DefaultAudiobookNetworkService(spine: [spine1, spine2, spine3])
