@@ -297,6 +297,14 @@ final class ScrubberView: UIView {
                     scrubbing: currentlyScrubbing
                 )
             }
+        } else {
+            self.state = ScrubberUIState(
+                gripperHeight: self.state.gripperHeight,
+                progressColor: self.state.progressColor,
+                progress: self.state.progress,
+                middleText: self.state.middleText,
+                scrubbing: currentlyScrubbing
+            )
         }
     }
 
