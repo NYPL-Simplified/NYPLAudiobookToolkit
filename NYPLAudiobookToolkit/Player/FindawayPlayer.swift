@@ -9,7 +9,9 @@
 import UIKit
 import AudioEngine
 
+typealias EngineManipulation = () -> Void
 typealias FindawayPlayheadManipulation = (previous: ChapterLocation?, destination:ChapterLocation)
+
 final class FindawayPlayer: NSObject, Player {
     public var currentChapterLocation: ChapterLocation? {
         let chapter: ChapterLocation?
@@ -44,12 +46,18 @@ final class FindawayPlayer: NSObject, Player {
     // requested for playback but for some reason is not able to be played
     // at this moment.
     //
-    // The two main reasons to queue a chapter instead of playing it
-    // immediately are that the AudioEngine SDK is still initializing
-    // so playback can't be started or you want to load a new chapter
-    // which is an expensive operation.
+    // The reason to queue a chapter instead of trying to play it
+    // immediately is that the AudioEngine SDK is still initializing
+    // so playback can't be started.
     private var queuedLocationWaitingForPlayback: ChapterLocation?
 
+    // `queuedEngineManipulation` is a closure that will manipulate
+    // `FAEPlaybackEngine`.
+    //
+    // The reason to queue a manipulation is that they are potentially
+    // very expensive, so by performing fewer manipulations, we get
+    // better performance and avoid crashes while in the background.
+    private var queuedEngineManipulation: EngineManipulation?
     private var willBeReadyToPlayNewChapterAt: Date = Date()
     private var debounceBufferTime: TimeInterval = 0.2
 
@@ -237,14 +245,14 @@ final class FindawayPlayer: NSObject, Player {
         /// move operation.
         func queueChapterManipulation() {
             func attemptQueuedPlayheadManipulation() {
-                guard let destinationLocation = self.queuedLocationWaitingForPlayback else {
+                guard let manipulationClosure = self.queuedEngineManipulation else {
                     return
                 }
                 if Date() < self.willBeReadyToPlayNewChapterAt {
                     queueChapterManipulation()
                 } else {
-                    self.loadAndRequestPlayback(destinationLocation)
-                    self.queuedLocationWaitingForPlayback = nil
+                    manipulationClosure()
+                    self.queuedEngineManipulation = nil
                 }
             }
             
@@ -262,34 +270,50 @@ final class FindawayPlayer: NSObject, Player {
         // when it succeeds so we do not have to update the delegates.
         if isResumeDescription(destinationLocation) {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
+        // Any other playhead manipulation is potentially expensive,
+        // so instead of making the request immediately
+        // we queue it and trash the existing request if a new one comes in.
         } else if isSeekOperation {
-            // Seek operations are very cheap and move the playhead almost instantly.
-            // They can be performed repeatedly within a chapter without fail.
-            FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(destinationLocation.playheadOffset)
-            DispatchQueue.main.async { [weak self] in
-                self?.notifyDelegatesOfPlaybackFor(chapter: destinationLocation)
+            self.queuedEngineManipulation = { [weak self] in
+                self?.seekTo(chapter: destinationLocation)
             }
+            queueChapterManipulation()
         } else {
-            // This is the expensive path, so instead of making the request immediately
-            // we queue it and trash the existing request if a new one comes in.
             self.willBeReadyToPlayNewChapterAt = Date().addingTimeInterval(self.debounceBufferTime)
-            self.queuedLocationWaitingForPlayback = destinationLocation
+            self.queuedEngineManipulation =  { [weak self] in
+                self?.loadAndRequestPlayback(destinationLocation)
+            }
             queueChapterManipulation()
         }
+        self.queuedLocationWaitingForPlayback = nil
         self.queuedPlayheadManipulation = nil
     }
 
     private func loadAndRequestPlayback(_ location: ChapterLocation) {
-        FAEAudioEngine.shared()?.playbackEngine?.play(
-            forAudiobookID: self.audiobookID,
-            partNumber: location.part,
-            chapterNumber: location.number,
-            offset: UInt(location.playheadOffset),
-            sessionKey: self.sessionKey,
-            licenseID: self.licenseID
-        )
+        if !self.currentChapterIsAt(part: location.part, number: location.number, audiobookID: location.audiobookID) {
+            FAEAudioEngine.shared()?.playbackEngine?.play(
+                forAudiobookID: self.audiobookID,
+                partNumber: location.part,
+                chapterNumber: location.number,
+                offset: UInt(location.playheadOffset),
+                sessionKey: self.sessionKey,
+                licenseID: self.licenseID
+            )
+        } else {
+            self.notifyDelegatesOfPlaybackFor(chapter: location)
+        }
     }
 
+    private func seekTo(chapter: ChapterLocation) {
+        // Seek operations are very cheap and move the playhead almost instantly.
+        // They can be performed repeatedly within a chapter without fail.
+        if Int(self.currentOffset) != Int(chapter.playheadOffset) {
+            FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(chapter.playheadOffset)
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.notifyDelegatesOfPlaybackFor(chapter: chapter)
+        }
+    }
     private func locationsPointToTheSameChapter(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
         return lhs?.inSameChapter(other: rhs) ?? false
     }
