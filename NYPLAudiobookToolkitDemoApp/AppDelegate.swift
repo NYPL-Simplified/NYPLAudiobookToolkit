@@ -12,10 +12,12 @@ import NYPLAudiobookToolkit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-    var playheadStore: PlayheadStore?
+    var audiobookController = AudiobookController()
     let audiobookLifecycleManager = DefaultAudiobookLifecycleManager.shared
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         self.audiobookLifecycleManager.didFinishLaunching()
+        let rootVC = self.window?.rootViewController?.childViewControllers.first as? ViewController
+        rootVC?.audiobokController = self.audiobookController
         return true
     }
 
@@ -28,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.audiobookLifecycleManager.didEnterBackground()
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        self.playheadStore?.savePlayhead()
+        self.audiobookController.savePlayhead()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -41,7 +43,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         self.audiobookLifecycleManager.willTerminate()
-        self.playheadStore?.savePlayhead()
+        self.audiobookController.savePlayhead()
     }
 
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {

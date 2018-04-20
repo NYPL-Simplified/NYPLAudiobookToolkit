@@ -46,6 +46,7 @@
 		7B7B37112028FC7D00030A1E /* FindawayPlaybackNotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B37102028FC7C00030A1E /* FindawayPlaybackNotificationHandler.swift */; };
 		7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */; };
 		7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */; };
+		7B87DCC9208A48E300256331 /* AudiobookController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC8208A48E300256331 /* AudiobookController.swift */; };
 		7BAFF98A201256F100DCA92A /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441F0200EAAA20047B6C6 /* PureLayout.framework */; };
 		7BAFF98B201256F100DCA92A /* PureLayout.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441F0200EAAA20047B6C6 /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BAFF98C20125D1900DCA92A /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; };
@@ -174,6 +175,7 @@
 		7B7B37102028FC7C00030A1E /* FindawayPlaybackNotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindawayPlaybackNotificationHandler.swift; sourceTree = "<group>"; };
 		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManipulationTest.swift; sourceTree = "<group>"; };
+		7B87DCC8208A48E300256331 /* AudiobookController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookController.swift; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
 		7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerTests.swift; sourceTree = "<group>"; };
 		7BBF4DFF2050856400700731 /* PlayerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerMock.swift; sourceTree = "<group>"; };
@@ -322,6 +324,7 @@
 				7B5441B3200EA7E30047B6C6 /* Assets.xcassets */,
 				7B5441B5200EA7E30047B6C6 /* LaunchScreen.storyboard */,
 				7B5441B8200EA7E30047B6C6 /* Info.plist */,
+				7B87DCC8208A48E300256331 /* AudiobookController.swift */,
 			);
 			path = NYPLAudiobookToolkitDemoApp;
 			sourceTree = "<group>";
@@ -668,6 +671,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B5441AF200EA7E30047B6C6 /* ViewController.swift in Sources */,
+				7B87DCC9208A48E300256331 /* AudiobookController.swift in Sources */,
 				7B5441AD200EA7E30047B6C6 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
