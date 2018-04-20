@@ -10,6 +10,10 @@ import UIKit
 import NYPLAudiobookToolkit
 
 class PlayerMock: Player {
+    func playAtLocation(_ location: ChapterLocation) { }
+    
+    func movePlayheadToLocation(_ location: ChapterLocation) { }
+    
     var playbackRate: PlaybackRate = .normalTime
     
     var currentChapterLocation: ChapterLocation? {
@@ -31,8 +35,6 @@ class PlayerMock: Player {
     func skipForward() { }
     
     func skipBack() { }
-    
-    func jumpToLocation(_ location: ChapterLocation) { }
     
     func registerDelegate(_ delegate: PlayerDelegate) { }
     

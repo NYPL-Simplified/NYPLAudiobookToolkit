@@ -40,7 +40,8 @@ class SleepTimerTests: XCTestCase {
             duration: duration,
             startOffset: 0,
             playheadOffset: 0,
-            title: "Sometime"
+            title: "Sometime",
+            audiobookID: "someID"
         )
         let sleepTimer = SleepTimer(player: PlayerMock(currentChapter: chapter))
         sleepTimer.setTimerTo(trigger: .endOfChapter)

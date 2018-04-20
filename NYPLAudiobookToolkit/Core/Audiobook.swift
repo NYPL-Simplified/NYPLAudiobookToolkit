@@ -20,6 +20,7 @@ private func findawayKey(_ key: String) -> String {
 }
 
 @objc public protocol Audiobook: class {
+    var uniqueIdentifier: String { get }
     var spine: [SpineElement] { get }
     var player: Player { get }
     init?(JSON: Any?)
@@ -52,6 +53,7 @@ private func findawayKey(_ key: String) -> String {
 private final class FindawayAudiobook: Audiobook {
     let player: Player
     let spine: [SpineElement]
+    let uniqueIdentifier: String
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
@@ -70,6 +72,7 @@ private final class FindawayAudiobook: Audiobook {
         }
         guard let firstSpineElement = self.spine.first as? FindawaySpineElement else { return nil }
         guard let cursor = Cursor(data: self.spine) else { return nil }
+        self.uniqueIdentifier = audiobookID
         self.player = FindawayPlayer(spineElement: firstSpineElement, cursor: cursor)
     }
 }
@@ -90,7 +93,8 @@ final class FindawaySpineElement: SpineElement {
             duration: self.duration,
             startOffset: 0,
             playheadOffset: 0,
-            title: self.title
+            title: self.title,
+            audiobookID: self.audiobookID
         )!
     }()
     
@@ -120,17 +124,22 @@ final class FindawaySpineElement: SpineElement {
 }
 
 private final class OpenAccessAudiobook: Audiobook {
-    var spine: [SpineElement]
     let player: Player
+    var spine: [SpineElement]
+    let uniqueIdentifier: String
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
+        guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
+        guard let identifier = metadata["identifier"] as? String else { return nil }
         guard let spine = payload["spine"] as? [Any] else { return nil }
         self.spine = spine.flatMap { (possibleLink) -> SpineElement? in
             OpenAccessSpineElement(
-                JSON: possibleLink
+                JSON: possibleLink,
+                audiobookID: identifier
             )
         }
         guard !self.spine.isEmpty else { return nil }
+        self.uniqueIdentifier = identifier
         self.player = OpenAccessPlayer()
     }
 }
@@ -141,7 +150,7 @@ final class OpenAccessSpineElement: SpineElement {
     let mediaType: String
     let duration: TimeInterval
     let bitrate: Int
-    
+    let audiobookID: String
     var key: String {
         return self.url.absoluteString
     }
@@ -157,12 +166,13 @@ final class OpenAccessSpineElement: SpineElement {
             duration: self.duration,
             startOffset: 0,
             playheadOffset: 0,
-            title: nil
+            title: nil,
+            audiobookID: self.audiobookID
         )!
     }()
 
 
-    public init?(JSON: Any?) {
+    public init?(JSON: Any?, audiobookID: String) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let address = payload["href"] as? String else { return nil }
         guard let url = URL(string: address) else { return nil }
@@ -173,5 +183,6 @@ final class OpenAccessSpineElement: SpineElement {
         self.mediaType = mediaType
         self.duration = duration
         self.bitrate = bitrate
+        self.audiobookID = audiobookID
     }
 }

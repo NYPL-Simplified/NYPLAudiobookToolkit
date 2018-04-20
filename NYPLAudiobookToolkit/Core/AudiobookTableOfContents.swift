@@ -59,7 +59,7 @@ extension AudiobookTableOfContents: UITableViewDelegate {
         // use case, and AVPlayer should as well. However it is an
         // implied requirement of the player that has not been
         // explicitly stated elsewhere.
-        self.player.jumpToLocation(spineElement.chapter)
+        self.player.playAtLocation(spineElement.chapter)
     }
 }
 

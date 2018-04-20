@@ -11,6 +11,10 @@ import UIKit
 final class OpenAccessPlayer: NSObject, Player {
     var playbackRate: PlaybackRate = .normalTime
     
+    func movePlayheadToLocation(_ location: ChapterLocation) {
+        
+    }
+    
     func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
         return false
     }
@@ -26,7 +30,7 @@ final class OpenAccessPlayer: NSObject, Player {
     }
     
     var delegate: PlayerDelegate?
-    func jumpToLocation(_ chapter: ChapterLocation) {
+    func playAtLocation(_ chapter: ChapterLocation) {
 
     }
     
