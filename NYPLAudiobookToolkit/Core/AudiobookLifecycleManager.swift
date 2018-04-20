@@ -11,7 +11,7 @@ import AudioEngine
 import AVFoundation
 
 /// Delegate to be notified when the state of the lifecycle manager has changed
-@objc protocol AudiobookLifecycleManagerDelegate: class {
+@objc public protocol AudiobookLifecycleManagerDelegate: class {
 
     /**
      General notifications about the state of the manager.
@@ -22,7 +22,7 @@ import AVFoundation
 /// Implementers of this protocol should hook into Lifecycle events in AppDelegate.swift.
 /// They should also listen to notifications found in AudioEngine in order to update their internal state.
 /// This is a wrapper around the stateful aspects of AudioEngine and avoids objects listening to NSNotifications directly.
-@objc protocol AudiobookLifeCycleManager: class {
+@objc public protocol AudiobookLifeCycleManager: class {
     var audioEngineDatabaseHasBeenVerified: Bool { get }
     func didFinishLaunching()
     func didEnterBackground()
@@ -59,11 +59,11 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
         NotificationCenter.default.removeObserver(self)
     }
 
-    func registerDelegate(_ delegate: AudiobookLifecycleManagerDelegate) {
+    public func registerDelegate(_ delegate: AudiobookLifecycleManagerDelegate) {
         self.delegates.add(delegate)
     }
     
-    func removeDelegate(_ delegate: AudiobookLifecycleManagerDelegate) {
+    public func removeDelegate(_ delegate: AudiobookLifecycleManagerDelegate) {
         self.delegates.remove(delegate)
     }
 

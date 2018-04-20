@@ -145,12 +145,26 @@ import Foundation
 
 typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
 
-/// Utility function for skipping around. It is difficult to determine
-/// which chapter we will land in when skipping around. For all players
-/// it is possible they will seek across chapter boundaries using the
-/// `skipForward` and `skipBack` methods. Using this utility
-/// allows player to share the logic for creating a new cursor
-/// that points to the new chapter.
+/// Utility function for manipulating the playhead.
+///
+/// We navigate around audiobooks using `ChapterLocation` objects that represent
+/// some section of audio that the player can navigate to.
+///
+/// We seek through chapters by calling the `chapterWith(_ offset:)` method
+/// on the `currentChapterLocation` to create a new `ChapterLocation` with an offset pointing to the passed
+/// in `offset`.
+///
+/// It is possible the new `offset` is not located in the `ChapterLocation` it represents.
+/// For example, if the new `offset` is longer than the duration of the chapter.
+/// The `moveTo(to:cursor:)` function resolves such conflicts and returns a `Playhead` containing
+/// the correct chapter location for a Player to use.
+///
+/// For example, if you have 5 seconds left in a chapter and you go to skip
+/// ahead 15 seconds. This chapter will return a `Playhead` where the `location`
+/// is 10 seconds into the next chapter and a `cursor` that points to the new playhead.
+///
+/// If the `destination` passed in is within the `cursor`’s current chapter, then the `Playhead`
+/// consists of the arguments passed in.
 ///
 /// - Parameters:
 ///   - destination: The `ChapterLocation` we are navigating to. This destination has a playhead that may or may not be inside the chapter it represents.
