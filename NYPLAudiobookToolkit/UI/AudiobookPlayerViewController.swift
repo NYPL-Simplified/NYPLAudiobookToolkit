@@ -22,9 +22,6 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.audiobookManager = audiobookManager
         self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
-        self.audiobookManager.timerDelegate = self
-        self.audiobookManager.downloadDelegate = self
-        self.audiobookManager.audiobook.player.registerDelegate(self)
     }
 
     public required init?(coder aDecoder: NSCoder) {
@@ -164,6 +161,19 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.gradiant.frame = self.view.bounds
     }
     
+    override public func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.audiobookManager.timerDelegate = nil
+        self.audiobookManager.downloadDelegate = nil
+        self.audiobookManager.audiobook.player.removeDelegate(self)
+    }
+    
+    override public func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.audiobookManager.timerDelegate = self
+        self.audiobookManager.downloadDelegate = self
+        self.audiobookManager.audiobook.player.registerDelegate(self)
+    }
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine
         var addUpStuff = false
