@@ -101,6 +101,7 @@ public final class DefaultAudiobookManager: AudiobookManager {
         self.networkService.registerDelegate(self)
         self.player.registerDelegate(self)
         try? AVAudioSession.sharedInstance().setActive(true)
+        UIApplication.shared.beginReceivingRemoteControlEvents()
         DispatchQueue.main.async {
             self.timer = Timer.scheduledTimer(
                 timeInterval: 1,
