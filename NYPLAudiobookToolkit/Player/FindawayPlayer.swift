@@ -205,7 +205,7 @@ final class FindawayPlayer: NSObject, Player {
     
     func updateCursorAndCreateManipulation(_ location: ChapterLocation) -> FindawayPlayheadManipulation? {
         let playheadBeforeManipulation = self.currentChapterLocation
-        let playhead = moveCursor(to: location, cursor: self.cursor)
+        let playhead = move(cursor: self.cursor, to: location)
         self.cursor = playhead.cursor
         return (previous: playheadBeforeManipulation, destination: playhead.location)
     }
