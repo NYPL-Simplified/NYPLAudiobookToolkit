@@ -15,7 +15,7 @@ class PlayerManipulationTest: XCTestCase {
         let spine = mockSpine(numberOfChapters: 1)
         let cursor = Cursor<SpineElement>(data: spine)!
         let destination = spine.first!.chapter
-        let playhead = moveCursor(to: destination, cursor: cursor)
+        let playhead = move(cursor: cursor, to: destination)
         let playheadLocationIsEqualToChapter = playhead.location.inSameChapter(other: destination)
         XCTAssertTrue(playheadLocationIsEqualToChapter, "Attempted to move playhead within chapter, but got a new chapter instead")
     }
@@ -29,7 +29,7 @@ class PlayerManipulationTest: XCTestCase {
         
         // we seek 5 seconds into the second chapter from the first
         let destination = chapter1.chapterWith(duration + 5)!
-        let playhead = moveCursor(to: destination, cursor: cursor)
+        let playhead = move(cursor: cursor, to: destination)
         let newDestinationIsNoLongerInChapter1 = playhead.location.inSameChapter(other: chapter1)
         XCTAssertFalse(
             newDestinationIsNoLongerInChapter1,
@@ -52,7 +52,7 @@ class PlayerManipulationTest: XCTestCase {
         
         // we seek 5 seconds into the first chapter from the second
         let destination = chapter2.chapterWith(-5)!
-        let playhead = moveCursor(to: destination, cursor: cursor)
+        let playhead = move(cursor: cursor, to: destination)
         let newDestinationIsNoLongerInPreviousChapter = playhead.location.inSameChapter(other: chapter2)
         XCTAssertFalse(
             newDestinationIsNoLongerInPreviousChapter,
