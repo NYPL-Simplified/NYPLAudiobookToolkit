@@ -58,6 +58,17 @@ final class FindawayPlayer: NSObject, Player {
     // very expensive, so by performing fewer manipulations, we get
     // better performance and avoid crashes while in the background.
     private var queuedEngineManipulation: EngineManipulation?
+
+    // `shouldPauseWhenPlaybackResumes` handles a case in the
+    // FAEPlaybackEngine where `pause`es that happen while
+    // the book is not playing are ignored. So if we are
+    // loading the next chapter for playback and a consumer
+    // decides to pause, we will fail.
+    //
+    // This flag is used to show that we intend to pause
+    // and it ought be checked when playback initiated
+    // notifications come in from FAEPlaybackEngine.
+    private var shouldPauseWhenPlaybackResumes = false
     private var willBeReadyToPlayNewChapterAt: Date = Date()
     private var debounceBufferTime: TimeInterval = 0.2
 
@@ -87,8 +98,13 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private var bookIsLoaded: Bool {
+        guard FAEAudioEngine.shared()?.playbackEngine?.playerStatus != FAEPlayerStatus.unloaded else {
+            return false
+        }
         let chapter = FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
-        guard let loadedAudiobookID = chapter?.audiobookID else { return false }
+        guard let loadedAudiobookID = chapter?.audiobookID else {
+            return false
+        }
         return loadedAudiobookID == self.audiobookID
     }
 
@@ -196,7 +212,7 @@ final class FindawayPlayer: NSObject, Player {
             self.resumePlaybackLocation = self.currentChapterLocation
             FAEAudioEngine.shared()?.playbackEngine?.pause()
         } else {
-            FAEAudioEngine.shared()?.playbackEngine?.unload()
+            self.shouldPauseWhenPlaybackResumes = true
         }
     }
     
@@ -240,7 +256,7 @@ final class FindawayPlayer: NSObject, Player {
         func seekOperation(locationBeforeNavigation: ChapterLocation?, destinationLocation: ChapterLocation) -> Bool {
             return self.bookIsLoaded && self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
         }
-        
+
         /// We queue the playhead move in order to rate limit the expensive
         /// move operation.
         func enqueueEngineManipulation() {
@@ -253,6 +269,9 @@ final class FindawayPlayer: NSObject, Player {
                 } else {
                     manipulationClosure()
                     self.queuedEngineManipulation = nil
+                    self.queuedLocationWaitingForPlayback = nil
+                    self.queuedPlayheadManipulation = nil
+                    self.resumePlaybackLocation = nil
                 }
             }
             
@@ -271,15 +290,15 @@ final class FindawayPlayer: NSObject, Player {
             locationBeforeNavigation: locationBeforeNavigation,
             destinationLocation: destinationLocation
         )
-    
+        
         // Resuming playback from the last point is practically free. We get notifications
         // when it succeeds so we do not have to update the delegates.
-        if isResumeDescription(destinationLocation) {
+        if isResumeDescription(destinationLocation) && self.bookIsLoaded {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
         // Any other playhead manipulation is potentially expensive,
         // so instead of making the request immediately
         // we queue it and trash the existing request if a new one comes in.
-        } else if isSeekOperation {
+        } else if isSeekOperation && self.bookIsLoaded {
             setAndQueueEngineManipulation { [weak self] in
                 self?.seekTo(chapter: destinationLocation)
             }
@@ -288,8 +307,6 @@ final class FindawayPlayer: NSObject, Player {
                 self?.loadAndRequestPlayback(destinationLocation)
             }
         }
-        self.queuedLocationWaitingForPlayback = nil
-        self.queuedPlayheadManipulation = nil
     }
 
     private func loadAndRequestPlayback(_ location: ChapterLocation) {
@@ -392,7 +409,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     }
 
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
-        func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription) {
+        func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription, shouldPause: Bool) {
             if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
                 let cursorPredicate = { (spineElement: SpineElement) -> Bool in
                     return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
@@ -400,6 +417,11 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 if let newCursor = self.cursor.cursor(at: cursorPredicate) {
                     self.cursor = newCursor
                 }
+            }
+
+            guard !shouldPause else {
+                self.performPause()
+                return
             }
 
             if let chapter = self.currentChapterLocation {
@@ -410,7 +432,8 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
         }
 
         self.queue.async {
-            handlePlaybackStartedFor(findawayChapter: findawayChapter)
+            handlePlaybackStartedFor(findawayChapter: findawayChapter, shouldPause: self.shouldPauseWhenPlaybackResumes)
+            self.shouldPauseWhenPlaybackResumes = false
         }
     }
 
