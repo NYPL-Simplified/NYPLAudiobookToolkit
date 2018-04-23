@@ -243,13 +243,13 @@ final class FindawayPlayer: NSObject, Player {
         
         /// We queue the playhead move in order to rate limit the expensive
         /// move operation.
-        func queueChapterManipulation() {
-            func attemptQueuedPlayheadManipulation() {
+        func enqueueEngineManipulation() {
+            func attemptToPerformQueuedEngineManipulation() {
                 guard let manipulationClosure = self.queuedEngineManipulation else {
                     return
                 }
                 if Date() < self.willBeReadyToPlayNewChapterAt {
-                    queueChapterManipulation()
+                    enqueueEngineManipulation()
                 } else {
                     manipulationClosure()
                     self.queuedEngineManipulation = nil
@@ -257,8 +257,14 @@ final class FindawayPlayer: NSObject, Player {
             }
             
             self.queue.asyncAfter(deadline: self.dispatchDeadline()) {
-                attemptQueuedPlayheadManipulation()
+                attemptToPerformQueuedEngineManipulation()
             }
+        }
+
+        func setAndQueueEngineManipulation(manipulationClosure: @escaping EngineManipulation) {
+            self.willBeReadyToPlayNewChapterAt = Date().addingTimeInterval(self.debounceBufferTime)
+            self.queuedEngineManipulation = manipulationClosure
+            enqueueEngineManipulation()
         }
 
         let isSeekOperation = seekOperation(
@@ -274,23 +280,25 @@ final class FindawayPlayer: NSObject, Player {
         // so instead of making the request immediately
         // we queue it and trash the existing request if a new one comes in.
         } else if isSeekOperation {
-            self.queuedEngineManipulation = { [weak self] in
+            setAndQueueEngineManipulation { [weak self] in
                 self?.seekTo(chapter: destinationLocation)
             }
-            queueChapterManipulation()
         } else {
-            self.willBeReadyToPlayNewChapterAt = Date().addingTimeInterval(self.debounceBufferTime)
-            self.queuedEngineManipulation =  { [weak self] in
+            setAndQueueEngineManipulation { [weak self] in
                 self?.loadAndRequestPlayback(destinationLocation)
             }
-            queueChapterManipulation()
         }
         self.queuedLocationWaitingForPlayback = nil
         self.queuedPlayheadManipulation = nil
     }
 
     private func loadAndRequestPlayback(_ location: ChapterLocation) {
-        if !self.currentChapterIsAt(part: location.part, number: location.number, audiobookID: location.audiobookID) {
+        let isCurrentlyPlayingThisChapter = self.isPlaying &&
+            self.currentChapterIsAt(part: location.part, number: location.number, audiobookID: location.audiobookID)
+        // If we are already playing this chapter, we do not want to load this chapter again.
+        // If we are moving within the current chapter, we should use the `seekTo(chapter:)` method
+        // instead of `loadAndRequestPlayback.
+        if !isCurrentlyPlayingThisChapter {
             FAEAudioEngine.shared()?.playbackEngine?.play(
                 forAudiobookID: self.audiobookID,
                 partNumber: location.part,
@@ -299,21 +307,26 @@ final class FindawayPlayer: NSObject, Player {
                 sessionKey: self.sessionKey,
                 licenseID: self.licenseID
             )
+        // Regardless weather or not the maniupulation happened, we want to notify
+        // listeners that we are now playing at the requested playhead
         } else {
             self.notifyDelegatesOfPlaybackFor(chapter: location)
         }
     }
 
     private func seekTo(chapter: ChapterLocation) {
-        // Seek operations are very cheap and move the playhead almost instantly.
-        // They can be performed repeatedly within a chapter without fail.
+        // If we are already at the offset we want to seek to, then don't
+        // make any request of AudioEngine
         if Int(self.currentOffset) != Int(chapter.playheadOffset) {
             FAEAudioEngine.shared()?.playbackEngine?.currentOffset = UInt(chapter.playheadOffset)
         }
+        // Regardless weather or not the maniupulation happened, we want to notify
+        // listeners that we are now playing at the requested offset
         DispatchQueue.main.async { [weak self] in
             self?.notifyDelegatesOfPlaybackFor(chapter: chapter)
         }
     }
+
     private func locationsPointToTheSameChapter(lhs: ChapterLocation?, rhs: ChapterLocation?) -> Bool {
         return lhs?.inSameChapter(other: rhs) ?? false
     }
