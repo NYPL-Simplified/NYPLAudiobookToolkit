@@ -100,7 +100,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
         self.networkService = networkService
         self.networkService.registerDelegate(self)
         self.player.registerDelegate(self)
-        try? AVAudioSession.sharedInstance().setActive(true)
         DispatchQueue.main.async {
             self.timer = Timer.scheduledTimer(
                 timeInterval: 1,
