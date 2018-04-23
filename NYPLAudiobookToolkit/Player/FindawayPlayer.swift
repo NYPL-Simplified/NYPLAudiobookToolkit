@@ -87,8 +87,13 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private var bookIsLoaded: Bool {
+        guard FAEAudioEngine.shared()?.playbackEngine?.playerStatus != FAEPlayerStatus.unloaded else {
+            return false
+        }
         let chapter = FAEAudioEngine.shared()?.playbackEngine?.currentLoadedChapter()
-        guard let loadedAudiobookID = chapter?.audiobookID else { return false }
+        guard let loadedAudiobookID = chapter?.audiobookID else {
+            return false
+        }
         return loadedAudiobookID == self.audiobookID
     }
 
@@ -271,10 +276,15 @@ final class FindawayPlayer: NSObject, Player {
             locationBeforeNavigation: locationBeforeNavigation,
             destinationLocation: destinationLocation
         )
-    
+        
+        // If the book is not loaded, then nothing else will work.
+        if !self.bookIsLoaded {
+            setAndQueueEngineManipulation { [weak self] in
+                self?.loadAndRequestPlayback(destinationLocation)
+            }
         // Resuming playback from the last point is practically free. We get notifications
         // when it succeeds so we do not have to update the delegates.
-        if isResumeDescription(destinationLocation) {
+        } else if isResumeDescription(destinationLocation) {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
         // Any other playhead manipulation is potentially expensive,
         // so instead of making the request immediately
