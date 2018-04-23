@@ -8,6 +8,7 @@
 
 import UIKit
 import NYPLAudiobookToolkit
+import AVKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,7 +19,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.audiobookLifecycleManager.didFinishLaunching()
         let rootVC = self.window?.rootViewController?.childViewControllers.first as? ViewController
         rootVC?.audiobokController = self.audiobookController
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(AppDelegate.handleAudioInterruption(_:)),
+                                               name: .AVAudioSessionInterruption,
+                                               object: AVAudioSession.sharedInstance()
+        )
         return true
+    }
+
+    @objc func handleAudioInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+            let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let type = AVAudioSessionInterruptionType(rawValue: typeValue) else {
+                return
+        }
+        switch type {
+        case .began:
+            // Audio has been interrupted, save our state and wait for how to proceed
+            self.audiobookController.savePlayhead()
+        case .ended:
+            // Interruption has ended, lets check if playback should resume
+            if let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt {
+                let options = AVAudioSessionInterruptionOptions(rawValue: optionsValue)
+                if options.contains(.shouldResume) {
+                    self.audiobookController.manager?.audiobook.player.play()
+                }
+            }
+        }
+
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -31,6 +60,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.audiobookLifecycleManager.didEnterBackground()
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        self.audiobookController.savePlayhead()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
