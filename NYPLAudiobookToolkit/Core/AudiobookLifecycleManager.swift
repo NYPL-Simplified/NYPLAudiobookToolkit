@@ -79,13 +79,6 @@ extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
         FAEAudioEngine.shared()?.didFinishLaunching()
         FAELogEngine.setLogLevel(.none)
-
-        try? AVAudioSession.sharedInstance().setCategory(
-            AVAudioSessionCategoryPlayback
-        )
-        try? AVAudioSession.sharedInstance().setMode(
-            AVAudioSessionModeDefault
-        )
     }
     
     public func didEnterBackground () {
