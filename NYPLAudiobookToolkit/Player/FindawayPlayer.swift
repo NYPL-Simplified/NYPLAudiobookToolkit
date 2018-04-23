@@ -245,7 +245,7 @@ final class FindawayPlayer: NSObject, Player {
         func seekOperation(locationBeforeNavigation: ChapterLocation?, destinationLocation: ChapterLocation) -> Bool {
             return self.bookIsLoaded && self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
         }
-        
+
         /// We queue the playhead move in order to rate limit the expensive
         /// move operation.
         func enqueueEngineManipulation() {
@@ -258,6 +258,9 @@ final class FindawayPlayer: NSObject, Player {
                 } else {
                     manipulationClosure()
                     self.queuedEngineManipulation = nil
+                    self.queuedLocationWaitingForPlayback = nil
+                    self.queuedPlayheadManipulation = nil
+                    self.resumePlaybackLocation = nil
                 }
             }
             
@@ -277,19 +280,14 @@ final class FindawayPlayer: NSObject, Player {
             destinationLocation: destinationLocation
         )
         
-        // If the book is not loaded, then nothing else will work.
-        if !self.bookIsLoaded {
-            setAndQueueEngineManipulation { [weak self] in
-                self?.loadAndRequestPlayback(destinationLocation)
-            }
         // Resuming playback from the last point is practically free. We get notifications
         // when it succeeds so we do not have to update the delegates.
-        } else if isResumeDescription(destinationLocation) {
+        if isResumeDescription(destinationLocation) && self.bookIsLoaded {
             FAEAudioEngine.shared()?.playbackEngine?.resume()
         // Any other playhead manipulation is potentially expensive,
         // so instead of making the request immediately
         // we queue it and trash the existing request if a new one comes in.
-        } else if isSeekOperation {
+        } else if isSeekOperation && self.bookIsLoaded {
             setAndQueueEngineManipulation { [weak self] in
                 self?.seekTo(chapter: destinationLocation)
             }
@@ -298,8 +296,6 @@ final class FindawayPlayer: NSObject, Player {
                 self?.loadAndRequestPlayback(destinationLocation)
             }
         }
-        self.queuedLocationWaitingForPlayback = nil
-        self.queuedPlayheadManipulation = nil
     }
 
     private func loadAndRequestPlayback(_ location: ChapterLocation) {
