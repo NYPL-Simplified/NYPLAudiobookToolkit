@@ -58,6 +58,17 @@ final class FindawayPlayer: NSObject, Player {
     // very expensive, so by performing fewer manipulations, we get
     // better performance and avoid crashes while in the background.
     private var queuedEngineManipulation: EngineManipulation?
+
+    // `shouldPauseWhenPlaybackResumes` handles a case in the
+    // FAEPlaybackEngine where `pause`es that happen while
+    // the book is not playing are ignored. So if we are
+    // loading the next chapter for playback and a consumer
+    // decides to pause, we will fail.
+    //
+    // This flag is used to show that we intend to pause
+    // and it ought be checked when playback initiated
+    // notifications come in from FAEPlaybackEngine.
+    private var shouldPauseWhenPlaybackResumes = false
     private var willBeReadyToPlayNewChapterAt: Date = Date()
     private var debounceBufferTime: TimeInterval = 0.2
 
@@ -201,7 +212,7 @@ final class FindawayPlayer: NSObject, Player {
             self.resumePlaybackLocation = self.currentChapterLocation
             FAEAudioEngine.shared()?.playbackEngine?.pause()
         } else {
-            FAEAudioEngine.shared()?.playbackEngine?.unload()
+            self.shouldPauseWhenPlaybackResumes = true
         }
     }
     
@@ -398,7 +409,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     }
 
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
-        func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription) {
+        func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription, shouldPause: Bool) {
             if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
                 let cursorPredicate = { (spineElement: SpineElement) -> Bool in
                     return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
@@ -406,6 +417,11 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 if let newCursor = self.cursor.cursor(at: cursorPredicate) {
                     self.cursor = newCursor
                 }
+            }
+
+            guard !shouldPause else {
+                self.performPause()
+                return
             }
 
             if let chapter = self.currentChapterLocation {
@@ -416,7 +432,8 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
         }
 
         self.queue.async {
-            handlePlaybackStartedFor(findawayChapter: findawayChapter)
+            handlePlaybackStartedFor(findawayChapter: findawayChapter, shouldPause: self.shouldPauseWhenPlaybackResumes)
+            self.shouldPauseWhenPlaybackResumes = false
         }
     }
 
