@@ -167,15 +167,15 @@ public final class AudiobookPlayerViewController: UIViewController {
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.audiobookManager.timerDelegate = nil
-        self.audiobookManager.downloadDelegate = nil
         self.audiobookManager.audiobook.player.removeDelegate(self)
+        self.audiobookManager.networkService.removeDelegate(self)
     }
     
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.audiobookManager.timerDelegate = self
-        self.audiobookManager.downloadDelegate = self
         self.audiobookManager.audiobook.player.registerDelegate(self)
+        self.audiobookManager.networkService.registerDelegate(self)
     }
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine
@@ -399,10 +399,11 @@ extension AudiobookPlayerViewController: PlayerDelegate {
     }
 }
 
-extension AudiobookPlayerViewController: AudiobookManagerDownloadDelegate {
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement) { }
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement) { }
-    public func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement) {
+extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {}
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {}
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         let errorLocalizedText = NSLocalizedString("Error!", bundle: Bundle.audiobookToolkit()!, value: "Error!", comment: "Error!")
         let alertController = UIAlertController(
             title: errorLocalizedText,
