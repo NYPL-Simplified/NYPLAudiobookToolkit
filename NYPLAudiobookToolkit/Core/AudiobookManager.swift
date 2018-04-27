@@ -25,15 +25,6 @@ import AVFoundation
     func audiobookManagerDidRequestRefresh()
 }
 
-/// Conform to this in order to get notifications about download
-/// updates from the manager.
-@objc public protocol AudiobookManagerDownloadDelegate {
-    func audiobookManager(_ audiobookManager: AudiobookManager, didUpdateDownloadPercentageFor spineElement: SpineElement)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didBecomeReadyForPlayback spineElement: SpineElement)
-    func audiobookManager(_ audiobookManager: AudiobookManager, didReceive error: NSError, for spineElement: SpineElement)
-}
-
-
 @objc public protocol AudiobookManagerTimerDelegate {
     func audiobookManager(_ audiobookManager: AudiobookManager, didUpdate timer: Timer?)
 }
@@ -45,31 +36,32 @@ import AVFoundation
 /// center / airplay.
 @objc public protocol AudiobookManager {
     weak var refreshDelegate: RefreshDelegate? { get set }
-    weak var downloadDelegate: AudiobookManagerDownloadDelegate? { get set }
     weak var timerDelegate: AudiobookManagerTimerDelegate? { get set }
+    
+    var networkService: AudiobookNetworkService { get}
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
+    
     var tableOfContents: AudiobookTableOfContents { get }
     var sleepTimer: SleepTimer { get }
+
     var timer: Timer? { get }
 }
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
 /// to be used by the AudibookDetailViewController to respond to UI events.
 public final class DefaultAudiobookManager: AudiobookManager {
-    public weak var downloadDelegate: AudiobookManagerDownloadDelegate?
     public weak var timerDelegate: AudiobookManagerTimerDelegate?
-    private(set) public var timer: Timer?
+    public weak var refreshDelegate: RefreshDelegate?
+    
+    public let networkService: AudiobookNetworkService
     public let metadata: AudiobookMetadata
     public let audiobook: Audiobook
-    public var isPlaying: Bool {
-        return self.player.isPlaying
-    }
-    
+
     public var tableOfContents: AudiobookTableOfContents {
         return AudiobookTableOfContents(
             networkService: self.networkService,
-            player: self.player
+            player: self.audiobook.player
         )
     }
 
@@ -79,18 +71,15 @@ public final class DefaultAudiobookManager: AudiobookManager {
     /// SleepTimer is thread safe, and will block until it can ensure only one
     /// object is messaging it at a time.
     public lazy var sleepTimer: SleepTimer = {
-        return SleepTimer(player: self.player)
+        return SleepTimer(player: self.audiobook.player)
     }()
-    
-    private let player: Player
-    private let networkService: AudiobookNetworkService
-    public init (metadata: AudiobookMetadata, audiobook: Audiobook,  player: Player, networkService: AudiobookNetworkService) {
+
+    private(set) public var timer: Timer?
+    public init (metadata: AudiobookMetadata, audiobook: Audiobook, networkService: AudiobookNetworkService) {
         self.metadata = metadata
         self.audiobook = audiobook
-        self.player = player
         self.networkService = networkService
-        self.networkService.registerDelegate(self)
-        self.player.registerDelegate(self)
+        self.audiobook.player.registerDelegate(self)
         DispatchQueue.main.async {
             self.timer = Timer.scheduledTimer(
                 timeInterval: 1,
@@ -106,14 +95,13 @@ public final class DefaultAudiobookManager: AudiobookManager {
         self.init(
             metadata: metadata,
             audiobook: audiobook,
-            player: audiobook.player,
             networkService: DefaultAudiobookNetworkService(spine: audiobook.spine)
         )
     }
 
     @objc func timerDidTick1Second(_ timer: Timer) {
         self.timerDelegate?.audiobookManager(self, didUpdate: timer)
-        if let chapter = self.player.currentChapterLocation {
+        if let chapter = self.audiobook.player.currentChapterLocation {
             var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
             if let title = chapter.title {
                 info[MPMediaItemPropertyTitle] = title
@@ -125,8 +113,6 @@ public final class DefaultAudiobookManager: AudiobookManager {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         }
     }
-
-    weak public var refreshDelegate: RefreshDelegate?
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {
@@ -139,39 +125,23 @@ extension DefaultAudiobookManager: PlayerDelegate {
         command.skipBackwardCommand.preferredIntervals = [15]
         
         command.togglePlayPauseCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            if self.player.isPlaying {
-                self.player.pause()
+            if self.audiobook.player.isPlaying {
+                self.audiobook.player.pause()
             } else {
-                self.player.play()
+                self.audiobook.player.play()
             }
             return .success
         }
         command.skipForwardCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            self.player.skipForward()
+            self.audiobook.player.skipForward()
             return .success
         }
         command.skipBackwardCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            self.player.skipBack()
+            self.audiobook.player.skipBack()
             return .success
         }
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
-}
-
-extension DefaultAudiobookManager: AudiobookNetworkServiceDelegate {
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
-        self.downloadDelegate?.audiobookManager(self, didReceive: error, for: spineElement)
-    }
-    
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
-        self.downloadDelegate?.audiobookManager(self, didBecomeReadyForPlayback: spineElement)
-    }
-    
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
-        self.downloadDelegate?.audiobookManager(self, didUpdateDownloadPercentageFor: spineElement)
-    }
-
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
 }
