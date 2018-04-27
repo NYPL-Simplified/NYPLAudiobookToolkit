@@ -11,27 +11,18 @@ import AudioEngine
 import MediaPlayer
 import AVFoundation
 
-/// If the AudiobookManager runs into an error while fetching
-/// values from the provided Audiobook, it may use this
-/// protocol to request a new Audiobook from the host app.
+/// If the AudiobookManager runs into an error that may
+/// be resolved by fetching a new audiobook manifest from
+/// the server, it will request the parent disposes
+/// of itself and instantiate a new manager with a new
+/// manifest
 @objc public protocol RefreshDelegate {
 
     /**
-     Will be called when the manager determines it needs a new audiobook.
-     
-     Example usage:
-     ```
-     func updateAudiobook(completion: (Audiobook?) -> Void) {
-     let audiobook = self.getAudiobook()
-     completion(audiobook)
-     }
-     ```
-     
-     - Parameters:
-        - completion: The block to be called when new audiobook has been obtained.
-        - audiobook: The new Audiobook, may be nil if fetch was unsuccessful
+     Will be called when the manager determines it has reached an error
+     that should be resolved by refreshing the AudiobookManager
      */
-    func updateAudiobook(completion: (_ audiobook: Audiobook?) -> Void)
+    func audiobookManagerDidRequestRefresh()
 }
 
 /// Conform to this in order to get notifications about download
