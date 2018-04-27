@@ -39,7 +39,7 @@ private func findawayKey(_ key: String) -> String {
             return OpenAccessAudiobook(JSON: JSON)
         }
 
-        var audiobook: Audiobook?
+        let audiobook: Audiobook?
         switch scheme {
         case "http://librarysimplified.org/terms/drm/scheme/FAE":
             audiobook = FindawayAudiobook(JSON: JSON)
