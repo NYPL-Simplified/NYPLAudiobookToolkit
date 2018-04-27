@@ -443,6 +443,11 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)
                 }
+                if self.resumePlaybackLocation == nil {
+                    self.queue.sync {
+                        self.resumePlaybackLocation = currentChapter
+                    }
+                }
             }
         }
     }

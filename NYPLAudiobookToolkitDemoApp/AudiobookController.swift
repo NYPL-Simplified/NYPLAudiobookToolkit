@@ -9,10 +9,6 @@
 import UIKit
 import NYPLAudiobookToolkit
 
-protocol PlayheadStore {
-    func savePlayhead()
-}
-
 class AudiobookController {
     var manager: AudiobookManager?
     func configurePlayhead() {
@@ -70,9 +66,7 @@ class AudiobookController {
         let fullURL = documentsURL.appendingPathComponent("\(audiobookID).playhead")
         return fullURL?.path
     }
-}
 
-extension AudiobookController: PlayheadStore {
     public func savePlayhead() {
         guard let chapter = self.manager?.audiobook.player.currentChapterLocation else {
             return

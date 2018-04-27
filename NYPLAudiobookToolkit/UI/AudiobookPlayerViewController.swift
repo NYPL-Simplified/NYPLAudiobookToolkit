@@ -28,6 +28,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     private let gradiant = CAGradientLayer()
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
@@ -75,8 +76,10 @@ public final class AudiobookPlayerViewController: UIViewController {
             target: self,
             action: #selector(AudiobookPlayerViewController.tocWasPressed)
         )
-        self.navigationItem.rightBarButtonItem = bbi
-    
+
+        self.activityIndicator.hidesWhenStopped = true
+        let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
+        self.navigationItem.rightBarButtonItems = [ bbi, indicatorBbi ]
         self.view.addSubview(self.chapterInfoStack)
         self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
         self.chapterInfoStack.autoPinEdge(.left, to: .left, of: self.view)
@@ -304,6 +307,12 @@ public final class AudiobookPlayerViewController: UIViewController {
                     barButtonItem.title = texts.title
                     barButtonItem.accessibilityLabel = texts.accessibilityLabel
                 }
+
+                if self.audiobookManager.audiobook.player.isPlaying {
+                    self.playbackControlView.showPauseButtonIfNeeded()
+                } else {
+                    self.playbackControlView.showPlayButtonIfNeeded()
+                }
             }
         }
     }
@@ -352,15 +361,13 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
         self.audiobookManager.audiobook.player.skipForward()
         self.updateUI()
     }
-    
-    // Pausing happens almost instantly so we ask the manager to pause and pause the seek bar at the same time. However playback can take time to start up and we need to wait to move the seek bar until we here playback has began from the manager. This is because playing could require downloading the track.
+
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.activityIndicator.startAnimating()
         if self.audiobookManager.audiobook.player.isPlaying {
             self.audiobookManager.audiobook.player.pause()
-            self.playbackControlView.showPlayButtonIfNeeded()
         } else {
             self.audiobookManager.audiobook.player.play()
-            self.playbackControlView.showPauseButtonIfNeeded()
         }
         self.updateUI()
     }
@@ -378,14 +385,17 @@ extension AudiobookPlayerViewController: PlayerDelegate {
     // to them and will hopefully be fixed.
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
+        self.activityIndicator.stopAnimating()
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
+        self.activityIndicator.stopAnimating()
     }
 
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         self.waitingForPlayer = false
+        self.activityIndicator.stopAnimating()
     }
 }
 
