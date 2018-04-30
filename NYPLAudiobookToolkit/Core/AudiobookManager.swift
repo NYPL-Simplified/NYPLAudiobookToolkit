@@ -95,6 +95,7 @@ public final class DefaultAudiobookManager: AudiobookManager {
             audiobook.player.skipBack()
             return .success
         })
+        self.audiobook.player.registerDelegate(self)
         DispatchQueue.main.async {
             self.timer = Timer.scheduledTimer(
                 timeInterval: 1,
@@ -106,7 +107,7 @@ public final class DefaultAudiobookManager: AudiobookManager {
         }
     }
 
-    public convenience init (metadata: AudiobookMetadata, audiobook: Audiobook) {
+    public convenience init(metadata: AudiobookMetadata, audiobook: Audiobook) {
         self.init(
             metadata: metadata,
             audiobook: audiobook,
@@ -130,7 +131,17 @@ public final class DefaultAudiobookManager: AudiobookManager {
     }
 }
 
+extension DefaultAudiobookManager: PlayerDelegate {
+    public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
+        self.mediaControlHandler.enableCommands()
+    }
+
+    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
+    public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
+}
+
 typealias RemoteEventHandler = (_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
+
 private class MediaControlHandler {
 
     private let togglePlaybackHandler: RemoteEventHandler
@@ -138,6 +149,14 @@ private class MediaControlHandler {
     private let skipBackHandler: RemoteEventHandler
     private var command: MPRemoteCommandCenter {
         return MPRemoteCommandCenter.shared()
+    }
+
+    func enableCommands() {
+        self.command.togglePlayPauseCommand.isEnabled = true
+        self.command.skipForwardCommand.isEnabled = true
+        self.command.skipBackwardCommand.isEnabled = true
+        self.command.skipForwardCommand.preferredIntervals = [15]
+        self.command.skipBackwardCommand.preferredIntervals = [15]
     }
     
     init(togglePlaybackHandler: @escaping RemoteEventHandler, skipForwardHandler: @escaping RemoteEventHandler, skipBackHandler: @escaping RemoteEventHandler) {
@@ -147,16 +166,11 @@ private class MediaControlHandler {
         self.command.togglePlayPauseCommand.addTarget(handler: self.togglePlaybackHandler)
         self.command.skipForwardCommand.addTarget(handler: self.skipForwardHandler)
         self.command.skipBackwardCommand.addTarget(handler: self.skipBackHandler)
-        self.command.skipForwardCommand.preferredIntervals = [15]
-        self.command.skipBackwardCommand.preferredIntervals = [15]
     }
 
+    // We ought to remove targets from the command center when this object is garbage collected
+    // so that handlers for multiple books are not called at the same time
     deinit {
-        self.command.togglePlayPauseCommand.isEnabled = false
-        self.command.skipForwardCommand.isEnabled = false
-        self.command.skipBackwardCommand.isEnabled = false
-        self.command.skipForwardCommand.preferredIntervals = []
-        self.command.skipBackwardCommand.preferredIntervals = []
         self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
         self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
         self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
