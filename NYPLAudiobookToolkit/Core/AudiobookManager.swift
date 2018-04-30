@@ -75,10 +75,26 @@ public final class DefaultAudiobookManager: AudiobookManager {
     }()
 
     private(set) public var timer: Timer?
+    private let mediaControlHandler: MediaControlHandler
     public init (metadata: AudiobookMetadata, audiobook: Audiobook, networkService: AudiobookNetworkService) {
         self.metadata = metadata
         self.audiobook = audiobook
         self.networkService = networkService
+        self.mediaControlHandler = MediaControlHandler(
+            togglePlaybackHandler: { (_) -> MPRemoteCommandHandlerStatus in
+                if audiobook.player.isPlaying {
+                    audiobook.player.pause()
+                } else {
+                    audiobook.player.play()
+                }
+                return .success
+        }, skipForwardHandler: { (_) -> MPRemoteCommandHandlerStatus in
+            audiobook.player.skipForward()
+            return .success
+        }, skipBackHandler: { (_) -> MPRemoteCommandHandlerStatus in
+            audiobook.player.skipBack()
+            return .success
+        })
         self.audiobook.player.registerDelegate(self)
         DispatchQueue.main.async {
             self.timer = Timer.scheduledTimer(
@@ -91,7 +107,7 @@ public final class DefaultAudiobookManager: AudiobookManager {
         }
     }
 
-    public convenience init (metadata: AudiobookMetadata, audiobook: Audiobook) {
+    public convenience init(metadata: AudiobookMetadata, audiobook: Audiobook) {
         self.init(
             metadata: metadata,
             audiobook: audiobook,
@@ -117,31 +133,46 @@ public final class DefaultAudiobookManager: AudiobookManager {
 
 extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        let command = MPRemoteCommandCenter.shared()
-        command.togglePlayPauseCommand.isEnabled = true
-        command.skipForwardCommand.isEnabled = true
-        command.skipBackwardCommand.isEnabled = true
-        command.skipForwardCommand.preferredIntervals = [15]
-        command.skipBackwardCommand.preferredIntervals = [15]
-        
-        command.togglePlayPauseCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            if self.audiobook.player.isPlaying {
-                self.audiobook.player.pause()
-            } else {
-                self.audiobook.player.play()
-            }
-            return .success
-        }
-        command.skipForwardCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            self.audiobook.player.skipForward()
-            return .success
-        }
-        command.skipBackwardCommand.addTarget { (event) -> MPRemoteCommandHandlerStatus in
-            self.audiobook.player.skipBack()
-            return .success
-        }
+        self.mediaControlHandler.enableCommands()
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
+}
+
+typealias RemoteEventHandler = (_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
+
+private class MediaControlHandler {
+
+    private let togglePlaybackHandler: RemoteEventHandler
+    private let skipForwardHandler: RemoteEventHandler
+    private let skipBackHandler: RemoteEventHandler
+    private var command: MPRemoteCommandCenter {
+        return MPRemoteCommandCenter.shared()
+    }
+
+    func enableCommands() {
+        self.command.togglePlayPauseCommand.isEnabled = true
+        self.command.skipForwardCommand.isEnabled = true
+        self.command.skipBackwardCommand.isEnabled = true
+        self.command.skipForwardCommand.preferredIntervals = [15]
+        self.command.skipBackwardCommand.preferredIntervals = [15]
+    }
+    
+    init(togglePlaybackHandler: @escaping RemoteEventHandler, skipForwardHandler: @escaping RemoteEventHandler, skipBackHandler: @escaping RemoteEventHandler) {
+        self.togglePlaybackHandler = togglePlaybackHandler
+        self.skipForwardHandler = skipForwardHandler
+        self.skipBackHandler = skipBackHandler
+        self.command.togglePlayPauseCommand.addTarget(handler: self.togglePlaybackHandler)
+        self.command.skipForwardCommand.addTarget(handler: self.skipForwardHandler)
+        self.command.skipBackwardCommand.addTarget(handler: self.skipBackHandler)
+    }
+
+    // We ought to remove targets from the command center when this object is garbage collected
+    // so that handlers for multiple books are not called at the same time
+    deinit {
+        self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
+        self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
+    }
 }
