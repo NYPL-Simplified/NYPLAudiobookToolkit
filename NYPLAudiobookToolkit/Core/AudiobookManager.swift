@@ -145,3 +145,4 @@ extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
 }
+
