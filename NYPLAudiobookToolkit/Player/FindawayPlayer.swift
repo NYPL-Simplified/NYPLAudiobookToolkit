@@ -183,15 +183,21 @@ final class FindawayPlayer: NSObject, Player {
     
     func movePlayheadToLocation(_ location: ChapterLocation) {
         self.queue.async { [weak self] in
-            self?.queuedPlayheadManipulation = self?.updateCursorAndCreateManipulation(location)
+            self?.performMoveToLocation(location)
         }
     }
 
     private func performSkip(_ time: Int) {
-        let newTime = Int(self.currentOffset) + time
-        let location = self.currentChapterLocation?.chapterWith(TimeInterval(newTime))
-        if let location = location {
-            self.performJumpToLocation(location)
+        let currentChapter = self.currentChapterLocation
+        let newTime = Int(currentChapter?.playheadOffset ?? 0) + time
+        let location = currentChapter?.chapterWith(TimeInterval(newTime))
+        guard let destination = location else {
+            return
+        }
+        if self.isPlaying {
+            self.performJumpToLocation(destination)
+        } else {
+            self.performMoveToLocation(destination)
         }
     }
     
@@ -227,6 +233,10 @@ final class FindawayPlayer: NSObject, Player {
         }
     }
     
+    private func performMoveToLocation(_ location: ChapterLocation) {
+        self.resumePlaybackLocation = nil
+        self.queuedPlayheadManipulation = self.updateCursorAndCreateManipulation(location)
+    }
     func updateCursorAndCreateManipulation(_ location: ChapterLocation) -> FindawayPlayheadManipulation? {
         let playheadBeforeManipulation = self.currentChapterLocation
         let playhead = move(cursor: self.cursor, to: location)
@@ -254,7 +264,9 @@ final class FindawayPlayer: NSObject, Player {
         }
 
         func seekOperation(locationBeforeNavigation: ChapterLocation?, destinationLocation: ChapterLocation) -> Bool {
-            return self.bookIsLoaded && self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
+            return self.bookIsLoaded &&
+                self.isPlaying &&
+                self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
         }
 
         /// We queue the playhead move in order to rate limit the expensive
@@ -298,7 +310,7 @@ final class FindawayPlayer: NSObject, Player {
         // Any other playhead manipulation is potentially expensive,
         // so instead of making the request immediately
         // we queue it and trash the existing request if a new one comes in.
-        } else if isSeekOperation && self.bookIsLoaded {
+        } else if isSeekOperation {
             setAndQueueEngineManipulation { [weak self] in
                 self?.seekTo(chapter: destinationLocation)
             }
