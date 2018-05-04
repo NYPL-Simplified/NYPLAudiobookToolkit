@@ -49,7 +49,7 @@ final class FindawayPlayer: NSObject, Player {
     
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     private var readyForPlayback: Bool = false
-    private var delayedPlayerState: PlayerState = .none
+    private var queuedPlayerState: PlayerState = .none
 
     // `queuedEngineManipulation` is a closure that will manipulate
     // `FAEPlaybackEngine`.
@@ -188,7 +188,7 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private func queuedPlayhead() -> ChapterLocation? {
-        switch self.delayedPlayerState {
+        switch self.queuedPlayerState {
         case .none:
             return nil
         case .paused(let location):
@@ -214,13 +214,13 @@ final class FindawayPlayer: NSObject, Player {
     }
     
     private func performPlay() {
-        switch self.delayedPlayerState {
+        switch self.queuedPlayerState {
         case .none:
             if let location = self.currentChapterLocation?.chapterWith(0) {
-                self.delayedPlayerState = .play((previous: nil, destination: location))
+                self.queuedPlayerState = .play((previous: nil, destination: location))
             }
         case .queued(let manipulation):
-            self.delayedPlayerState = .play(manipulation)
+            self.queuedPlayerState = .play(manipulation)
         default:
             break
         }
@@ -232,7 +232,7 @@ final class FindawayPlayer: NSObject, Player {
             return
         }
         if self.isPlaying {
-            self.delayedPlayerState = .paused(location)
+            self.queuedPlayerState = .paused(location)
             FAEAudioEngine.shared()?.playbackEngine?.pause()
         } else {
             self.shouldPauseWhenPlaybackResumes = true
@@ -241,15 +241,15 @@ final class FindawayPlayer: NSObject, Player {
     
     private func performJumpToLocation(_ location: ChapterLocation) {
         if self.readyForPlayback {
-            self.delayedPlayerState = .play(self.updateCursorAndCreateManipulation(location))
+            self.queuedPlayerState = .play(self.updateCursorAndCreateManipulation(location))
             self.playWithCurrentState()
         } else {
-            self.delayedPlayerState = .play((previous: nil, destination: location))
+            self.queuedPlayerState = .play((previous: nil, destination: location))
         }
     }
     
     private func performMoveToLocation(_ location: ChapterLocation) {
-        self.delayedPlayerState = .queued(self.updateCursorAndCreateManipulation(location))
+        self.queuedPlayerState = .queued(self.updateCursorAndCreateManipulation(location))
     }
 
     func updateCursorAndCreateManipulation(_ location: ChapterLocation) -> FindawayPlayheadManipulation {
@@ -289,7 +289,7 @@ final class FindawayPlayer: NSObject, Player {
                 } else {
                     manipulationClosure()
                     self.queuedEngineManipulation = nil
-                    self.delayedPlayerState = .none
+                    self.queuedPlayerState = .none
                 }
             }
             
@@ -304,7 +304,7 @@ final class FindawayPlayer: NSObject, Player {
             enqueueEngineManipulation()
         }
 
-        switch self.delayedPlayerState {
+        switch self.queuedPlayerState {
         case .none:
             break
         case .queued(_, _):
@@ -462,9 +462,9 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 }
 
                 self.queue.sync {
-                    switch self.delayedPlayerState {
+                    switch self.queuedPlayerState {
                     case .none:
-                        self.delayedPlayerState = .paused(currentChapter)
+                        self.queuedPlayerState = .paused(currentChapter)
                     default:
                         break
                     }
