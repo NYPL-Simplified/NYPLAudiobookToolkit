@@ -12,11 +12,27 @@ import AudioEngine
 typealias EngineManipulation = () -> Void
 typealias FindawayPlayheadManipulation = (previous: ChapterLocation?, destination:ChapterLocation)
 
+
+/// `PlayerState`s help determine which methods to call
+/// on the `FAEPlaybackEngine`. `PlayerState`s are set
+/// by the public `play`/`skip`/`pause` methods defined
+/// in the player interface. 
+///
+/// The only method that ought to play or seek in a chapter
+/// is `playWithCurrentState`, and it will check for the current
+/// action and determine the way to handle its playback.
+enum PlayerState {
+    case none
+    case queued(FindawayPlayheadManipulation)
+    case play(FindawayPlayheadManipulation)
+    case paused(ChapterLocation)
+}
+
 final class FindawayPlayer: NSObject, Player {
     public var currentChapterLocation: ChapterLocation? {
         let chapter: ChapterLocation?
-        if !self.isPlaying && self.queuedPlayheadManipulation != nil {
-            chapter = self.queuedPlayheadManipulation?.destination
+        if let queuedChapter = self.queuedPlayhead() {
+            chapter = queuedChapter
         } else {
             chapter = ChapterLocation(
                 number: self.chapterAtCursor.number,
@@ -30,26 +46,10 @@ final class FindawayPlayer: NSObject, Player {
         }
         return chapter
     }
-
+    
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     private var readyForPlayback: Bool = false
-    private var resumePlaybackLocation: ChapterLocation?
-
-    // `queuedPlayheadManipulation` is for a manipulation that has been
-    // made to the cursor but has not been passed onto the AudioEngine.playbackEngine yet.
-    //
-    // The main reason we use this is to allow us to perform playhead manipulations
-    // without actually initiating playback. This is useful for state restoration.
-    private var queuedPlayheadManipulation: FindawayPlayheadManipulation?
-
-    // `queuedLocationWaitingForPlayback` is for the location that has been
-    // requested for playback but for some reason is not able to be played
-    // at this moment.
-    //
-    // The reason to queue a chapter instead of trying to play it
-    // immediately is that the AudioEngine SDK is still initializing
-    // so playback can't be started.
-    private var queuedLocationWaitingForPlayback: ChapterLocation?
+    private var queuedPlayerState: PlayerState = .none
 
     // `queuedEngineManipulation` is a closure that will manipulate
     // `FAEPlaybackEngine`.
@@ -69,8 +69,8 @@ final class FindawayPlayer: NSObject, Player {
     // and it ought be checked when playback initiated
     // notifications come in from FAEPlaybackEngine.
     private var shouldPauseWhenPlaybackResumes = false
-    private var willBeReadyToPlayNewChapterAt: Date = Date()
-    private var debounceBufferTime: TimeInterval = 0.2
+    private var willBeReadyToPerformPlayheadManipulation: Date = Date()
+    private var debounceBufferTime: TimeInterval = 0.075
 
     private var sessionKey: String {
         return self.spineElement.sessionKey
@@ -187,6 +187,16 @@ final class FindawayPlayer: NSObject, Player {
         }
     }
 
+    private func queuedPlayhead() -> ChapterLocation? {
+        switch self.queuedPlayerState {
+        case .none:
+            return nil
+        case .paused(let location),
+            .queued(_, let location),
+            .play(_, let location):
+            return location
+        }
+    }
     private func performSkip(_ time: Int) {
         let currentChapter = self.currentChapterLocation
         let newTime = Int(currentChapter?.playheadOffset ?? 0) + time
@@ -202,20 +212,25 @@ final class FindawayPlayer: NSObject, Player {
     }
     
     private func performPlay() {
-        if let resumeLocation = self.resumePlaybackLocation {
-            self.performJumpToLocation(resumeLocation)
-        } else {
-            if let manipulation = self.queuedPlayheadManipulation {
-                self.movePlayhead(from: manipulation.previous, to: manipulation.destination)
-            } else if let location = self.currentChapterLocation?.chapterWith(0) {
-                self.performJumpToLocation(location)
+        switch self.queuedPlayerState {
+        case .none:
+            if let location = self.currentChapterLocation?.chapterWith(0) {
+                self.queuedPlayerState = .play((previous: nil, destination: location))
             }
+        case .queued(let manipulation):
+            self.queuedPlayerState = .play(manipulation)
+        default:
+            break
         }
+        self.playWithCurrentState()
     }
     
     private func performPause() {
+        guard let location = self.currentChapterLocation else {
+            return
+        }
         if self.isPlaying {
-            self.resumePlaybackLocation = self.currentChapterLocation
+            self.queuedPlayerState = .paused(location)
             FAEAudioEngine.shared()?.playbackEngine?.pause()
         } else {
             self.shouldPauseWhenPlaybackResumes = true
@@ -224,20 +239,18 @@ final class FindawayPlayer: NSObject, Player {
     
     private func performJumpToLocation(_ location: ChapterLocation) {
         if self.readyForPlayback {
-            self.queuedPlayheadManipulation = self.updateCursorAndCreateManipulation(location)
-            if let manipulation = self.queuedPlayheadManipulation {
-                self.movePlayhead(from: manipulation.previous, to: manipulation.destination)
-            }
+            self.queuedPlayerState = .play(self.updateCursorAndCreateManipulation(location))
+            self.playWithCurrentState()
         } else {
-            self.queuedLocationWaitingForPlayback = location
+            self.queuedPlayerState = .play((previous: nil, destination: location))
         }
     }
     
     private func performMoveToLocation(_ location: ChapterLocation) {
-        self.resumePlaybackLocation = nil
-        self.queuedPlayheadManipulation = self.updateCursorAndCreateManipulation(location)
+        self.queuedPlayerState = .queued(self.updateCursorAndCreateManipulation(location))
     }
-    func updateCursorAndCreateManipulation(_ location: ChapterLocation) -> FindawayPlayheadManipulation? {
+
+    func updateCursorAndCreateManipulation(_ location: ChapterLocation) -> FindawayPlayheadManipulation {
         let playheadBeforeManipulation = self.currentChapterLocation
         let playhead = move(cursor: self.cursor, to: location)
         self.cursor = playhead.cursor
@@ -255,15 +268,8 @@ final class FindawayPlayer: NSObject, Player {
     ///
     /// If moving the playhead stays in the same file, then the update is instant and we are still
     /// ready to get a new request.
-    private func movePlayhead(from locationBeforeNavigation: ChapterLocation?, to destinationLocation: ChapterLocation) {
-        func isResumeDescription(_ chapter: ChapterLocation) -> Bool {
-            guard let resumeDescription = self.resumePlaybackLocation else {
-                return false
-            }
-            return resumeDescription === chapter
-        }
-
-        func seekOperation(locationBeforeNavigation: ChapterLocation?, destinationLocation: ChapterLocation) -> Bool {
+    private func playWithCurrentState() {
+        func seekOperation(_ locationBeforeNavigation: ChapterLocation?, _ destinationLocation: ChapterLocation) -> Bool {
             return self.bookIsLoaded &&
                 self.isPlaying &&
                 self.locationsPointToTheSameChapter(lhs: destinationLocation, rhs: locationBeforeNavigation)
@@ -276,14 +282,12 @@ final class FindawayPlayer: NSObject, Player {
                 guard let manipulationClosure = self.queuedEngineManipulation else {
                     return
                 }
-                if Date() < self.willBeReadyToPlayNewChapterAt {
+                if Date() < self.willBeReadyToPerformPlayheadManipulation {
                     enqueueEngineManipulation()
                 } else {
                     manipulationClosure()
                     self.queuedEngineManipulation = nil
-                    self.queuedLocationWaitingForPlayback = nil
-                    self.queuedPlayheadManipulation = nil
-                    self.resumePlaybackLocation = nil
+                    self.queuedPlayerState = .none
                 }
             }
             
@@ -293,30 +297,31 @@ final class FindawayPlayer: NSObject, Player {
         }
 
         func setAndQueueEngineManipulation(manipulationClosure: @escaping EngineManipulation) {
-            self.willBeReadyToPlayNewChapterAt = Date().addingTimeInterval(self.debounceBufferTime)
+            self.willBeReadyToPerformPlayheadManipulation = Date().addingTimeInterval(self.debounceBufferTime)
             self.queuedEngineManipulation = manipulationClosure
             enqueueEngineManipulation()
         }
 
-        let isSeekOperation = seekOperation(
-            locationBeforeNavigation: locationBeforeNavigation,
-            destinationLocation: destinationLocation
-        )
-        
-        // Resuming playback from the last point is practically free. We get notifications
-        // when it succeeds so we do not have to update the delegates.
-        if isResumeDescription(destinationLocation) && self.bookIsLoaded {
-            FAEAudioEngine.shared()?.playbackEngine?.resume()
-        // Any other playhead manipulation is potentially expensive,
-        // so instead of making the request immediately
-        // we queue it and trash the existing request if a new one comes in.
-        } else if isSeekOperation {
+        switch self.queuedPlayerState {
+        case .none:
+            break
+        case .queued(_, _):
+            break
+        case .paused(let location) where !self.bookIsLoaded:
             setAndQueueEngineManipulation { [weak self] in
-                self?.seekTo(chapter: destinationLocation)
+                self?.loadAndRequestPlayback(location)
             }
-        } else {
+        case .paused:
+            setAndQueueEngineManipulation {
+                FAEAudioEngine.shared()?.playbackEngine?.resume()
+            }
+        case .play(let previous, let destination) where seekOperation(previous, destination):
             setAndQueueEngineManipulation { [weak self] in
-                self?.loadAndRequestPlayback(destinationLocation)
+                self?.seekTo(chapter: destination)
+            }
+        case .play(_, let destination):
+            setAndQueueEngineManipulation { [weak self] in
+                self?.loadAndRequestPlayback(destination)
             }
         }
     }
@@ -394,9 +399,7 @@ extension FindawayPlayer: AudiobookLifecycleManagerDelegate {
     func audiobookLifecycleManagerDidUpdate(_ audiobookLifecycleManager: AudiobookLifeCycleManager) {
         func handleLifecycleManagerUpdate(hasBeenVerified: Bool) {
             self.readyForPlayback = hasBeenVerified
-            if let location = self.queuedLocationWaitingForPlayback {
-                self.playAtLocation(location)
-            }
+            self.playWithCurrentState()
         }
 
         self.queue.async {
@@ -455,9 +458,13 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)
                 }
-                if self.resumePlaybackLocation == nil {
-                    self.queue.sync {
-                        self.resumePlaybackLocation = currentChapter
+
+                self.queue.sync {
+                    switch self.queuedPlayerState {
+                    case .none:
+                        self.queuedPlayerState = .paused(currentChapter)
+                    default:
+                        break
                     }
                 }
             }

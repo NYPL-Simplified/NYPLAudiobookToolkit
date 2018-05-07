@@ -233,7 +233,7 @@ public final class AudiobookPlayerViewController: UIViewController {
             buttonItem.accessibilityLabel = self.playbackSpeedTextFor(speedText: playbackSpeedText)
         }
     }
-    
+
     @objc public func sleepTimerWasPressed(_ sender: Any) {
         func actionFrom(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
