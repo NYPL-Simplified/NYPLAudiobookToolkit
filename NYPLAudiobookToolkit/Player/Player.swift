@@ -205,9 +205,17 @@ private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: Cha
     // there is a next chapter for us to play.
     let newCursor: Cursor<SpineElement>
     if let nextCursor = cursor.next() {
-        possibleDestinationLocation = chapterAt(cursor: nextCursor).chapterWith(
-            timeIntoNextChapter
-        )
+        let newChapter = chapterAt(cursor: nextCursor)
+        // If the new chapter is too short to skip to the current point,
+        // we go to the start of that chapter.
+        if newChapter.duration > timeIntoNextChapter {
+            possibleDestinationLocation = newChapter.chapterWith(
+                timeIntoNextChapter
+            )
+        } else {
+            possibleDestinationLocation = newChapter
+        }
+
         newCursor = nextCursor
     } else {
         // If there is no next chapter, then we are at the end of the book
@@ -229,7 +237,7 @@ private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: Chapte
     let newCursor: Cursor<SpineElement>
     if let prevCursor = cursor.prev() {
         newCursor = prevCursor
-        let durationOfChapter =  chapterAt(cursor: cursor).duration
+        let durationOfChapter = chapterAt(cursor: cursor).duration
         let playheadOffset = durationOfChapter - timeIntoPreviousChapter
         possibleDestinationLocation = chapterAt(cursor: prevCursor).chapterWith(max(0, playheadOffset))
     } else {

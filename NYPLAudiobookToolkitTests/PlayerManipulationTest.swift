@@ -30,11 +30,6 @@ class PlayerManipulationTest: XCTestCase {
         // we seek 5 seconds into the second chapter from the first
         let destination = chapter1.chapterWith(duration + 5)!
         let playhead = move(cursor: cursor, to: destination)
-        let newDestinationIsNoLongerInChapter1 = playhead.location.inSameChapter(other: chapter1)
-        XCTAssertFalse(
-            newDestinationIsNoLongerInChapter1,
-            "Attempted to move playhead into next chapter, but playhead is still in current chapter"
-        )
 
         let newDestinationIsInChapter2 = playhead.location.inSameChapter(other: chapter2)
         XCTAssertTrue(
@@ -53,16 +48,53 @@ class PlayerManipulationTest: XCTestCase {
         // we seek 5 seconds into the first chapter from the second
         let destination = chapter2.chapterWith(-5)!
         let playhead = move(cursor: cursor, to: destination)
-        let newDestinationIsNoLongerInPreviousChapter = playhead.location.inSameChapter(other: chapter2)
-        XCTAssertFalse(
-            newDestinationIsNoLongerInPreviousChapter,
-            "Attempted to move playhead into next chapter, but playhead is still in current chapter"
-        )
         
         let newDestinationIsInNewChapter = playhead.location.inSameChapter(other: chapter1)
         XCTAssertTrue(
             newDestinationIsInNewChapter,
             "Attempted to move playhead into next chapter, but playhead was not found in the next chapter"
+        )
+    }
+
+    func testSeekToStartOfNextChapter() {
+        let duration = TimeInterval(10)
+        let spine = self.mockSpine(numberOfChapters: 3, duration: duration)
+        let cursor = Cursor<SpineElement>(data: spine)!
+        let chapter2 = spine[1].chapter
+
+        // Seek to a point that does not exist in chapter 2
+        let destination = chapter2.chapterWith(100)!
+        let playhead = move(cursor: cursor, to: destination)
+
+        let newDestinationIsInNextChapter = playhead.location.inSameChapter(other: chapter2)
+        XCTAssertTrue(
+            newDestinationIsInNextChapter,
+            "Attempted to move playhead into next chapter, but playhead was not found in the next chapter"
+        )
+        XCTAssertTrue(
+            playhead.location.playheadOffset == 0,
+            "Attempted to move playhead to start of next chapter, but playhead was not at 0"
+        )
+    }
+
+    func testSeekToStartOfPrevChapter() {
+        let duration = TimeInterval(10)
+        let spine = self.mockSpine(numberOfChapters: 3, duration: duration)
+        let cursor = Cursor<SpineElement>(data: spine, index: 1)!
+        let chapter1 = spine[0].chapter
+
+        // Seek to a point that does not exist in chapter 1
+        let destination = chapter1.chapterWith(-100)!
+        let playhead = move(cursor: cursor, to: destination)
+
+        let newDestinationIsInPrevChapter = playhead.location.inSameChapter(other: chapter1)
+        XCTAssertTrue(
+            newDestinationIsInPrevChapter,
+            "Attempted to move playhead into next chapter, but playhead was not found in the next chapter"
+        )
+        XCTAssertTrue(
+            playhead.location.playheadOffset == 0,
+            "Attempted to move playhead to start of next chapter, but playhead was not at 0"
         )
     }
 
