@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class Cursor<T> {
+final public class Cursor<T> {
     var currentElement: T {
         return self.data[self.index]
     }

@@ -143,7 +143,7 @@ import Foundation
     }
 }
 
-typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
+public typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
 
 /// Utility function for manipulating the playhead.
 ///
@@ -171,7 +171,7 @@ typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
 ///   - cursor: The `Cursor` representing the spine for that book.
 /// - Returns:
 ///  The `Playhead` where the location represents the chapter the playhead is located in, and a cursor that points to that chapter.
-func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
+public func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
     let newPlayhead: Playhead
     // Check to see if our playback location is in the next chapter
     if let nextPlayhead = attemptToMove(cursor: cursor, forwardTo: destination) {
