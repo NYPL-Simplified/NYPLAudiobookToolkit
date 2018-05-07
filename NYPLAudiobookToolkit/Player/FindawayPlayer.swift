@@ -327,25 +327,14 @@ final class FindawayPlayer: NSObject, Player {
     }
 
     private func loadAndRequestPlayback(_ location: ChapterLocation) {
-        let isCurrentlyPlayingThisChapter = self.isPlaying &&
-            self.currentChapterIsAt(part: location.part, number: location.number, audiobookID: location.audiobookID)
-        // If we are already playing this chapter, we do not want to load this chapter again.
-        // If we are moving within the current chapter, we should use the `seekTo(chapter:)` method
-        // instead of `loadAndRequestPlayback.
-        if !isCurrentlyPlayingThisChapter {
-            FAEAudioEngine.shared()?.playbackEngine?.play(
-                forAudiobookID: self.audiobookID,
-                partNumber: location.part,
-                chapterNumber: location.number,
-                offset: UInt(location.playheadOffset),
-                sessionKey: self.sessionKey,
-                licenseID: self.licenseID
-            )
-        // Regardless weather or not the maniupulation happened, we want to notify
-        // listeners that we are now playing at the requested playhead
-        } else {
-            self.notifyDelegatesOfPlaybackFor(chapter: location)
-        }
+        FAEAudioEngine.shared()?.playbackEngine?.play(
+            forAudiobookID: self.audiobookID,
+            partNumber: location.part,
+            chapterNumber: location.number,
+            offset: UInt(location.playheadOffset),
+            sessionKey: self.sessionKey,
+            licenseID: self.licenseID
+        )
     }
 
     private func seekTo(chapter: ChapterLocation) {
@@ -365,7 +354,7 @@ final class FindawayPlayer: NSObject, Player {
         return lhs?.inSameChapter(other: rhs) ?? false
     }
 
-    private func currentChapterIsAt(part: UInt, number: UInt, audiobookID: String) -> Bool {
+    private func cursorChapterIsAt(part: UInt, number: UInt, audiobookID: String) -> Bool {
         guard let chapter = self.currentChapterLocation else { return false }
         return chapter.audiobookID == audiobookID &&
             chapter.part == part &&
@@ -425,7 +414,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
 
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
         func handlePlaybackStartedFor(findawayChapter: FAEChapterDescription, shouldPause: Bool) {
-            if !self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
+            if !self.cursorChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
                 let cursorPredicate = { (spineElement: SpineElement) -> Bool in
                     return spineElement.chapter.number == findawayChapter.chapterNumber && spineElement.chapter.part == findawayChapter.partNumber
                 }
@@ -453,7 +442,7 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
     }
 
     func audioEnginePlaybackPaused(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
-        if self.currentChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
+        if self.cursorChapterIsAt(part: findawayChapter.partNumber, number: findawayChapter.chapterNumber, audiobookID: findawayChapter.audiobookID) {
             if let currentChapter = self.currentChapterLocation {
                 DispatchQueue.main.async { [weak self] () -> Void in
                     self?.notifyDelegatesOfPauseFor(chapter: currentChapter)
