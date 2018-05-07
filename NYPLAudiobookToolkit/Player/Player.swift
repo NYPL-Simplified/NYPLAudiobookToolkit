@@ -15,7 +15,7 @@ import Foundation
     case oneAndAHalfTime = 150
     case doubleTime = 200
     
-    static func convert(rate: PlaybackRate) -> Float {
+    public static func convert(rate: PlaybackRate) -> Float {
         return Float(rate.rawValue) * 0.01
     }
 }
@@ -127,7 +127,7 @@ import Foundation
         
     }
 
-    func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
+    public func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
             part: self.part,
