@@ -408,8 +408,9 @@ extension FindawayPlayer: FindawayPlaybackNotificationHandlerDelegate {
         guard let chapterAtEnd = chapterLocation?.chapterWith(duration) else {
             return
         }
-
-        self.notifyDelegatesOfPlaybackEndFor(chapter: chapterAtEnd)
+        DispatchQueue.main.async { [weak self] in
+            self?.notifyDelegatesOfPlaybackEndFor(chapter: chapterAtEnd)
+        }
     }
 
     func audioEnginePlaybackStarted(_ notificationHandler: FindawayPlaybackNotificationHandler, for findawayChapter: FAEChapterDescription) {
