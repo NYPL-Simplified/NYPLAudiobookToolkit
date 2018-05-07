@@ -191,11 +191,9 @@ final class FindawayPlayer: NSObject, Player {
         switch self.queuedPlayerState {
         case .none:
             return nil
-        case .paused(let location):
-            return location
-        case .queued(_, let location):
-            return location
-        case .play(_, let location):
+        case .paused(let location),
+            .queued(_, let location),
+            .play(_, let location):
             return location
         }
     }
