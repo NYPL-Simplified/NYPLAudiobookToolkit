@@ -42,12 +42,12 @@
 		7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */; };
 		7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */; };
 		7B87DCC9208A48E300256331 /* AudiobookController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC8208A48E300256331 /* AudiobookController.swift */; };
+		7BA55A2C20A22DB700712CAC /* NYPLAEToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A2B20A22DAF00712CAC /* NYPLAEToolkit.framework */; };
+		7BA55A2D20A22DB700712CAC /* NYPLAEToolkit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A2B20A22DAF00712CAC /* NYPLAEToolkit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BAFF98A201256F100DCA92A /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441F0200EAAA20047B6C6 /* PureLayout.framework */; };
 		7BAFF98B201256F100DCA92A /* PureLayout.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441F0200EAAA20047B6C6 /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BAFF98C20125D1900DCA92A /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; };
 		7BAFF98D20125D1900DCA92A /* AudioEngine.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B5441E9200EA8740047B6C6 /* AudioEngine.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		7BB4E7FB20A0E8CF002E1360 /* NYPLAEToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BB4E7F620A0E896002E1360 /* NYPLAEToolkit.framework */; };
-		7BB4E7FC20A0E8CF002E1360 /* NYPLAEToolkit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7BB4E7F620A0E896002E1360 /* NYPLAEToolkit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFB20506FF600700731 /* SleepTimer.swift */; };
 		7BBF4DFE2050850A00700731 /* SleepTimerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */; };
 		7BBF4E002050856400700731 /* PlayerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFF2050856400700731 /* PlayerMock.swift */; };
@@ -117,7 +117,7 @@
 			files = (
 				7BAFF98B201256F100DCA92A /* PureLayout.framework in Embed Frameworks */,
 				7B5441EE200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Embed Frameworks */,
-				7BB4E7FC20A0E8CF002E1360 /* NYPLAEToolkit.framework in Embed Frameworks */,
+				7BA55A2D20A22DB700712CAC /* NYPLAEToolkit.framework in Embed Frameworks */,
 				7BAFF98D20125D1900DCA92A /* AudioEngine.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -168,7 +168,7 @@
 		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManipulationTest.swift; sourceTree = "<group>"; };
 		7B87DCC8208A48E300256331 /* AudiobookController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookController.swift; sourceTree = "<group>"; };
-		7BB4E7F620A0E896002E1360 /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
+		7BA55A2B20A22DAF00712CAC /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
 		7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerTests.swift; sourceTree = "<group>"; };
 		7BBF4DFF2050856400700731 /* PlayerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerMock.swift; sourceTree = "<group>"; };
@@ -212,7 +212,7 @@
 			files = (
 				7BAFF98A201256F100DCA92A /* PureLayout.framework in Frameworks */,
 				7B5441ED200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */,
-				7BB4E7FB20A0E8CF002E1360 /* NYPLAEToolkit.framework in Frameworks */,
+				7BA55A2C20A22DB700712CAC /* NYPLAEToolkit.framework in Frameworks */,
 				7BAFF98C20125D1900DCA92A /* AudioEngine.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -340,7 +340,7 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				7BB4E7F620A0E896002E1360 /* NYPLAEToolkit.framework */,
+				7BA55A2B20A22DAF00712CAC /* NYPLAEToolkit.framework */,
 				7BD759CB20191980004CE65F /* CoreData.framework */,
 				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
 				7B5441F0200EAAA20047B6C6 /* PureLayout.framework */,
