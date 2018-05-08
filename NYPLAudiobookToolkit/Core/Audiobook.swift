@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AudioEngine
 
 @objc public protocol SpineElement: class {
     var key: String { get }

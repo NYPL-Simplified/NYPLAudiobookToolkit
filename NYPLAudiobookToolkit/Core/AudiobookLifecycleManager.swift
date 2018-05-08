@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import AudioEngine
+//import AudioEngine
 import AVFoundation
 
 /// Delegate to be notified when the state of the lifecycle manager has changed
@@ -47,12 +47,12 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
     private var _audioEngineDatabaseHasBeenVerified = false
     private override init() {
         super.init()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDatabaseVerificationStatusHasBeenUpdated(_:)),
-            name: NSNotification.Name.FAEDatabaseVerificationComplete,
-            object: nil
-        )
+//        NotificationCenter.default.addObserver(
+//            self,
+//            selector: #selector(DefaultAudiobookLifecycleManager.audioEngineDatabaseVerificationStatusHasBeenUpdated(_:)),
+//            name: NSNotification.Name.FAEDatabaseVerificationComplete,
+//            object: nil
+//        )
     }
     
     deinit {
@@ -77,22 +77,22 @@ public class DefaultAudiobookLifecycleManager: NSObject, AudiobookLifeCycleManag
 
 extension DefaultAudiobookLifecycleManager {
     public func didFinishLaunching () {
-        FAEAudioEngine.shared()?.didFinishLaunching()
-        FAELogEngine.setLogLevel(.none)
+//        FAEAudioEngine.shared()?.didFinishLaunching()
+//        FAELogEngine.setLogLevel(.none)
     }
     
     public func didEnterBackground () {
-        FAEAudioEngine.shared()?.didEnterBackground()
+//        FAEAudioEngine.shared()?.didEnterBackground()
     }
     
     public func willTerminate () {
-        FAEAudioEngine.shared()?.willTerminate()
+//        FAEAudioEngine.shared()?.willTerminate()
     }
     
     public func handleEventsForBackgroundURLSession(for identifier: String, completionHandler: @escaping () -> Void) {
         if identifier.contains("FWAE") {
-            FAEAudioEngine.shared()?.didFinishLaunching()
-            FAEAudioEngine.shared()?.downloadEngine?.addCompletionHandler(completionHandler, forSession: identifier)
+//            FAEAudioEngine.shared()?.didFinishLaunching()
+//            FAEAudioEngine.shared()?.downloadEngine?.addCompletionHandler(completionHandler, forSession: identifier)
         }
     }
 }
