@@ -38,8 +38,8 @@ import AudioEngine
         let audiobook: Audiobook?
         switch scheme {
         case "http://librarysimplified.org/terms/drm/scheme/FAE":
-//            audiobook = FindawayAudiobook(JSON: JSON)
-            audiobook = nil
+            let FindawayAudiobookClass = NSClassFromString("NYPLAEToolkit.FindawayAudiobook") as? Audiobook.Type
+            audiobook = FindawayAudiobookClass?.init(JSON: JSON)
         default:
             audiobook = OpenAccessAudiobook(JSON: JSON)
         }
