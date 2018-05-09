@@ -237,9 +237,9 @@ private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: Chapte
     let newCursor: Cursor<SpineElement>
     if let prevCursor = cursor.prev() {
         newCursor = prevCursor
-        let durationOfChapter = chapterAt(cursor: cursor).duration
-        let playheadOffset = durationOfChapter - timeIntoPreviousChapter
-        possibleDestinationLocation = chapterAt(cursor: prevCursor).chapterWith(max(0, playheadOffset))
+        let destinationChapter = chapterAt(cursor: newCursor)
+        let playheadOffset = destinationChapter.duration - timeIntoPreviousChapter
+        possibleDestinationLocation = destinationChapter.chapterWith(max(0, playheadOffset))
     } else {
         // If there is no previous chapter, we are at the start of the book
         // and skip to the beginning.
