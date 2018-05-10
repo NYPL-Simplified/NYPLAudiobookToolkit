@@ -1,1 +1,2 @@
 github "PureLayout/PureLayout" == 3.0.2
+binary "AudioEngine.json" ~> 6.1.13

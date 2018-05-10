@@ -27,3 +27,6 @@ DerivedData/
 AudioEngine/
 Carthage/
 NYPLAEToolkit.framework/
+
+# Binary spec for Carthage
+AudioEngine.json

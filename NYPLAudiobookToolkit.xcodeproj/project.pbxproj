@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B159A7E20A3870100BA5740 /* NYPLAEToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B159A7D20A386F900BA5740 /* NYPLAEToolkit.framework */; };
+		7B159A7F20A3870100BA5740 /* NYPLAEToolkit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B159A7D20A386F900BA5740 /* NYPLAEToolkit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7B159A8120A38A3E00BA5740 /* AudioEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B159A8020A38A3900BA5740 /* AudioEngine.framework */; };
+		7B159A8220A38A3E00BA5740 /* AudioEngine.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B159A8020A38A3900BA5740 /* AudioEngine.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
 		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
@@ -40,8 +44,6 @@
 		7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */; };
 		7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */; };
 		7B87DCC9208A48E300256331 /* AudiobookController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC8208A48E300256331 /* AudiobookController.swift */; };
-		7BA55A3420A3488F00712CAC /* NYPLAEToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */; };
-		7BA55A3520A3488F00712CAC /* NYPLAEToolkit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BA55A3720A34DC200712CAC /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; };
 		7BA55A3820A34DCA00712CAC /* PureLayout.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BA55A3920A34DDC00712CAC /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; };
@@ -114,8 +116,9 @@
 			dstSubfolderSpec = 10;
 			files = (
 				7B5441EE200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Embed Frameworks */,
-				7BA55A3520A3488F00712CAC /* NYPLAEToolkit.framework in Embed Frameworks */,
+				7B159A8220A38A3E00BA5740 /* AudioEngine.framework in Embed Frameworks */,
 				7BA55A3A20A34DDC00712CAC /* PureLayout.framework in Embed Frameworks */,
+				7B159A7F20A3870100BA5740 /* NYPLAEToolkit.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -123,6 +126,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7B159A7D20A386F900BA5740 /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
+		7B159A8020A38A3900BA5740 /* AudioEngine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioEngine.framework; path = Carthage/Build/iOS/AudioEngine.framework; sourceTree = "<group>"; };
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
 		7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberProgressTests.swift; sourceTree = "<group>"; };
 		7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberUIStateTests.swift; sourceTree = "<group>"; };
@@ -163,7 +168,6 @@
 		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManipulationTest.swift; sourceTree = "<group>"; };
 		7B87DCC8208A48E300256331 /* AudiobookController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookController.swift; sourceTree = "<group>"; };
-		7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
 		7BA55A3620A34DB900712CAC /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
 		7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerTests.swift; sourceTree = "<group>"; };
@@ -207,8 +211,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B5441ED200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */,
-				7BA55A3420A3488F00712CAC /* NYPLAEToolkit.framework in Frameworks */,
+				7B159A8120A38A3E00BA5740 /* AudioEngine.framework in Frameworks */,
 				7BA55A3920A34DDC00712CAC /* PureLayout.framework in Frameworks */,
+				7B159A7E20A3870100BA5740 /* NYPLAEToolkit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,8 +340,9 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7B159A8020A38A3900BA5740 /* AudioEngine.framework */,
+				7B159A7D20A386F900BA5740 /* NYPLAEToolkit.framework */,
 				7BA55A3620A34DB900712CAC /* PureLayout.framework */,
-				7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */,
 				7BD759CB20191980004CE65F /* CoreData.framework */,
 				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
 			);
