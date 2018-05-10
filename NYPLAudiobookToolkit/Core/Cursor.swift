@@ -8,20 +8,20 @@
 
 import UIKit
 
-final class Cursor<T> {
-    var currentElement: T {
+final public class Cursor<T> {
+    public var currentElement: T {
         return self.data[self.index]
     }
 
-    func prev() -> Cursor<T>? {
+    public func prev() -> Cursor<T>? {
         return Cursor(data: self.data, index: self.index - 1)
     }
     
-    func next() -> Cursor<T>? {
+    public func next() -> Cursor<T>? {
         return Cursor(data: self.data, index: self.index + 1)
     }
     
-    func cursor(at: (_ element: T) -> Bool) -> Cursor<T>? {
+    public func cursor(at: (_ element: T) -> Bool) -> Cursor<T>? {
         var cursor: Cursor<T>?
         for (i, element) in self.data.enumerated() {
             if at(element) {
@@ -32,9 +32,9 @@ final class Cursor<T> {
         return cursor
     }
 
-    let data: [T]
-    let index: Int
-    init?(data: [T], index: Int) {
+    public let data: [T]
+    public let index: Int
+    public init?(data: [T], index: Int) {
         guard index >= data.startIndex else {
             return nil
         }
@@ -45,7 +45,7 @@ final class Cursor<T> {
         self.index = index
     }
 
-    convenience init?(data: [T]) {
+    public convenience init?(data: [T]) {
         guard !data.isEmpty else { return nil }
         self.init(data: data, index: data.startIndex)
     }

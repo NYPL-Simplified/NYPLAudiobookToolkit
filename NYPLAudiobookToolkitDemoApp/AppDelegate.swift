@@ -14,7 +14,7 @@ import AVKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     var audiobookController = AudiobookController()
-    let audiobookLifecycleManager = DefaultAudiobookLifecycleManager.shared
+    let audiobookLifecycleManager = AudiobookLifecycleManager()
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         self.audiobookLifecycleManager.didFinishLaunching()
         let rootVC = self.window?.rootViewController?.childViewControllers.first as? ViewController

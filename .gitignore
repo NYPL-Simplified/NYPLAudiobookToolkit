@@ -26,4 +26,7 @@ DerivedData/
 ## Do not commit private AudioEngine SDK
 AudioEngine/
 Carthage/
+NYPLAEToolkit.framework/
 
+#binary spec for carthage
+AudioEngine.json

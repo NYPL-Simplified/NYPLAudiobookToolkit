@@ -15,7 +15,7 @@ import Foundation
     case oneAndAHalfTime = 150
     case doubleTime = 200
     
-    static func convert(rate: PlaybackRate) -> Float {
+    public static func convert(rate: PlaybackRate) -> Float {
         return Float(rate.rawValue) * 0.01
     }
 }
@@ -127,7 +127,7 @@ import Foundation
         
     }
 
-    func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
+    public func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
             part: self.part,
@@ -143,7 +143,7 @@ import Foundation
     }
 }
 
-typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
+public typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
 
 /// Utility function for manipulating the playhead.
 ///
@@ -171,7 +171,7 @@ typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
 ///   - cursor: The `Cursor` representing the spine for that book.
 /// - Returns:
 ///  The `Playhead` where the location represents the chapter the playhead is located in, and a cursor that points to that chapter.
-func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
+public func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
     let newPlayhead: Playhead
     // Check to see if our playback location is in the next chapter
     if let nextPlayhead = attemptToMove(cursor: cursor, forwardTo: destination) {
@@ -237,9 +237,9 @@ private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: Chapte
     let newCursor: Cursor<SpineElement>
     if let prevCursor = cursor.prev() {
         newCursor = prevCursor
-        let durationOfChapter = chapterAt(cursor: cursor).duration
-        let playheadOffset = durationOfChapter - timeIntoPreviousChapter
-        possibleDestinationLocation = chapterAt(cursor: prevCursor).chapterWith(max(0, playheadOffset))
+        let destinationChapter = chapterAt(cursor: newCursor)
+        let playheadOffset = destinationChapter.duration - timeIntoPreviousChapter
+        possibleDestinationLocation = destinationChapter.chapterWith(max(0, playheadOffset))
     } else {
         // If there is no previous chapter, we are at the start of the book
         // and skip to the beginning.
