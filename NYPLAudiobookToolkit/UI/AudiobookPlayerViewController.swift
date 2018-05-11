@@ -18,7 +18,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         return self.audiobookManager.audiobook.player.currentChapterLocation
     }
 
-    public required init(audiobookManager: AudiobookManager) {
+    @objc public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
