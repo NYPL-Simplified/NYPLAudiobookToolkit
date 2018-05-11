@@ -76,7 +76,7 @@ import Foundation
 }
 
 /// This class represents a location in a book.
-@objc public final class ChapterLocation: NSObject, Codable {
+@objcMembers public final class ChapterLocation: NSObject, Codable {
     public let title: String?
     public let number: UInt
     public let part: UInt

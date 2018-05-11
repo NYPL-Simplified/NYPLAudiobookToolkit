@@ -20,7 +20,7 @@ import AVFoundation
 /// Hooks into life cycle events for AppDelegate.swift. Listens to notifcations from
 /// AudioEngine to ensure other objects know when it is safe to perform operations on
 /// their SDK.
-public class AudiobookLifecycleManager: NSObject {
+@objcMembers public class AudiobookLifecycleManager: NSObject {
     /**
      The shared instance of the lifecycle manager intended for usage throughout the framework.
      */
