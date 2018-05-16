@@ -421,11 +421,10 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
         if let chapter = self.currentChapter?.chapterWith(offset) {
           if self.audiobookManager.audiobook.player.isPlaying {
-            self.audiobookManager.audiobook.player.playAtLocation(chapter)
+              self.audiobookManager.audiobook.player.playAtLocation(chapter)
           } else {
-            self.audiobookManager.audiobook.player.movePlayheadToLocation(chapter)
+              self.audiobookManager.audiobook.player.movePlayheadToLocation(chapter)
           }
-
         }
         self.waitingForPlayer = true
         self.updateUI()
