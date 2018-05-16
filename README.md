@@ -1,5 +1,7 @@
-Ensure to use AudioEngine SDK 6.1.12 
+# Integration
 
-Simply download the SDK, unzip and place in the root of this project
+1) Add repo to carthage
+2) Add relevant Player toolkits to repo, currently NYPLAEToolkit is the only player
+3) Ensure host has Background Modes enabled
+3) Allow audio playback and airplay from the background
 
-http://developer.audioengine.io/downloads
