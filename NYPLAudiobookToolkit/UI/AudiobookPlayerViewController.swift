@@ -354,11 +354,13 @@ extension AudiobookPlayerViewController: AudiobookManagerTimerDelegate {
 extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.audiobookManager.audiobook.player.skipBack()
+        self.waitingForPlayer = false
         self.updateUI()
     }
     
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.audiobookManager.audiobook.player.skipForward()
+        self.waitingForPlayer = false
         self.updateUI()
     }
 
