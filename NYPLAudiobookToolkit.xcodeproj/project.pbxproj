@@ -14,20 +14,11 @@
 		7B4F1B2020361547003F047B /* Cursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4F1B1F20361546003F047B /* Cursor.swift */; };
 		7B544196200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; };
 		7B54419D200EA7C20047B6C6 /* NYPLAudiobookToolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = 7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		7B5441AD200EA7E30047B6C6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441AC200EA7E30047B6C6 /* AppDelegate.swift */; };
-		7B5441AF200EA7E30047B6C6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441AE200EA7E30047B6C6 /* ViewController.swift */; };
-		7B5441B2200EA7E30047B6C6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441B0200EA7E30047B6C6 /* Main.storyboard */; };
-		7B5441B4200EA7E30047B6C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441B3200EA7E30047B6C6 /* Assets.xcassets */; };
-		7B5441B7200EA7E30047B6C6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441B5200EA7E30047B6C6 /* LaunchScreen.storyboard */; };
-		7B5441C2200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441C1200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.swift */; };
-		7B5441CD200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441CC200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.swift */; };
 		7B5441E1200EA82C0047B6C6 /* AudiobookMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */; };
 		7B5441E3200EA82C0047B6C6 /* Audiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DC200EA82C0047B6C6 /* Audiobook.swift */; };
 		7B5441E4200EA82C0047B6C6 /* AudiobookPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DD200EA82C0047B6C6 /* AudiobookPlayerViewController.swift */; };
 		7B5441E6200EA82C0047B6C6 /* AudiobookLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441DF200EA82C0047B6C6 /* AudiobookLifecycleManager.swift */; };
 		7B5441E7200EA82C0047B6C6 /* AudiobookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5441E0200EA82C0047B6C6 /* AudiobookManager.swift */; };
-		7B5441ED200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; };
-		7B5441EE200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7B6C1BD0203F1CDA00EB791E /* AudiobookNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C1BCF203F1CDA00EB791E /* AudiobookNetworkService.swift */; };
 		7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C1BD1203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift */; };
 		7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C1BD320405C4D00EB791E /* CursorTests.swift */; };
@@ -39,13 +30,8 @@
 		7B7B370F20227A8200030A1E /* OpenAccessPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */; };
 		7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */; };
 		7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */; };
-		7B87DCC9208A48E300256331 /* AudiobookController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC8208A48E300256331 /* AudiobookController.swift */; };
-		7BA55A3420A3488F00712CAC /* NYPLAEToolkit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */; };
-		7BA55A3520A3488F00712CAC /* NYPLAEToolkit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BA55A3720A34DC200712CAC /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; };
 		7BA55A3820A34DCA00712CAC /* PureLayout.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		7BA55A3920A34DDC00712CAC /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; };
-		7BA55A3A20A34DDC00712CAC /* PureLayout.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFB20506FF600700731 /* SleepTimer.swift */; };
 		7BBF4DFE2050850A00700731 /* SleepTimerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */; };
 		7BBF4E002050856400700731 /* PlayerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFF2050856400700731 /* PlayerMock.swift */; };
@@ -72,27 +58,6 @@
 			remoteGlobalIDString = 7B54418B200EA7C20047B6C6;
 			remoteInfo = NYPLAudiobookToolkit;
 		};
-		7B5441BE200EA7E40047B6C6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7B544183200EA7C20047B6C6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7B5441A9200EA7E30047B6C6;
-			remoteInfo = NYPLAudiobookToolkitDemoApp;
-		};
-		7B5441C9200EA7E40047B6C6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7B544183200EA7C20047B6C6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7B5441A9200EA7E30047B6C6;
-			remoteInfo = NYPLAudiobookToolkitDemoApp;
-		};
-		7B5441D8200EA8020047B6C6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7B544183200EA7C20047B6C6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7B54418B200EA7C20047B6C6;
-			remoteInfo = NYPLAudiobookToolkit;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -107,19 +72,6 @@
 			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7B5441EF200EA9380047B6C6 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				7B5441EE200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Embed Frameworks */,
-				7BA55A3520A3488F00712CAC /* NYPLAEToolkit.framework in Embed Frameworks */,
-				7BA55A3A20A34DDC00712CAC /* PureLayout.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -132,19 +84,6 @@
 		7B544190200EA7C20047B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7B544195200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NYPLAudiobookToolkitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B54419C200EA7C20047B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7B5441AA200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NYPLAudiobookToolkitDemoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B5441AC200EA7E30047B6C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		7B5441AE200EA7E30047B6C6 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		7B5441B1200EA7E30047B6C6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		7B5441B3200EA7E30047B6C6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		7B5441B6200EA7E30047B6C6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		7B5441B8200EA7E30047B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7B5441BD200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NYPLAudiobookToolkitDemoAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B5441C1200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NYPLAudiobookToolkitDemoAppTests.swift; sourceTree = "<group>"; };
-		7B5441C3200EA7E40047B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7B5441C8200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NYPLAudiobookToolkitDemoAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B5441CC200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NYPLAudiobookToolkitDemoAppUITests.swift; sourceTree = "<group>"; };
-		7B5441CE200EA7E40047B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7B5441DA200EA82C0047B6C6 /* AudiobookMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookMetadata.swift; sourceTree = "<group>"; };
 		7B5441DC200EA82C0047B6C6 /* Audiobook.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Audiobook.swift; sourceTree = "<group>"; };
 		7B5441DD200EA82C0047B6C6 /* AudiobookPlayerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudiobookPlayerViewController.swift; sourceTree = "<group>"; };
@@ -162,7 +101,6 @@
 		7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAccessPlayer.swift; sourceTree = "<group>"; };
 		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManipulationTest.swift; sourceTree = "<group>"; };
-		7B87DCC8208A48E300256331 /* AudiobookController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookController.swift; sourceTree = "<group>"; };
 		7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
 		7BA55A3620A34DB900712CAC /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
@@ -202,30 +140,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7B5441A7200EA7E30047B6C6 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7B5441ED200EA9380047B6C6 /* NYPLAudiobookToolkit.framework in Frameworks */,
-				7BA55A3420A3488F00712CAC /* NYPLAEToolkit.framework in Frameworks */,
-				7BA55A3920A34DDC00712CAC /* PureLayout.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441BA200EA7E40047B6C6 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441C5200EA7E40047B6C6 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -249,9 +163,6 @@
 			children = (
 				7B54418E200EA7C20047B6C6 /* NYPLAudiobookToolkit */,
 				7B544199200EA7C20047B6C6 /* NYPLAudiobookToolkitTests */,
-				7B5441AB200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp */,
-				7B5441C0200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests */,
-				7B5441CB200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests */,
 				7B54418D200EA7C20047B6C6 /* Products */,
 				7B5441E8200EA8740047B6C6 /* Frameworks */,
 			);
@@ -262,9 +173,6 @@
 			children = (
 				7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */,
 				7B544195200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.xctest */,
-				7B5441AA200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp.app */,
-				7B5441BD200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.xctest */,
-				7B5441C8200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -298,38 +206,6 @@
 				7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */,
 			);
 			path = NYPLAudiobookToolkitTests;
-			sourceTree = "<group>";
-		};
-		7B5441AB200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp */ = {
-			isa = PBXGroup;
-			children = (
-				7B5441AC200EA7E30047B6C6 /* AppDelegate.swift */,
-				7B5441AE200EA7E30047B6C6 /* ViewController.swift */,
-				7B5441B0200EA7E30047B6C6 /* Main.storyboard */,
-				7B5441B3200EA7E30047B6C6 /* Assets.xcassets */,
-				7B5441B5200EA7E30047B6C6 /* LaunchScreen.storyboard */,
-				7B5441B8200EA7E30047B6C6 /* Info.plist */,
-				7B87DCC8208A48E300256331 /* AudiobookController.swift */,
-			);
-			path = NYPLAudiobookToolkitDemoApp;
-			sourceTree = "<group>";
-		};
-		7B5441C0200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests */ = {
-			isa = PBXGroup;
-			children = (
-				7B5441C1200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.swift */,
-				7B5441C3200EA7E40047B6C6 /* Info.plist */,
-			);
-			path = NYPLAudiobookToolkitDemoAppTests;
-			sourceTree = "<group>";
-		};
-		7B5441CB200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests */ = {
-			isa = PBXGroup;
-			children = (
-				7B5441CC200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.swift */,
-				7B5441CE200EA7E40047B6C6 /* Info.plist */,
-			);
-			path = NYPLAudiobookToolkitDemoAppUITests;
 			sourceTree = "<group>";
 		};
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
@@ -433,61 +309,6 @@
 			productReference = 7B544195200EA7C20047B6C6 /* NYPLAudiobookToolkitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		7B5441A9200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7B5441CF200EA7E40047B6C6 /* Build configuration list for PBXNativeTarget "NYPLAudiobookToolkitDemoApp" */;
-			buildPhases = (
-				7B5441A6200EA7E30047B6C6 /* Sources */,
-				7B5441A7200EA7E30047B6C6 /* Frameworks */,
-				7B5441A8200EA7E30047B6C6 /* Resources */,
-				7B5441EF200EA9380047B6C6 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				7B5441D9200EA8020047B6C6 /* PBXTargetDependency */,
-			);
-			name = NYPLAudiobookToolkitDemoApp;
-			productName = NYPLAudiobookToolkitDemoApp;
-			productReference = 7B5441AA200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp.app */;
-			productType = "com.apple.product-type.application";
-		};
-		7B5441BC200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7B5441D2200EA7E40047B6C6 /* Build configuration list for PBXNativeTarget "NYPLAudiobookToolkitDemoAppTests" */;
-			buildPhases = (
-				7B5441B9200EA7E40047B6C6 /* Sources */,
-				7B5441BA200EA7E40047B6C6 /* Frameworks */,
-				7B5441BB200EA7E40047B6C6 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				7B5441BF200EA7E40047B6C6 /* PBXTargetDependency */,
-			);
-			name = NYPLAudiobookToolkitDemoAppTests;
-			productName = NYPLAudiobookToolkitDemoAppTests;
-			productReference = 7B5441BD200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		7B5441C7200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7B5441D5200EA7E40047B6C6 /* Build configuration list for PBXNativeTarget "NYPLAudiobookToolkitDemoAppUITests" */;
-			buildPhases = (
-				7B5441C4200EA7E40047B6C6 /* Sources */,
-				7B5441C5200EA7E40047B6C6 /* Frameworks */,
-				7B5441C6200EA7E40047B6C6 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				7B5441CA200EA7E40047B6C6 /* PBXTargetDependency */,
-			);
-			name = NYPLAudiobookToolkitDemoAppUITests;
-			productName = NYPLAudiobookToolkitDemoAppUITests;
-			productReference = 7B5441C8200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -507,25 +328,6 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
-					7B5441A9200EA7E30047B6C6 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-						SystemCapabilities = {
-							com.apple.BackgroundModes = {
-								enabled = 1;
-							};
-						};
-					};
-					7B5441BC200EA7E40047B6C6 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-						TestTargetID = 7B5441A9200EA7E30047B6C6;
-					};
-					7B5441C7200EA7E40047B6C6 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-						TestTargetID = 7B5441A9200EA7E30047B6C6;
-					};
 				};
 			};
 			buildConfigurationList = 7B544186200EA7C20047B6C6 /* Build configuration list for PBXProject "NYPLAudiobookToolkit" */;
@@ -543,9 +345,6 @@
 			targets = (
 				7B54418B200EA7C20047B6C6 /* NYPLAudiobookToolkit */,
 				7B544194200EA7C20047B6C6 /* NYPLAudiobookToolkitTests */,
-				7B5441A9200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp */,
-				7B5441BC200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests */,
-				7B5441C7200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -560,30 +359,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7B544193200EA7C20047B6C6 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441A8200EA7E30047B6C6 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7B5441B7200EA7E30047B6C6 /* LaunchScreen.storyboard in Resources */,
-				7B5441B4200EA7E30047B6C6 /* Assets.xcassets in Resources */,
-				7B5441B2200EA7E30047B6C6 /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441BB200EA7E40047B6C6 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441C6200EA7E40047B6C6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -642,32 +417,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7B5441A6200EA7E30047B6C6 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7B5441AF200EA7E30047B6C6 /* ViewController.swift in Sources */,
-				7B87DCC9208A48E300256331 /* AudiobookController.swift in Sources */,
-				7B5441AD200EA7E30047B6C6 /* AppDelegate.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441B9200EA7E40047B6C6 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7B5441C2200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B5441C4200EA7E40047B6C6 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7B5441CD200EA7E40047B6C6 /* NYPLAudiobookToolkitDemoAppUITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -676,41 +425,7 @@
 			target = 7B54418B200EA7C20047B6C6 /* NYPLAudiobookToolkit */;
 			targetProxy = 7B544197200EA7C20047B6C6 /* PBXContainerItemProxy */;
 		};
-		7B5441BF200EA7E40047B6C6 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7B5441A9200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp */;
-			targetProxy = 7B5441BE200EA7E40047B6C6 /* PBXContainerItemProxy */;
-		};
-		7B5441CA200EA7E40047B6C6 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7B5441A9200EA7E30047B6C6 /* NYPLAudiobookToolkitDemoApp */;
-			targetProxy = 7B5441C9200EA7E40047B6C6 /* PBXContainerItemProxy */;
-		};
-		7B5441D9200EA8020047B6C6 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7B54418B200EA7C20047B6C6 /* NYPLAudiobookToolkit */;
-			targetProxy = 7B5441D8200EA8020047B6C6 /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		7B5441B0200EA7E30047B6C6 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				7B5441B1200EA7E30047B6C6 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		7B5441B5200EA7E30047B6C6 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				7B5441B6200EA7E30047B6C6 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		7B54419E200EA7C20047B6C6 /* Debug */ = {
@@ -913,116 +628,6 @@
 			};
 			name = Release;
 		};
-		7B5441D0200EA7E40047B6C6 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7262U6ST2R;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-					"$(PROJECT_DIR)/AudioEngine/Debug",
-					"$(PROJECT_DIR)",
-				);
-				INFOPLIST_FILE = NYPLAudiobookToolkitDemoApp/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitDemoApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		7B5441D1200EA7E40047B6C6 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7262U6ST2R;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-					"$(PROJECT_DIR)/AudioEngine/Debug",
-					"$(PROJECT_DIR)",
-				);
-				INFOPLIST_FILE = NYPLAudiobookToolkitDemoApp/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitDemoApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		7B5441D3200EA7E40047B6C6 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7262U6ST2R;
-				INFOPLIST_FILE = NYPLAudiobookToolkitDemoAppTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitDemoAppTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NYPLAudiobookToolkitDemoApp.app/NYPLAudiobookToolkitDemoApp";
-			};
-			name = Debug;
-		};
-		7B5441D4200EA7E40047B6C6 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7262U6ST2R;
-				INFOPLIST_FILE = NYPLAudiobookToolkitDemoAppTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitDemoAppTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NYPLAudiobookToolkitDemoApp.app/NYPLAudiobookToolkitDemoApp";
-			};
-			name = Release;
-		};
-		7B5441D6200EA7E40047B6C6 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7262U6ST2R;
-				INFOPLIST_FILE = NYPLAudiobookToolkitDemoAppUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitDemoAppUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = NYPLAudiobookToolkitDemoApp;
-			};
-			name = Debug;
-		};
-		7B5441D7200EA7E40047B6C6 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7262U6ST2R;
-				INFOPLIST_FILE = NYPLAudiobookToolkitDemoAppUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitDemoAppUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = NYPLAudiobookToolkitDemoApp;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1049,33 +654,6 @@
 			buildConfigurations = (
 				7B5441A4200EA7C20047B6C6 /* Debug */,
 				7B5441A5200EA7C20047B6C6 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7B5441CF200EA7E40047B6C6 /* Build configuration list for PBXNativeTarget "NYPLAudiobookToolkitDemoApp" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7B5441D0200EA7E40047B6C6 /* Debug */,
-				7B5441D1200EA7E40047B6C6 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7B5441D2200EA7E40047B6C6 /* Build configuration list for PBXNativeTarget "NYPLAudiobookToolkitDemoAppTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7B5441D3200EA7E40047B6C6 /* Debug */,
-				7B5441D4200EA7E40047B6C6 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7B5441D5200EA7E40047B6C6 /* Build configuration list for PBXNativeTarget "NYPLAudiobookToolkitDemoAppUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7B5441D6200EA7E40047B6C6 /* Debug */,
-				7B5441D7200EA7E40047B6C6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
