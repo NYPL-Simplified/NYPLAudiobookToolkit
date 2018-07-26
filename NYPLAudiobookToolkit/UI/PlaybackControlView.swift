@@ -37,7 +37,7 @@ final class PlaybackControlView: UIView {
         }
     }
 
-    private let padding = CGFloat(8)
+    private var horizontalPadding = CGFloat(25)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)
@@ -96,7 +96,7 @@ final class PlaybackControlView: UIView {
 
         self.addSubview(self.skipBackView)
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.padding * 2)
+        self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.horizontalPadding)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self, withOffset: 0)
         self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipBackView.autoPinEdge(.top, to: .top, of: self)
@@ -105,7 +105,7 @@ final class PlaybackControlView: UIView {
 
         self.addSubview(self.skipForwardView)
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.padding * 2)
+        self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.horizontalPadding)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self, withOffset: 0)
         self.skipForwardView.autoPinEdge(.top, to: .top, of: self)
         self.skipForwardView.autoPinEdge(.bottom, to: .bottom, of: self)
