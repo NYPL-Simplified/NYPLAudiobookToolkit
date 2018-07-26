@@ -81,35 +81,54 @@ public final class AudiobookPlayerViewController: UIViewController {
         let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
         self.navigationItem.rightBarButtonItems = [ bbi, indicatorBbi ]
         self.view.addSubview(self.chapterInfoStack)
-        self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
-        self.chapterInfoStack.autoPinEdge(.left, to: .left, of: self.view)
-        self.chapterInfoStack.autoPinEdge(.right, to: .right, of: self.view)
-
+        self.chapterInfoStack.autoPinEdge(toSuperviewEdge: .top, withInset: self.padding, relation: .greaterThanOrEqual)
+        self.chapterInfoStack.autoAlignAxis(toSuperviewAxis: .vertical)
         self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
         self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
 
-        self.view.addSubview(self.seekBar)
-        self.seekBar.delegate = self;
-        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 2)
-        self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding, relation: .greaterThanOrEqual)
-        self.seekBar.autoPinEdge(.left, to: .left, of: self.view, withOffset: self.padding * 2)
-        self.seekBar.autoPinEdge(.right, to: .right, of: self.view, withOffset: -(self.padding * 2))
-
         self.view.addSubview(self.coverView)
-        self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 2, relation: .greaterThanOrEqual)
-        self.coverView.autoPinEdge(.top, to: .bottom, of: self.seekBar, withOffset: self.padding * 4, relation: .lessThanOrEqual)
+        self.coverView.autoCenterInSuperview()
         self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
-        self.coverView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
+        if (self.view.traitCollection.horizontalSizeClass == .regular) {
+            self.coverView.autoSetDimension(.width, toSize: 500)
+        }
 
-        self.view.addSubview(self.playbackControlView)
+        let playbackControlViewContainer = UIView()
+        playbackControlViewContainer.addSubview(self.playbackControlView)
+        self.view.addSubview(playbackControlViewContainer)
         self.view.addSubview(self.toolbar)
 
         self.playbackControlView.delegate = self
-        self.playbackControlView.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: (self.padding * 2), relation: .greaterThanOrEqual)
-        self.playbackControlView.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -(self.padding * 2))
-        self.playbackControlView.autoPinEdge(.left, to: .left, of: self.view, withOffset: 0, relation: .greaterThanOrEqual)
-        self.playbackControlView.autoPinEdge(.right, to: .right, of: self.view, withOffset: 0, relation: .lessThanOrEqual)
-        self.playbackControlView.autoAlignAxis(.vertical, toSameAxisOf: self.view)
+        self.playbackControlView.autoCenterInSuperview()
+        self.playbackControlView.autoPinEdge(toSuperviewEdge: .leading, withInset: 0, relation: .greaterThanOrEqual)
+        self.playbackControlView.autoPinEdge(toSuperviewEdge: .trailing, withInset: 0, relation: .greaterThanOrEqual)
+        self.playbackControlView.autoPinEdge(toSuperviewEdge: .top, withInset: 0, relation: .greaterThanOrEqual)
+        self.playbackControlView.autoPinEdge(toSuperviewEdge: .bottom, withInset: 0, relation: .greaterThanOrEqual)
+
+        playbackControlViewContainer.autoPinEdge(toSuperviewEdge: .left)
+        playbackControlViewContainer.autoPinEdge(toSuperviewEdge: .right)
+        playbackControlViewContainer.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: (self.padding * 2))
+        playbackControlViewContainer.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -(self.padding * 2))
+
+        let seekBarContainerView = UIView()
+        self.view.addSubview(seekBarContainerView)
+
+        seekBarContainerView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 2)
+        seekBarContainerView.autoPinEdge(.bottom, to: .top, of: self.coverView, withOffset: -self.padding * 2)
+        seekBarContainerView.autoPinEdge(toSuperviewEdge: .leading)
+        seekBarContainerView.autoPinEdge(toSuperviewEdge: .trailing)
+
+        seekBarContainerView.addSubview(self.seekBar)
+
+        self.seekBar.delegate = self;
+        self.seekBar.autoCenterInSuperview()
+        self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 4, relation: .greaterThanOrEqual)
+        self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 4, relation: .greaterThanOrEqual)
+        NSLayoutConstraint.autoSetPriority(.defaultHigh) {
+            self.seekBar.autoSetDimension(.width, toSize: 500)
+            self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 6)
+        }
+
         self.coverView.addGestureRecognizer(
             UITapGestureRecognizer(
                 target: self,
