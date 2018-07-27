@@ -98,9 +98,9 @@ final class PlaybackControlView: UIView {
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
         self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.horizontalPadding)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self, withOffset: 0)
-        self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipBackView.autoPinEdge(.top, to: .top, of: self)
         self.skipBackView.autoPinEdge(.bottom, to: .bottom, of: self)
+        self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipBackView.addTarget(self, action: #selector(PlaybackControlView.skipBackButtonWasTapped(_:)), for: .touchUpInside)
 
         self.addSubview(self.skipForwardView)

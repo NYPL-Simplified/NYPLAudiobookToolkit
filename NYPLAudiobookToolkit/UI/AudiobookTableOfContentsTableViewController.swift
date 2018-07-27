@@ -26,8 +26,10 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
             action: #selector(AudiobookTableOfContentsTableViewController.deleteChapterRequested(_:))
         )
         let downloadAllItem = UIBarButtonItem(
-            barButtonSystemItem: .save,
-            target: self, action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
+            title: "Download All",
+            style: .plain,
+            target: self,
+            action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
         self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem ]
         self.tableOfContents.delegate = self
         self.tableView.register(
@@ -36,6 +38,7 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
         )
         self.tableView.dataSource = self.tableOfContents
         self.tableView.delegate = self.tableOfContents
+        
     }
     
     required public init?(coder aDecoder: NSCoder) {
