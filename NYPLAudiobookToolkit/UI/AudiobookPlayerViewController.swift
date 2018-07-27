@@ -56,6 +56,7 @@ public final class AudiobookPlayerViewController: UIViewController {
     private var waitingForPlayer = false
     override public func viewDidLoad() {
         super.viewDidLoad()
+
         self.navigationController?.navigationBar.isTranslucent = false
         self.navigationController?.navigationBar.tintColor = self.tintColor
 
@@ -65,6 +66,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.gradiant.startPoint = CGPoint.zero
         self.gradiant.endPoint = CGPoint(x: 1, y: 1)
         self.view.layer.insertSublayer(self.gradiant, at: 0)
+
         let tocImage = UIImage(
             named: "table_of_contents",
             in: Bundle.audiobookToolkit(),
@@ -80,18 +82,19 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.activityIndicator.hidesWhenStopped = true
         let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
         self.navigationItem.rightBarButtonItems = [ bbi, indicatorBbi ]
-        self.view.addSubview(self.chapterInfoStack)
-        self.chapterInfoStack.autoPinEdge(toSuperviewEdge: .top, withInset: self.padding, relation: .greaterThanOrEqual)
-        self.chapterInfoStack.autoAlignAxis(toSuperviewAxis: .vertical)
+
         self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
         self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
 
+        self.view.addSubview(self.chapterInfoStack)
+
+        self.chapterInfoStack.autoPinEdge(toSuperviewEdge: .top, withInset: self.padding, relation: .greaterThanOrEqual)
+        self.chapterInfoStack.autoAlignAxis(toSuperviewAxis: .vertical)
+
         self.view.addSubview(self.coverView)
+
         self.coverView.autoCenterInSuperview()
         self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
-        if (self.view.traitCollection.horizontalSizeClass == .regular) {
-            self.coverView.autoSetDimension(.width, toSize: 500)
-        }
 
         let playbackControlViewContainer = UIView()
         playbackControlViewContainer.addSubview(self.playbackControlView)
@@ -124,9 +127,13 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.seekBar.autoCenterInSuperview()
         self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 4, relation: .greaterThanOrEqual)
         self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 4, relation: .greaterThanOrEqual)
+        
         NSLayoutConstraint.autoSetPriority(.defaultHigh) {
             self.seekBar.autoSetDimension(.width, toSize: 500)
             self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 6)
+            if (self.view.traitCollection.horizontalSizeClass == .regular) {
+                self.coverView.autoSetDimension(.width, toSize: 500)
+            }
         }
 
         self.coverView.addGestureRecognizer(
@@ -137,12 +144,12 @@ public final class AudiobookPlayerViewController: UIViewController {
         )
         guard let chapter = self.currentChapter else { return }
 
+        self.toolbar.layer.borderWidth = 1
+        self.toolbar.layer.borderColor = UIColor.white.cgColor
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
         self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
         self.toolbar.autoPinEdge(.right, to: .right, of: self.view)
         self.toolbar.autoSetDimension(.height, toSize: self.toolbarHeight)
-        self.toolbar.layer.borderWidth = 1
-        self.toolbar.layer.borderColor = UIColor.white.cgColor
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
         let playbackSpeedText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value
