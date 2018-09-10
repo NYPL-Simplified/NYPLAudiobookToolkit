@@ -202,6 +202,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.audiobookManager.timerDelegate = self
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
+        self.updateUI()
     }
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine

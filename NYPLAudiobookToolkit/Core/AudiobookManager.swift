@@ -37,7 +37,7 @@ import AVFoundation
     weak var refreshDelegate: RefreshDelegate? { get set }
     weak var timerDelegate: AudiobookManagerTimerDelegate? { get set }
     
-    var networkService: AudiobookNetworkService { get}
+    var networkService: AudiobookNetworkService { get }
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
     
