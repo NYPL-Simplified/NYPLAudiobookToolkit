@@ -12,7 +12,7 @@ import XCTest
 class ScrubberProgressTests: XCTestCase {
     func testProgressFromPrecentage() {
         let scrubberProgress = ScrubberProgress(offset: 0, duration: 10, timeLeftInBook: 10)
-        let halfWayThrough = scrubberProgress.progressFromPrecentage(0.5)
+        let halfWayThrough = scrubberProgress.progressFromPercentage(0.5)
         XCTAssertEqual(halfWayThrough.offset, 5)
         XCTAssertEqual(halfWayThrough.duration, 10)
         XCTAssertEqual(halfWayThrough.timeLeftInBook, 5)
