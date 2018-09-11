@@ -50,7 +50,7 @@ struct ScrubberProgress {
         return max(self.duration - self.offset, 0)
     }
     
-    func progressFromPrecentage(_ percentage: Float) -> ScrubberProgress {
+    func progressFromPercentage(_ percentage: Float) -> ScrubberProgress {
         let newOffset = TimeInterval(Float(self.duration) * percentage)
         let difference = self.offset - newOffset
         return ScrubberProgress(
@@ -287,16 +287,24 @@ final class ScrubberView: UIView {
     func scrub(touch: UITouch?, currentlyScrubbing: Bool) {
         if let touch = touch {
             let position = touch.location(in: self.progressBackground)
-            if position.x > 0 && position.x < self.progressBarWidth {
-                let percentage = Float(position.x / self.progressBarWidth)
-                self.state = ScrubberUIState(
-                    gripperHeight: self.state.gripperHeight,
-                    progressColor: self.state.progressColor,
-                    progress: self.state.progress.progressFromPrecentage(percentage),
-                    middleText: self.state.middleText,
-                    scrubbing: currentlyScrubbing
-                )
+            let percentage: Float
+            if position.x >= 0 && position.x <= self.progressBarWidth {
+                percentage = Float(position.x / self.progressBarWidth)
+            } else if position.x < 0 {
+                percentage = 0
+            } else if position.x > self.progressBarWidth {
+                percentage = 1.0
+            } else {
+                print("\(#file) Error: Unknown scrub state!")
+                return
             }
+            self.state = ScrubberUIState(
+                gripperHeight: self.state.gripperHeight,
+                progressColor: self.state.progressColor,
+                progress: self.state.progress.progressFromPercentage(percentage),
+                middleText: self.state.middleText,
+                scrubbing: currentlyScrubbing
+            )
         } else {
             self.state = ScrubberUIState(
                 gripperHeight: self.state.gripperHeight,
