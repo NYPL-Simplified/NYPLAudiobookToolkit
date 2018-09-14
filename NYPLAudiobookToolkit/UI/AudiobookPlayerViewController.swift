@@ -20,7 +20,6 @@ public final class AudiobookPlayerViewController: UIViewController {
 
     @objc public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
-        self.tintColor = UIColor.red
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -32,7 +31,6 @@ public final class AudiobookPlayerViewController: UIViewController {
     private let gradiant = CAGradientLayer()
     private let padding = CGFloat(8)
     private let seekBar = ScrubberView()
-    private let tintColor: UIColor
     private let playbackControlView = PlaybackControlView()
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
@@ -58,7 +56,6 @@ public final class AudiobookPlayerViewController: UIViewController {
         super.viewDidLoad()
 
         self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.tintColor = self.tintColor
 
         self.gradiant.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -160,7 +157,7 @@ public final class AudiobookPlayerViewController: UIViewController {
             action: #selector(AudiobookPlayerViewController.speedWasPressed(_:))
         )
         speed.accessibilityLabel = self.playbackSpeedTextFor(speedText: playbackSpeedText)
-        speed.tintColor = self.tintColor
+        speed.tintColor = self.view.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
         let audioRoutingItem = self.audioRoutingBarButtonItem()
@@ -172,7 +169,7 @@ public final class AudiobookPlayerViewController: UIViewController {
             target: self,
             action: #selector(AudiobookPlayerViewController.sleepTimerWasPressed(_:))
         )
-        sleepTimer.tintColor = self.tintColor
+        sleepTimer.tintColor = self.view.tintColor
         sleepTimer.accessibilityLabel = texts.accessibilityLabel
 
         items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
@@ -310,7 +307,7 @@ public final class AudiobookPlayerViewController: UIViewController {
             volumeView.sizeToFit()
             view = volumeView
         }
-        view.tintColor = self.tintColor
+        view.tintColor = self.view.tintColor
         let buttonItem = UIBarButtonItem(customView: view)
         buttonItem.isAccessibilityElement = true
         buttonItem.accessibilityLabel = NSLocalizedString("Airplay", bundle: Bundle.audiobookToolkit()!, value: "Airplay", comment: "Airplay")
