@@ -35,8 +35,8 @@ public final class AudiobookTableOfContents: NSObject {
     }
 
     weak var delegate: AudiobookTableOfContentsDelegate?
-    private let networkService: AudiobookNetworkService
-    private let player: Player
+    let networkService: AudiobookNetworkService
+    let player: Player
     internal init(networkService: AudiobookNetworkService, player: Player) {
         self.networkService = networkService
         self.player = player

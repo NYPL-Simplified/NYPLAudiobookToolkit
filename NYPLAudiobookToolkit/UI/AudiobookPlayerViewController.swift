@@ -52,6 +52,7 @@ public final class AudiobookPlayerViewController: UIViewController {
     private let chapterInfoStack = ChapterInfoStack()
     private let toolbarHeight: CGFloat = 44
     private var waitingForPlayer = false
+    private var waitingToTogglePlayPause = false
     override public func viewDidLoad() {
         super.viewDidLoad()
 
@@ -199,8 +200,17 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.audiobookManager.timerDelegate = self
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
+
+        self.waitingToTogglePlayPause = true
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.playbackControlView.showPauseButtonIfNeeded()
+        } else {
+            self.playbackControlView.showPlayButtonIfNeeded()
+        }
+
         self.updateUI()
     }
+    
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine
         var addUpStuff = false
@@ -311,6 +321,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         let buttonItem = UIBarButtonItem(customView: view)
         buttonItem.isAccessibilityElement = true
         buttonItem.accessibilityLabel = NSLocalizedString("Airplay", bundle: Bundle.audiobookToolkit()!, value: "Airplay", comment: "Airplay")
+        buttonItem.accessibilityHint = NSLocalizedString("Send audio to another airplay-compatible device.", bundle: Bundle.audiobookToolkit()!, value: "Send audio to another airplay-compatible device.", comment: "Longer description to identify airplay button.")
         buttonItem.accessibilityTraits = UIAccessibilityTraitButton
         return buttonItem
     }
@@ -325,11 +336,18 @@ public final class AudiobookPlayerViewController: UIViewController {
                     timeLeftInBook: timeLeftInBook,
                     middleText: self.middleTextFor(chapter: chapter)
                 )
-
                 if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
                     let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
                     barButtonItem.title = texts.title
                     barButtonItem.accessibilityLabel = texts.accessibilityLabel
+                }
+                if self.waitingToTogglePlayPause {
+                    if self.audiobookManager.audiobook.player.isPlaying {
+                        self.playbackControlView.showPauseButtonIfNeeded()
+                    } else {
+                        self.playbackControlView.showPlayButtonIfNeeded()
+                    }
+                    self.waitingToTogglePlayPause = false
                 }
             }
         }

@@ -15,7 +15,6 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
     //MARK: - AudiobookTableOfContentsDelegate
 
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
-
         if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.reloadData()
             self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .middle)
@@ -61,6 +60,19 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        let spine = self.tableOfContents.networkService.spine
+        if let currentPlayingChapter = self.tableOfContents.player.currentChapterLocation {
+            for index in 0..<spine.count {
+                if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
+                    let indexPath = IndexPath(row: index, section: 0)
+                    self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+                }
+            }
+        }
     }
     
     @objc func deleteChapterRequested(_ sender: Any) {
