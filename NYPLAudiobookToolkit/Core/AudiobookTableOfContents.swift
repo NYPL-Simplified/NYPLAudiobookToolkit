@@ -10,6 +10,7 @@ import UIKit
 
 protocol AudiobookTableOfContentsDelegate: class {
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
+    func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool)
 }
 
 /// This class may be used in conjunction with a UITableView
@@ -23,7 +24,7 @@ public final class AudiobookTableOfContents: NSObject {
         return self.networkService.downloadProgress
     }
 
-    /// Download all available files from network  for the current audiobook.
+    /// Download all available files from network for the current audiobook.
     public func fetch() {
         self.networkService.fetch()
     }
@@ -60,6 +61,7 @@ extension AudiobookTableOfContents: UITableViewDelegate {
         // implied requirement of the player that has not been
         // explicitly stated elsewhere.
         self.player.playAtLocation(spineElement.chapter)
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: true)
     }
 }
 
@@ -70,51 +72,27 @@ extension AudiobookTableOfContents: UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .value1, reuseIdentifier: AudiobookTableOfContentsTableViewControllerCellIdentifier)
         let spineElement = self.networkService.spine[indexPath.row]
-        let config = self.configFor(spineElement)
-        cell.textLabel?.text = config.title
-        cell.detailTextLabel?.text = config.detailLabel
-        cell.backgroundColor = config.backgroundColor
-        cell.selectionStyle = .none
-        let playingChapter = self.player.currentChapterLocation?.inSameChapter(other: spineElement.chapter) ?? false
-        if playingChapter {
-            cell.contentView.layer.borderColor = UIColor.red.cgColor
-            cell.contentView.layer.borderWidth = 1
-        }
-        return cell
-    }
-    
-    func configFor(_ spineElement: SpineElement) -> (title: String?, detailLabel: String, backgroundColor: UIColor) {
-        let progress = spineElement.downloadTask.downloadProgress
-        let title = spineElement.chapter.title
-        let detailLabel: String
-        let backgroundColor: UIColor
-        if progress == 0 {
-            detailLabel = NSLocalizedString("Not Downloaded", bundle: Bundle.audiobookToolkit()!, value: "Not Downloaded", comment: "Track has not been  downloaded to the user's phone")
-            backgroundColor = UIColor.lightGray
-        } else if progress > 0 && progress < 1  {
-            let percentage = HumanReadablePercentage(percentage: progress).value
-            let labelFormat = NSLocalizedString("Downloading %@", bundle: Bundle.audiobookToolkit()!, value: "Downloading %@", comment: "The percentage of the chapter that has been downloaded, formatting for string should be localized at this point.")
-            detailLabel = String(format: labelFormat, percentage)
-            backgroundColor = UIColor.lightGray
+        if let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTableOfContentsTableViewControllerCellIdentifier) as? AudiobookTrackTableViewCell {
+            cell.configureFor(spineElement)
+            return cell
         } else {
-            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
-            let labelFormat = NSLocalizedString("Duration %@", bundle: Bundle.audiobookToolkit()!, value: "Duration %@", comment: "Duration of the track, with formatting for a previously localized string to be inserted.")
-            detailLabel = String(format: labelFormat, duration)
-            backgroundColor = UIColor.white
+            let cell = AudiobookTrackTableViewCell(style: .value1, reuseIdentifier:AudiobookTableOfContentsTableViewControllerCellIdentifier)
+            cell.configureFor(spineElement)
+            return cell
         }
-        return (title: title, detailLabel: detailLabel, backgroundColor: backgroundColor)
     }
 }
 
 
 extension AudiobookTableOfContents: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
 
@@ -123,18 +101,22 @@ extension AudiobookTableOfContents: PlayerDelegate {
 
 extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
 }

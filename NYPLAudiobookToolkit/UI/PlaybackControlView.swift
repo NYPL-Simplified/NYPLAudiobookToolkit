@@ -25,16 +25,32 @@ final class PlaybackControlView: UIView {
 
     public func showPlayButtonIfNeeded () {
         if self.playButton.image != self.playImage  {
-            self.playButton.image = self.playImage
-            self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
+            self.setToPlayIcon()
         }
     }
     
     public func showPauseButtonIfNeeded () {
         if self.playButton.image != self.pauseImage {
-            self.playButton.image = self.pauseImage
-            self.playButton.accessibilityLabel = NSLocalizedString("Pause", bundle: Bundle.audiobookToolkit()!, value: "Pause", comment: "Pause")
+            self.setToPauseIcon()
         }
+    }
+
+    public func togglePlayPauseButtonUIState() {
+        if self.playButton.image == self.playImage {
+            self.setToPauseIcon()
+        } else {
+            self.setToPlayIcon()
+        }
+    }
+
+    private func setToPauseIcon() {
+        self.playButton.image = self.pauseImage
+        self.playButton.accessibilityLabel = NSLocalizedString("Pause", bundle: Bundle.audiobookToolkit()!, value: "Pause", comment: "Pause")
+    }
+
+    private func setToPlayIcon() {
+        self.playButton.image = self.playImage
+        self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
     }
 
     private var horizontalPadding = CGFloat(25)

@@ -334,12 +334,6 @@ public final class AudiobookPlayerViewController: UIViewController {
                     barButtonItem.title = texts.title
                     barButtonItem.accessibilityLabel = texts.accessibilityLabel
                 }
-
-                if self.audiobookManager.audiobook.player.isPlaying {
-                    self.playbackControlView.showPauseButtonIfNeeded()
-                } else {
-                    self.playbackControlView.showPlayButtonIfNeeded()
-                }
             }
         }
     }
@@ -393,6 +387,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
 
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.activityIndicator.startAnimating()
+        self.playbackControlView.togglePlayPauseButtonUIState()
         if self.audiobookManager.audiobook.player.isPlaying {
             self.audiobookManager.audiobook.player.pause()
         } else {
@@ -412,19 +407,31 @@ extension AudiobookPlayerViewController: PlayerDelegate {
     //
     // This a known bug in the AudioEngine player. It has been reported
     // to them and will hopefully be fixed.
+
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
         self.activityIndicator.stopAnimating()
+        self.updatePlayPauseButtonIfNeeded()
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
         self.activityIndicator.stopAnimating()
+        self.updatePlayPauseButtonIfNeeded()
     }
 
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         self.waitingForPlayer = false
         self.activityIndicator.stopAnimating()
+        self.updatePlayPauseButtonIfNeeded()
+    }
+
+    private func updatePlayPauseButtonIfNeeded() {
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.playbackControlView.showPauseButtonIfNeeded()
+        } else {
+            self.playbackControlView.showPlayButtonIfNeeded()
+        }
     }
 }
 
