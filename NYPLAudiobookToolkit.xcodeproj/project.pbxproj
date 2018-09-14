@@ -48,6 +48,7 @@
 		7BDD33B320470A7100CC8807 /* HumanReadablePercentage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */; };
 		7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */; };
 		7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */; };
+		E67888EA214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,6 +121,7 @@
 		7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePercentage.swift; sourceTree = "<group>"; };
 		7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterInfoStack.swift; sourceTree = "<group>"; };
 		7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeRemaining.swift; sourceTree = "<group>"; };
+		E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTrackTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				7B5441DD200EA82C0047B6C6 /* AudiobookPlayerViewController.swift */,
+				E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */,
 				7B3BD9C72011739E002C5416 /* ScrubberView.swift */,
 				7BD759B4201279BB004CE65F /* TextWithImageView.swift */,
 				7BD759BC20163B71004CE65F /* PlaybackControlView.swift */,
@@ -377,6 +380,7 @@
 				7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */,
 				7B6C1BD0203F1CDA00EB791E /* AudiobookNetworkService.swift in Sources */,
 				7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */,
+				E67888EA214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift in Sources */,
 				7B7B370F20227A8200030A1E /* OpenAccessPlayer.swift in Sources */,
 				7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */,
 				7BD7E03D207BC66400C122F2 /* ImageControlView.swift in Sources */,

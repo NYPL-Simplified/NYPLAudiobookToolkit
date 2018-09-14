@@ -12,13 +12,34 @@ let AudiobookTableOfContentsTableViewControllerCellIdentifier = "AudiobookTableO
 
 public class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
 
+    //MARK: - AudiobookTableOfContentsDelegate
+
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
-        self.tableView.reloadData()
+
+        if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.reloadData()
+            self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .middle)
+        } else {
+            self.tableView.reloadData()
+        }
     }
 
+    func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool) {
+        if inProgress {
+            self.activityIndicator.startAnimating()
+        } else {
+            self.activityIndicator.stopAnimating()
+        }
+    }
+
+    //MARK: -
+
     let tableOfContents: AudiobookTableOfContents
+    private let activityIndicator: UIActivityIndicatorView
     public init(tableOfContents: AudiobookTableOfContents) {
         self.tableOfContents = tableOfContents
+        self.activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        self.activityIndicator.hidesWhenStopped = true
         super.init(nibName: nil, bundle: nil)
         let deleteItem = UIBarButtonItem(
             barButtonSystemItem: .trash,
@@ -30,15 +51,12 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
             style: .plain,
             target: self,
             action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
-        self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem ]
+        let activityItem = UIBarButtonItem(
+            customView: self.activityIndicator)
+        self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem, activityItem ]
         self.tableOfContents.delegate = self
-        self.tableView.register(
-            UITableViewCell.self,
-            forCellReuseIdentifier: AudiobookTableOfContentsTableViewControllerCellIdentifier
-        )
         self.tableView.dataSource = self.tableOfContents
         self.tableView.delegate = self.tableOfContents
-        
     }
     
     required public init?(coder aDecoder: NSCoder) {
