@@ -9,7 +9,7 @@
 import UIKit
 import PureLayout
 
-class TextOverImageView: HighlightedUIControl {
+class TextOverImageView: UIControl {
     
     var text: String? {
         get {

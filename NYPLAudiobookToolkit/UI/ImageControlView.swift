@@ -9,7 +9,7 @@
 import UIKit
 import PureLayout
 
-class ImageControlView: HighlightedUIControl {
+class ImageControlView: UIControl {
 
     var image: UIImage? {
         get {
