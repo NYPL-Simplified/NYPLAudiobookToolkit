@@ -5,7 +5,7 @@ class AudiobookTrackTableViewCell: UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         let view = UIView()
-        view.backgroundColor = .red
+        view.backgroundColor = view.tintColor.withAlphaComponent(0.1)
         self.selectedBackgroundView = view
     }
 
@@ -15,7 +15,9 @@ class AudiobookTrackTableViewCell: UITableViewCell {
         let detailLabel: String
         let backgroundColor: UIColor
         if progress == 0 {
-            detailLabel = NSLocalizedString("Not Downloaded", bundle: Bundle.audiobookToolkit()!, value: "Not Downloaded", comment: "Track has not been  downloaded to the user's phone")
+            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
+            let labelFormat = NSLocalizedString("%@ (Not Downloaded)", bundle: Bundle.audiobookToolkit()!, value: "%@ (Not Downloaded)", comment: "Track has not been downloaded to the user's phone")
+            detailLabel = String(format: labelFormat, duration)
             backgroundColor = .white
         } else if progress > 0 && progress < 1  {
             let percentage = HumanReadablePercentage(percentage: progress).value
@@ -31,6 +33,7 @@ class AudiobookTrackTableViewCell: UITableViewCell {
 
         self.textLabel?.text = title
         self.detailTextLabel?.text = detailLabel
+        self.detailTextLabel?.textColor = .black
         self.backgroundColor = backgroundColor
     }
 }

@@ -163,6 +163,7 @@ final class ScrubberView: UIView {
         self.topLabel.text = self.state.progress.timeLeftInBookText
         self.middleLabel.text = self.state.middleText
         self.setNeedsUpdateConstraints()
+        self.layoutIfNeeded()
     }
 
     init(tintColor: UIColor = UIColor.red) {
@@ -269,15 +270,13 @@ final class ScrubberView: UIView {
     }
     
     override func updateConstraints() {
-        super.updateConstraints()
-        UIView.beginAnimations("moveScrubberViewProgressBar", context: nil)
         self.barWidthConstraint?.constant = self.state.progressLocationFor(self.progressBarWidth)
         self.progressBar.backgroundColor = self.state.progressColor
         self.gripper.backgroundColor = self.trimColor
         self.labelWidthConstraints.forEach { (constraint) in
             constraint.constant = self.state.progress.labelWidth
         }
-        UIView.commitAnimations()
+        super.updateConstraints()
     }
     
     required init?(coder aDecoder: NSCoder) {

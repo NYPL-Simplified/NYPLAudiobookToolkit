@@ -17,7 +17,7 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
         if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.reloadData()
-            self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .middle)
+            self.tableView.selectRow(at: selectedIndexPath, animated: false, scrollPosition: .none)
         } else {
             self.tableView.reloadData()
         }
@@ -46,7 +46,7 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
             action: #selector(AudiobookTableOfContentsTableViewController.deleteChapterRequested(_:))
         )
         let downloadAllItem = UIBarButtonItem(
-            title: "Download All",
+            title: "(Download All)",
             style: .plain,
             target: self,
             action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
@@ -64,12 +64,14 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let spine = self.tableOfContents.networkService.spine
-        if let currentPlayingChapter = self.tableOfContents.player.currentChapterLocation {
-            for index in 0..<spine.count {
-                if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
-                    let indexPath = IndexPath(row: index, section: 0)
-                    self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+        if self.tableOfContents.player.isPlaying {
+            let spine = self.tableOfContents.networkService.spine
+            if let currentPlayingChapter = self.tableOfContents.player.currentChapterLocation {
+                for index in 0..<spine.count {
+                    if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
+                        let indexPath = IndexPath(row: index, section: 0)
+                        self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+                    }
                 }
             }
         }
