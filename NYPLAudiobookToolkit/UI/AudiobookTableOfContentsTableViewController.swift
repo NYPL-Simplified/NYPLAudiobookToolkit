@@ -40,11 +40,6 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
         self.activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         self.activityIndicator.hidesWhenStopped = true
         super.init(nibName: nil, bundle: nil)
-        let deleteItem = UIBarButtonItem(
-            barButtonSystemItem: .trash,
-            target: self,
-            action: #selector(AudiobookTableOfContentsTableViewController.deleteChapterRequested(_:))
-        )
         let downloadAllItem = UIBarButtonItem(
             title: "(Download All)",
             style: .plain,
@@ -52,7 +47,7 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
             action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
         let activityItem = UIBarButtonItem(
             customView: self.activityIndicator)
-        self.navigationItem.rightBarButtonItems = [ downloadAllItem, deleteItem, activityItem ]
+        self.navigationItem.rightBarButtonItems = [ downloadAllItem, activityItem ]
         self.tableOfContents.delegate = self
         self.tableView.dataSource = self.tableOfContents
         self.tableView.delegate = self.tableOfContents
@@ -60,6 +55,22 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.width, height: 80))
+        self.tableView.tableFooterView = container
+
+        let deleteButton = UIButton()
+        container.addSubview(deleteButton)
+
+        let title = NSLocalizedString("Clear Downloads", bundle: Bundle.audiobookToolkit()!, value: "Clear Downloads", comment: "Remove downloaded chapters from the device to save storage space")
+
+        deleteButton.autoCenterInSuperview()
+        deleteButton.setTitle(title, for: .normal)
+        deleteButton.setTitleColor(.red, for: .normal)
+        deleteButton.addTarget(self, action: #selector(deleteChapterRequested(_:)), for: .touchUpInside)
     }
 
     public override func viewWillAppear(_ animated: Bool) {
