@@ -11,6 +11,7 @@ import UIKit
 protocol AudiobookTableOfContentsDelegate: class {
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
     func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool)
+    func audiobookTableOfContentsUserSelected(spineItem: SpineElement)
 }
 
 /// This class may be used in conjunction with a UITableView
@@ -61,6 +62,7 @@ extension AudiobookTableOfContents: UITableViewDelegate {
         // implied requirement of the player that has not been
         // explicitly stated elsewhere.
         self.player.playAtLocation(spineElement.chapter)
+        self.delegate?.audiobookTableOfContentsUserSelected(spineItem: spineElement)
         self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: true)
     }
 }
