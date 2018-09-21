@@ -15,7 +15,7 @@ class AudiobookTrackTableViewCell: UITableViewCell {
         let detailLabel: String
         let backgroundColor: UIColor
         if progress == 0 {
-            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
+            let duration = TimeIntervalStringHelper(timeInterval: spineElement.chapter.duration).timecode
             let labelFormat = NSLocalizedString("%@ (Not Downloaded)", bundle: Bundle.audiobookToolkit()!, value: "%@ (Not Downloaded)", comment: "Track has not been downloaded to the user's phone")
             detailLabel = String(format: labelFormat, duration)
             backgroundColor = .white
@@ -25,7 +25,7 @@ class AudiobookTrackTableViewCell: UITableViewCell {
             detailLabel = String(format: labelFormat, percentage)
             backgroundColor = .white
         } else {
-            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).value
+            let duration = TimeIntervalStringHelper(timeInterval: spineElement.chapter.duration).timecode
             let labelFormat = NSLocalizedString("Duration %@", bundle: Bundle.audiobookToolkit()!, value: "Duration %@", comment: "Duration of the track, with formatting for a previously localized string to be inserted.")
             detailLabel = String(format: labelFormat, duration)
             backgroundColor = .white

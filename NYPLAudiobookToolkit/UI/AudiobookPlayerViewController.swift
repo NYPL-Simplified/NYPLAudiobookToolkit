@@ -360,7 +360,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         let title: String
         let accessibilityLabel: String
         if sleepTimer.isActive {
-            title = HumanReadableTimestamp(timeInterval: sleepTimer.timeRemaining).value
+            title = TimeIntervalStringHelper(timeInterval: sleepTimer.timeRemaining).timecode
             let voiceOverTimeRemaining = VoiceOverTimestamp(
                 timeInterval: sleepTimer.timeRemaining
             ).value
