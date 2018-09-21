@@ -13,6 +13,9 @@ import AVKit
 import MediaPlayer
 
 public final class AudiobookPlayerViewController: UIViewController {
+
+    private let SkipTimeInterval: Double = 15
+
     private let audiobookManager: AudiobookManager
     private var currentChapter: ChapterLocation? {
         return self.audiobookManager.audiobook.player.currentChapterLocation
@@ -388,14 +391,57 @@ extension AudiobookPlayerViewController: AudiobookManagerTimerDelegate {
 
 extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+
+        guard let currentLoc = self.currentChapter else {
+            print("ERROR: tried to skip with no known current chapter location")
+            return
+        }
+
+        self.waitingForPlayer = true
+
+        var newTimeLeftInBook = self.timeLeftAfter(chapter: currentLoc) + SkipTimeInterval
+        var newPlayheadOffset = currentLoc.playheadOffset - SkipTimeInterval
+
+        if newPlayheadOffset < 0 {
+            newPlayheadOffset = 0
+            newTimeLeftInBook = self.timeLeftAfter(chapter: currentLoc)
+        }
+
+        self.seekBar.setOffset(
+            newPlayheadOffset,
+            duration: currentLoc.duration,
+            timeLeftInBook: newTimeLeftInBook,
+            middleText: self.middleTextFor(chapter: currentLoc)
+        )
+
         self.audiobookManager.audiobook.player.skipBack()
-        self.waitingForPlayer = false
         self.updateUI()
     }
     
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+
+        guard let currentLoc = self.currentChapter else {
+            print("ERROR: tried to skip with no known current chapter location")
+            return
+        }
+
+        self.waitingForPlayer = true
+
+        var newTimeLeftInBook = self.timeLeftAfter(chapter: currentLoc) - SkipTimeInterval
+        var newPlayheadOffset = currentLoc.playheadOffset + SkipTimeInterval
+
+        if newTimeLeftInBook < SkipTimeInterval {
+            newPlayheadOffset = currentLoc.duration
+            newTimeLeftInBook = self.timeLeftAfter(chapter: currentLoc)
+        }
+
+        self.seekBar.setOffset(
+            newPlayheadOffset,
+            duration: currentLoc.duration,
+            timeLeftInBook: newTimeLeftInBook,
+            middleText: self.middleTextFor(chapter: currentLoc)
+        )
         self.audiobookManager.audiobook.player.skipForward()
-        self.waitingForPlayer = false
         self.updateUI()
     }
 
