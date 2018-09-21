@@ -142,8 +142,6 @@ public final class AudiobookPlayerViewController: UIViewController {
         )
         guard let chapter = self.currentChapter else { return }
 
-        self.toolbar.layer.borderWidth = 1
-        self.toolbar.layer.borderColor = UIColor.white.cgColor
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
         self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
         self.toolbar.autoPinEdge(.right, to: .right, of: self.view)
@@ -208,6 +206,7 @@ public final class AudiobookPlayerViewController: UIViewController {
             self.playbackControlView.showPlayButtonIfNeeded()
         }
 
+        self.waitingForPlayer = false
         self.updateUI()
     }
     
@@ -371,7 +370,7 @@ public final class AudiobookPlayerViewController: UIViewController {
     }
 
     func middleTextFor(chapter: ChapterLocation) -> String {
-        let middleTextFormat = NSLocalizedString("Chapter %d of %d", bundle: Bundle.audiobookToolkit()!, value: "Chapter %d of %d", comment: "Current chapter and the amount of chapters left in the book")
+        let middleTextFormat = NSLocalizedString("Part %d of %d", bundle: Bundle.audiobookToolkit()!, value: "Part %d of %d", comment: "Current chapter and the amount of chapters left in the book")
         return String(format: middleTextFormat, chapter.number, self.audiobookManager.audiobook.spine.count)
     }
 
@@ -402,13 +401,13 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
 
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.activityIndicator.startAnimating()
+        self.waitingForPlayer = true
         self.playbackControlView.togglePlayPauseButtonUIState()
         if self.audiobookManager.audiobook.player.isPlaying {
             self.audiobookManager.audiobook.player.pause()
         } else {
             self.audiobookManager.audiobook.player.play()
         }
-        self.updateUI()
     }
 }
 
@@ -455,6 +454,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
+        //TODO
         let errorLocalizedText = NSLocalizedString("Error!", bundle: Bundle.audiobookToolkit()!, value: "Error!", comment: "Error!")
         let alertController = UIAlertController(
             title: errorLocalizedText,
@@ -476,9 +476,11 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
             } else {
                 self.audiobookManager.audiobook.player.movePlayheadToLocation(chapter)
             }
+            self.waitingForPlayer = true
+            self.updateUI()
+        } else {
+            print("Undefined state: scrubber attempted to scrub without a current chapter.")
         }
-        self.waitingForPlayer = true
-        self.updateUI()
     }
 
     func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {

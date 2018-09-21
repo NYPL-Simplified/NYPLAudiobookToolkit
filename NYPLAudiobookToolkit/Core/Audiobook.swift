@@ -54,8 +54,8 @@ private final class OpenAccessAudiobook: Audiobook {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
         guard let identifier = metadata["identifier"] as? String else { return nil }
-        guard let spine = payload["spine"] as? [Any] else { return nil }
-        self.spine = spine.flatMap { (possibleLink) -> SpineElement? in
+        guard let spine = payload["readingOrder"] as? [Any] else { return nil }
+        self.spine = spine.compactMap { (possibleLink) -> SpineElement? in
             OpenAccessSpineElement(
                 JSON: possibleLink,
                 audiobookID: identifier

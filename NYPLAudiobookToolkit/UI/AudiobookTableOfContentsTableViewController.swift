@@ -64,13 +64,16 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if self.tableOfContents.player.isPlaying {
+        if let currentPlayingChapter = self.tableOfContents.player.currentChapterLocation {
             let spine = self.tableOfContents.networkService.spine
-            if let currentPlayingChapter = self.tableOfContents.player.currentChapterLocation {
-                for index in 0..<spine.count {
-                    if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
-                        let indexPath = IndexPath(row: index, section: 0)
-                        self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+            for index in 0..<spine.count {
+                if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
+                    let indexPath = IndexPath(row: index, section: 0)
+                    if self.tableOfContents.player.isPlaying {
+                        self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
+                    } else {
+                        self.tableView.reloadData()
+                        self.tableView.scrollToRow(at: indexPath, at: .top, animated: false)
                     }
                 }
             }
