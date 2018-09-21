@@ -54,7 +54,15 @@ public final class AudiobookPlayerViewController: UIViewController {
     private let toolbar = UIToolbar()
     private let chapterInfoStack = ChapterInfoStack()
     private let toolbarHeight: CGFloat = 44
-    private var waitingForPlayer = false
+    private var waitingForPlayer = false {
+        didSet {
+            if (waitingForPlayer == true) {
+                self.activityIndicator.startAnimating()
+            } else {
+                self.activityIndicator.stopAnimating()
+            }
+        }
+    }
     private var waitingToTogglePlayPause = false
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -202,14 +210,11 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
 
-        self.waitingToTogglePlayPause = true
         if self.audiobookManager.audiobook.player.isPlaying {
             self.playbackControlView.showPauseButtonIfNeeded()
-        } else {
-            self.playbackControlView.showPlayButtonIfNeeded()
+            self.waitingForPlayer = false
         }
 
-        self.waitingForPlayer = false
         self.updateUI()
     }
     
@@ -233,10 +238,9 @@ public final class AudiobookPlayerViewController: UIViewController {
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents)
+        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents, delegate: self)
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
-
     
     @objc public func speedWasPressed(_ sender: Any) {
         func actionFrom(rate: PlaybackRate, player: Player) -> UIAlertAction {
@@ -343,13 +347,10 @@ public final class AudiobookPlayerViewController: UIViewController {
                     barButtonItem.title = texts.title
                     barButtonItem.accessibilityLabel = texts.accessibilityLabel
                 }
-                if self.waitingToTogglePlayPause {
-                    if self.audiobookManager.audiobook.player.isPlaying {
-                        self.playbackControlView.showPauseButtonIfNeeded()
-                    } else {
-                        self.playbackControlView.showPlayButtonIfNeeded()
-                    }
-                    self.waitingToTogglePlayPause = false
+                if self.audiobookManager.audiobook.player.isPlaying {
+                    self.playbackControlView.showPauseButtonIfNeeded()
+                } else {
+                    self.playbackControlView.showPlayButtonIfNeeded()
                 }
             }
         }
@@ -380,6 +381,25 @@ public final class AudiobookPlayerViewController: UIViewController {
     func playbackSpeedTextFor(speedText: String) -> String {
         let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Playback speed with localized format, used for voice over")
         return String(format: speedAccessibilityFormatString, speedText)
+    }
+}
+
+extension AudiobookPlayerViewController: AudiobookTableOfContentsTableViewControllerDelegate {
+    public func userSelectedSpineItem(item: SpineElement) {
+
+        //Set UI state to new chapter before play may actually commence
+        self.waitingForPlayer = true
+
+        self.playbackControlView.showPauseButtonIfNeeded()
+
+        let selectedChapter = item.chapter
+        let timeLeftInBook = self.timeLeftAfter(chapter: selectedChapter)
+        self.seekBar.setOffset(
+            selectedChapter.playheadOffset,
+            duration: selectedChapter.duration,
+            timeLeftInBook: timeLeftInBook,
+            middleText: self.middleTextFor(chapter: selectedChapter)
+        )
     }
 }
 
@@ -446,7 +466,6 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     }
 
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
-        self.activityIndicator.startAnimating()
         self.waitingForPlayer = true
         self.playbackControlView.togglePlayPauseButtonUIState()
         if self.audiobookManager.audiobook.player.isPlaying {
@@ -470,19 +489,16 @@ extension AudiobookPlayerViewController: PlayerDelegate {
 
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
-        self.activityIndicator.stopAnimating()
         self.updatePlayPauseButtonIfNeeded()
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
-        self.activityIndicator.stopAnimating()
         self.updatePlayPauseButtonIfNeeded()
     }
 
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         self.waitingForPlayer = false
-        self.activityIndicator.stopAnimating()
         self.updatePlayPauseButtonIfNeeded()
     }
 

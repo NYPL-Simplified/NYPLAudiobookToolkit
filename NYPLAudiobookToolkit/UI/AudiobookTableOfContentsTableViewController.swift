@@ -10,7 +10,12 @@ import UIKit
 
 let AudiobookTableOfContentsTableViewControllerCellIdentifier = "AudiobookTableOfContentsTableViewControllerCellIdentifier"
 
+public protocol AudiobookTableOfContentsTableViewControllerDelegate {
+    func userSelectedSpineItem(item: SpineElement)
+}
+
 public class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
+
 
     //MARK: - AudiobookTableOfContentsDelegate
 
@@ -31,15 +36,22 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
         }
     }
 
+    func audiobookTableOfContentsUserSelected(spineItem: SpineElement) {
+        self.delegate?.userSelectedSpineItem(item: spineItem)
+    }
+
     //MARK: -
 
     let tableOfContents: AudiobookTableOfContents
+    let delegate: AudiobookTableOfContentsTableViewControllerDelegate?
     private let activityIndicator: UIActivityIndicatorView
-    public init(tableOfContents: AudiobookTableOfContents) {
+    public init(tableOfContents: AudiobookTableOfContents, delegate: AudiobookTableOfContentsTableViewControllerDelegate?) {
         self.tableOfContents = tableOfContents
+        self.delegate = delegate
         self.activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         self.activityIndicator.hidesWhenStopped = true
         super.init(nibName: nil, bundle: nil)
+        //TODO localize when text is final (or replace with icon)
         let downloadAllItem = UIBarButtonItem(
             title: "(Download All)",
             style: .plain,
