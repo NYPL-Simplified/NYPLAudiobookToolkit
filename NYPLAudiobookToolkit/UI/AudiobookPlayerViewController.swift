@@ -56,9 +56,7 @@ public final class AudiobookPlayerViewController: UIViewController {
     private let toolbarHeight: CGFloat = 44
     private var waitingForPlayer = false {
         didSet {
-            if (waitingForPlayer == true) {
-                self.activityIndicator.startAnimating()
-            } else {
+            if !waitingForPlayer {
                 self.activityIndicator.stopAnimating()
             }
         }
@@ -266,7 +264,16 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.present(actionSheet, animated: true, completion: nil)
     }
 
-    func speedButtonShouldUpdate(rate: PlaybackRate) {
+    private func sleepTimerValueShouldUpdate() {
+        if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex],
+        let chapter = self.currentChapter {
+            let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
+            barButtonItem.title = texts.title
+            barButtonItem.accessibilityLabel = texts.accessibilityLabel
+        }
+    }
+
+    private func speedButtonShouldUpdate(rate: PlaybackRate) {
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
             let playbackSpeedText = HumanReadablePlaybackRate(rate: rate).value
             buttonItem.title = playbackSpeedText
@@ -278,6 +285,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         func actionFrom(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 sleepTimer.setTimerTo(trigger: trigger)
+                self.sleepTimerValueShouldUpdate()
             }
             var action: UIAlertAction! = nil
             switch trigger {
@@ -285,18 +293,21 @@ public final class AudiobookPlayerViewController: UIViewController {
                 let title = NSLocalizedString("End of Chapter", bundle: Bundle.audiobookToolkit()!, value: "End of Chapter", comment: "End of Chapter")
                 action = UIAlertAction(title: title, style: .default, handler: handler)
             case .oneHour:
-                action = UIAlertAction(title: "60", style: .default, handler: handler)
+                let title = NSLocalizedString("60 Minutes", bundle: Bundle.audiobookToolkit()!, value: "60 Minutes", comment: "60 Minutes")
+                action = UIAlertAction(title: title, style: .default, handler: handler)
             case .thirtyMinutes:
-                action = UIAlertAction(title: "30", style: .default, handler: handler)
+                let title = NSLocalizedString("30 Minutes", bundle: Bundle.audiobookToolkit()!, value: "30 Minutes", comment: "30 Minutes")
+                action = UIAlertAction(title: title, style: .default, handler: handler)
             case .fifteenMinutes:
-                action = UIAlertAction(title: "15", style: .default, handler: handler)
+                let title = NSLocalizedString("15 Minutes", bundle: Bundle.audiobookToolkit()!, value: "15 Minutes", comment: "15 Minutes")
+                action = UIAlertAction(title: title, style: .default, handler: handler)
             case .never:
                 let title = NSLocalizedString("Off", bundle: Bundle.audiobookToolkit()!, value: "Off", comment: "Off")
                 action = UIAlertAction(title: title, style: .default, handler: handler)
             }
             return action
         }
-        let title = NSLocalizedString("Set Your Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Set Your Sleep Timer", comment: "Set Your Sleep Timer")
+        let title = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment: "Sleep Timer")
         let actionSheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         let triggers: [SleepTimerTriggerAt] = [.never, .fifteenMinutes, .thirtyMinutes, .oneHour, .endOfChapter]
         triggers.forEach { (trigger)  in
@@ -387,8 +398,8 @@ public final class AudiobookPlayerViewController: UIViewController {
 extension AudiobookPlayerViewController: AudiobookTableOfContentsTableViewControllerDelegate {
     public func userSelectedSpineItem(item: SpineElement) {
 
-        //Set UI state to new chapter before play may actually commence
         self.waitingForPlayer = true
+        self.activityIndicator.startAnimating()
 
         self.playbackControlView.showPauseButtonIfNeeded()
 
@@ -418,6 +429,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
         }
 
         self.waitingForPlayer = true
+        self.activityIndicator.startAnimating()
 
         var newTimeLeftInBook = self.timeLeftAfter(chapter: currentLoc) + SkipTimeInterval
         var newPlayheadOffset = currentLoc.playheadOffset - SkipTimeInterval
@@ -446,6 +458,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
         }
 
         self.waitingForPlayer = true
+        self.activityIndicator.startAnimating()
 
         var newTimeLeftInBook = self.timeLeftAfter(chapter: currentLoc) - SkipTimeInterval
         var newPlayheadOffset = currentLoc.playheadOffset + SkipTimeInterval
@@ -467,6 +480,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
 
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.waitingForPlayer = true
+        self.activityIndicator.startAnimating()
         self.playbackControlView.togglePlayPauseButtonUIState()
         if self.audiobookManager.audiobook.player.isPlaying {
             self.audiobookManager.audiobook.player.pause()

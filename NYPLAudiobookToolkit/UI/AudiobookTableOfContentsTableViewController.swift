@@ -92,12 +92,8 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
             for index in 0..<spine.count {
                 if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
                     let indexPath = IndexPath(row: index, section: 0)
-                    if self.tableOfContents.player.isPlaying {
-                        self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
-                    } else {
-                        self.tableView.reloadData()
-                        self.tableView.scrollToRow(at: indexPath, at: .top, animated: false)
-                    }
+                    self.tableView.reloadData()
+                    self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
                 }
             }
         }
