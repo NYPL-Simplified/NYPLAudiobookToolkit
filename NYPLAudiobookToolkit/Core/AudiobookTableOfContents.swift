@@ -36,8 +36,8 @@ public final class AudiobookTableOfContents: NSObject {
     }
 
     weak var delegate: AudiobookTableOfContentsDelegate?
-    let networkService: AudiobookNetworkService
-    let player: Player
+    private let networkService: AudiobookNetworkService
+    private let player: Player
     internal init(networkService: AudiobookNetworkService, player: Player) {
         self.networkService = networkService
         self.player = player
@@ -49,6 +49,18 @@ public final class AudiobookTableOfContents: NSObject {
     deinit {
         self.player.removeDelegate(self)
         self.networkService.removeDelegate(self)
+    }
+
+    func currentSpineIndex() -> Int? {
+        if let currentPlayingChapter = self.player.currentChapterLocation {
+            let spine = self.networkService.spine
+            for index in 0..<spine.count {
+                if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
+                    return index
+                }
+            }
+        }
+        return nil
     }
 }
 

@@ -25,16 +25,16 @@ struct ScrubberProgress {
     let timeLeftInBook: TimeInterval
 
     var timeLeftText: String {
-        return TimeIntervalStringHelper(timeInterval: self.timeLeft).timecode
+        return HumanReadableTimestamp(timeInterval: self.timeLeft).timecode
     }
 
     var playheadText: String {
-        return TimeIntervalStringHelper(timeInterval: self.offset).timecode
+        return HumanReadableTimestamp(timeInterval: self.offset).timecode
     }
 
     var timeLeftInBookText: String {
-        let timeLeft = TimeIntervalStringHelper(timeInterval: self.timeLeftInBook).description
-        let formatString = NSLocalizedString("%@ remaining", bundle: Bundle.audiobookToolkit()!, value: "%@ remaining", comment: "what is left in a time value")
+        let timeLeft = HumanReadableTimestamp(timeInterval: self.timeLeftInBook).stringDescription
+        let formatString = NSLocalizedString("%@ remaining", bundle: Bundle.audiobookToolkit()!, value: "%@ remaining", comment: "The amount of hours and minutes left")
         return String(format: formatString, timeLeft)
     }
 
