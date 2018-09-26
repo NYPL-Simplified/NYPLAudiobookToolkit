@@ -244,7 +244,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         func actionFrom(rate: PlaybackRate, player: Player) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 player.playbackRate = rate
-                self.speedButtonShouldUpdate(rate: rate)
+                self.updateSpeedButtonIfNeeded(rate: rate)
             }
             let title = HumanReadablePlaybackRate(rate: rate).value
             return UIAlertAction(title: title, style: .default, handler: handler)
@@ -264,7 +264,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         self.present(actionSheet, animated: true, completion: nil)
     }
 
-    private func sleepTimerValueShouldUpdate() {
+    private func updateSleepTimerIfNeeded() {
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex],
         let chapter = self.currentChapter {
             let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
@@ -273,7 +273,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         }
     }
 
-    private func speedButtonShouldUpdate(rate: PlaybackRate) {
+    private func updateSpeedButtonIfNeeded(rate: PlaybackRate) {
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
             let playbackSpeedText = HumanReadablePlaybackRate(rate: rate).value
             buttonItem.title = playbackSpeedText
@@ -285,7 +285,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         func actionFrom(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 sleepTimer.setTimerTo(trigger: trigger)
-                self.sleepTimerValueShouldUpdate()
+                self.updateSleepTimerIfNeeded()
             }
             var action: UIAlertAction! = nil
             switch trigger {
@@ -371,7 +371,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         let title: String
         let accessibilityLabel: String
         if sleepTimer.isActive {
-            title = TimeIntervalStringHelper(timeInterval: sleepTimer.timeRemaining).timecode
+            title = HumanReadableTimestamp(timeInterval: sleepTimer.timeRemaining).stringDescription
             let voiceOverTimeRemaining = VoiceOverTimestamp(
                 timeInterval: sleepTimer.timeRemaining
             ).value
@@ -530,14 +530,13 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
-        //TODO
-        let errorLocalizedText = NSLocalizedString("Error!", bundle: Bundle.audiobookToolkit()!, value: "Error!", comment: "Error!")
+        let errorLocalizedText = NSLocalizedString("A Problem Has Occurred", bundle: Bundle.audiobookToolkit()!, value: "A Problem Has Occurred", comment: "A Problem Has Occurred")
         let alertController = UIAlertController(
             title: errorLocalizedText,
             message: error.localizedDescription,
             preferredStyle: .alert
         )
-        let okLocalizedText = NSLocalizedString("Ok", bundle: Bundle.audiobookToolkit()!, value: "Ok", comment: "Ok")
+        let okLocalizedText = NSLocalizedString("Ok", bundle: Bundle.audiobookToolkit()!, value: "Ok", comment: "Okay")
         alertController.addAction(UIAlertAction(title: okLocalizedText, style: .cancel, handler: nil))
         alertController.popoverPresentationController?.sourceView = self.view
         self.present(alertController, animated: true, completion: nil)

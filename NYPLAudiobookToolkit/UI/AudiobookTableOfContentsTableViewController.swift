@@ -14,33 +14,7 @@ public protocol AudiobookTableOfContentsTableViewControllerDelegate {
     func userSelectedSpineItem(item: SpineElement)
 }
 
-public class AudiobookTableOfContentsTableViewController: UITableViewController, AudiobookTableOfContentsDelegate {
-
-
-    //MARK: - AudiobookTableOfContentsDelegate
-
-    func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
-        if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.reloadData()
-            self.tableView.selectRow(at: selectedIndexPath, animated: false, scrollPosition: .none)
-        } else {
-            self.tableView.reloadData()
-        }
-    }
-
-    func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool) {
-        if inProgress {
-            self.activityIndicator.startAnimating()
-        } else {
-            self.activityIndicator.stopAnimating()
-        }
-    }
-
-    func audiobookTableOfContentsUserSelected(spineItem: SpineElement) {
-        self.delegate?.userSelectedSpineItem(item: spineItem)
-    }
-
-    //MARK: -
+public class AudiobookTableOfContentsTableViewController: UITableViewController {
 
     let tableOfContents: AudiobookTableOfContents
     let delegate: AudiobookTableOfContentsTableViewControllerDelegate?
@@ -51,7 +25,6 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
         self.activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         self.activityIndicator.hidesWhenStopped = true
         super.init(nibName: nil, bundle: nil)
-        //TODO localize when text is final (or replace with icon)
         let downloadAllItem = UIBarButtonItem(
             title: "(Download All)",
             style: .plain,
@@ -87,18 +60,15 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if let currentPlayingChapter = self.tableOfContents.player.currentChapterLocation {
-            let spine = self.tableOfContents.networkService.spine
-            for index in 0..<spine.count {
-                if currentPlayingChapter.inSameChapter(other: spine[index].chapter) {
-                    let indexPath = IndexPath(row: index, section: 0)
-                    self.tableView.reloadData()
-                    self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
-                }
+        if let index = self.tableOfContents.currentSpineIndex() {
+            self.tableView.reloadData()
+            if self.tableView.numberOfRows(inSection: 0) > index {
+                let indexPath = IndexPath(row: index, section: 0)
+                self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
             }
         }
     }
-    
+
     @objc func deleteChapterRequested(_ sender: Any) {
         let confirmController = UIAlertController(
             title: "Clear Files",
@@ -126,5 +96,28 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController,
 
     @objc func downloadAllChaptersRequested(_ sender: Any) {
         self.tableOfContents.fetch()
+    }
+}
+
+extension AudiobookTableOfContentsTableViewController: AudiobookTableOfContentsDelegate {
+    func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents) {
+        if let selectedIndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.reloadData()
+            self.tableView.selectRow(at: selectedIndexPath, animated: false, scrollPosition: .none)
+        } else {
+            self.tableView.reloadData()
+        }
+    }
+
+    func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool) {
+        if inProgress {
+            self.activityIndicator.startAnimating()
+        } else {
+            self.activityIndicator.stopAnimating()
+        }
+    }
+
+    func audiobookTableOfContentsUserSelected(spineItem: SpineElement) {
+        self.delegate?.userSelectedSpineItem(item: spineItem)
     }
 }
