@@ -32,7 +32,7 @@ public final class AudiobookPlayerViewController: UIViewController {
 
     private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     private let gradiant = CAGradientLayer()
-    private let padding = CGFloat(8)
+    private let padding = CGFloat(12)
     private let seekBar = ScrubberView()
     private let playbackControlView = PlaybackControlView()
     private let speedBarButtonIndex = 1
@@ -123,8 +123,8 @@ public final class AudiobookPlayerViewController: UIViewController {
         let seekBarContainerView = UIView()
         self.view.addSubview(seekBarContainerView)
 
-        seekBarContainerView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 2)
-        seekBarContainerView.autoPinEdge(.bottom, to: .top, of: self.coverView, withOffset: -self.padding * 2)
+        seekBarContainerView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)
+        seekBarContainerView.autoPinEdge(.bottom, to: .top, of: self.coverView, withOffset: -self.padding)
         seekBarContainerView.autoPinEdge(toSuperviewEdge: .leading)
         seekBarContainerView.autoPinEdge(toSuperviewEdge: .trailing)
 
@@ -132,8 +132,8 @@ public final class AudiobookPlayerViewController: UIViewController {
 
         self.seekBar.delegate = self;
         self.seekBar.autoCenterInSuperview()
-        self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 4, relation: .greaterThanOrEqual)
-        self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 4, relation: .greaterThanOrEqual)
+        self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 2, relation: .greaterThanOrEqual)
+        self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 2, relation: .greaterThanOrEqual)
         
         NSLayoutConstraint.autoSetPriority(.defaultHigh) {
             self.seekBar.autoSetDimension(.width, toSize: 500)
@@ -424,7 +424,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
         guard let currentLoc = self.currentChapter else {
-            print("ERROR: tried to skip with no known current chapter location")
+            NSLog("\(#file): ERROR: tried to skip with no known current chapter location")
             return
         }
 
@@ -453,7 +453,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
         guard let currentLoc = self.currentChapter else {
-            print("ERROR: tried to skip with no known current chapter location")
+            NSLog("\(#file): ERROR: tried to skip with no known current chapter location")
             return
         }
 
@@ -554,7 +554,7 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
             self.waitingForPlayer = true
             self.updateUI()
         } else {
-            print("Undefined state: scrubber attempted to scrub without a current chapter.")
+            NSLog("\(#file): Undefined state: scrubber attempted to scrub without a current chapter.")
         }
     }
 

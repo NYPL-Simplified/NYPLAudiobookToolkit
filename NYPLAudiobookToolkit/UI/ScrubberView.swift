@@ -294,7 +294,7 @@ final class ScrubberView: UIView {
             } else if position.x > self.progressBarWidth {
                 percentage = 1.0
             } else {
-                print("\(#file) Error: Unknown scrub state!")
+                NSLog("\(#file) Error: Unknown scrub state!")
                 return
             }
             self.state = ScrubberUIState(
