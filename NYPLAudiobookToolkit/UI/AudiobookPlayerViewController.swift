@@ -30,7 +30,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+    private let activityIndicator = UIActivityIndicatorView(style: .gray)
     private let gradiant = CAGradientLayer()
     private let padding = CGFloat(12)
     private let seekBar = ScrubberView()
@@ -47,7 +47,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
-        imageView.contentMode = UIViewContentMode.scaleAspectFill
+        imageView.contentMode = UIView.ContentMode.scaleAspectFill
         return imageView
     }()
 
@@ -339,7 +339,7 @@ public final class AudiobookPlayerViewController: UIViewController {
         buttonItem.isAccessibilityElement = true
         buttonItem.accessibilityLabel = NSLocalizedString("Airplay", bundle: Bundle.audiobookToolkit()!, value: "Airplay", comment: "Airplay")
         buttonItem.accessibilityHint = NSLocalizedString("Send audio to another airplay-compatible device.", bundle: Bundle.audiobookToolkit()!, value: "Send audio to another airplay-compatible device.", comment: "Longer description to identify airplay button.")
-        buttonItem.accessibilityTraits = UIAccessibilityTraitButton
+        buttonItem.accessibilityTraits = UIAccessibilityTraits.button
         return buttonItem
     }
     

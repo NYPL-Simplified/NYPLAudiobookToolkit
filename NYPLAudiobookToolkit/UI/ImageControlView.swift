@@ -41,7 +41,7 @@ class ImageControlView: UIControl {
     }
 
     func setup() {
-        self.accessibilityTraits = UIAccessibilityTraitButton
+        self.accessibilityTraits = UIAccessibilityTraits.button
         self.isAccessibilityElement = true
 
         self.addSubview(self.imageView)

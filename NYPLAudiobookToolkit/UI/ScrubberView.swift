@@ -187,17 +187,17 @@ final class ScrubberView: UIView {
         self.progressBackground.autoPinEdge(.left, to: .left, of: self)
         self.progressBackground.autoPinEdge(.right, to: .right, of: self)
         self.progressBackground.accessibilityIdentifier = "progress_background"
-        self.progressBackground.setContentCompressionResistancePriority(UILayoutPriority.required, for: UILayoutConstraintAxis.horizontal)
-        self.progressBackground.setContentHuggingPriority(.defaultLow, for: UILayoutConstraintAxis.horizontal)
+        self.progressBackground.setContentCompressionResistancePriority(UILayoutPriority.required, for: NSLayoutConstraint.Axis.horizontal)
+        self.progressBackground.setContentHuggingPriority(.defaultLow, for: NSLayoutConstraint.Axis.horizontal)
 
         self.leftLabel.autoPinEdge(.left, to: .left, of: self)
         self.leftLabel.autoAlignAxis(.horizontal, toSameAxisOf: self.middleLabel)
         let leftLabelWidth = self.leftLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.leftLabel.numberOfLines = 1
         self.leftLabel.textAlignment = .left
-        self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
-        self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
-        self.leftLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
+        self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.horizontal)
+        self.leftLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.vertical)
+        self.leftLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: NSLayoutConstraint.Axis.horizontal)
         self.leftLabel.font = UIFont.systemFont(ofSize: 12)
         self.leftLabel.accessibilityIdentifier = "progress_leftLabel"
         self.leftLabel.text = self.state.progress.playheadText
@@ -207,9 +207,9 @@ final class ScrubberView: UIView {
         let rightLabelWidth = self.rightLabel.autoSetDimension(.width, toSize: defaultTimeLabelWidth())
         self.rightLabel.numberOfLines = 1
         self.rightLabel.textAlignment = .right
-        self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
-        self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
-        self.rightLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
+        self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.horizontal)
+        self.rightLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.vertical)
+        self.rightLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultLow, for: NSLayoutConstraint.Axis.horizontal)
         self.rightLabel.font = UIFont.systemFont(ofSize: 12)
         self.rightLabel.accessibilityIdentifier = "progress_rightLabel"
         self.rightLabel.text = self.state.progress.timeLeftText
@@ -220,9 +220,9 @@ final class ScrubberView: UIView {
         self.middleLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.middleLabel.numberOfLines = 1
         self.middleLabel.textAlignment = .center
-        self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
-        self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
-        self.middleLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
+        self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: NSLayoutConstraint.Axis.horizontal)
+        self.middleLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.vertical)
+        self.middleLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.horizontal)
         self.middleLabel.font = UIFont.boldSystemFont(ofSize: 16)
         self.middleLabel.accessibilityIdentifier = "progress_rightLabel"
 
@@ -238,9 +238,9 @@ final class ScrubberView: UIView {
         self.topLabel.autoPinEdge(.top, to: .top, of: self)
         self.topLabel.autoPinEdge(.left, to: .left, of: self)
         self.topLabel.autoPinEdge(.right, to: .right, of: self)
-        self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: UILayoutConstraintAxis.horizontal)
-        self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.vertical)
-        self.topLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: UILayoutConstraintAxis.horizontal)
+        self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: NSLayoutConstraint.Axis.horizontal)
+        self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.vertical)
+        self.topLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.horizontal)
         
         self.gripper.backgroundColor = self.state.progressColor
         self.gripper.autoPinEdge(.top, to: .bottom, of: self.topLabel, withOffset: self.padding / 2)
@@ -258,7 +258,7 @@ final class ScrubberView: UIView {
     }
     
     func setupAccessibility() {
-        self.accessibilityTraits = UIAccessibilityTraitAdjustable
+        self.accessibilityTraits = UIAccessibilityTraits.adjustable
     }
     
     override func accessibilityIncrement() {
