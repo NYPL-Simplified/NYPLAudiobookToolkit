@@ -49,7 +49,7 @@ import AVFoundation
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
 /// to be used by the AudibookDetailViewController to respond to UI events.
-public final class DefaultAudiobookManager: AudiobookManager {
+@objcMembers public final class DefaultAudiobookManager: NSObject, AudiobookManager {
     public weak var timerDelegate: AudiobookManagerTimerDelegate?
     public weak var refreshDelegate: RefreshDelegate?
     
@@ -94,6 +94,7 @@ public final class DefaultAudiobookManager: AudiobookManager {
             audiobook.player.skipBack()
             return .success
         })
+        super.init()
         self.audiobook.player.registerDelegate(self)
         DispatchQueue.main.async {
             self.timer = Timer.scheduledTimer(
