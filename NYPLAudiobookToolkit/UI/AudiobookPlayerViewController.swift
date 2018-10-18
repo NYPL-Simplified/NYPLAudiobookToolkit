@@ -65,8 +65,6 @@ public final class AudiobookPlayerViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        self.navigationController?.navigationBar.isTranslucent = false
-
         self.gradiant.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
         self.gradiant.colors = [ startColor, UIColor.white.cgColor]
