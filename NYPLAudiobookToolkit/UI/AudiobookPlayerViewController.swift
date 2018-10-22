@@ -12,16 +12,16 @@ import PureLayout
 import AVKit
 import MediaPlayer
 
-public final class AudiobookPlayerViewController: UIViewController {
+@objcMembers public final class AudiobookPlayerViewController: UIViewController {
 
     private let SkipTimeInterval: Double = 15
 
     private let audiobookManager: AudiobookManager
-    private var currentChapter: ChapterLocation? {
+    public var currentChapter: ChapterLocation? {
         return self.audiobookManager.audiobook.player.currentChapterLocation
     }
 
-    @objc public required init(audiobookManager: AudiobookManager) {
+    public required init(audiobookManager: AudiobookManager) {
         self.audiobookManager = audiobookManager
         super.init(nibName: nil, bundle: nil)
     }
