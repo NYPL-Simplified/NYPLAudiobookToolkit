@@ -31,7 +31,7 @@ import MediaPlayer
     }
 
     private let activityIndicator = UIActivityIndicatorView(style: .gray)
-    private let gradiant = CAGradientLayer()
+    private let gradient = CAGradientLayer()
     private let padding = CGFloat(12)
     private let seekBar = ScrubberView()
     private let playbackControlView = PlaybackControlView()
@@ -65,12 +65,12 @@ import MediaPlayer
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        self.gradiant.frame = self.view.bounds
+        self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
-        self.gradiant.colors = [ startColor, UIColor.white.cgColor]
-        self.gradiant.startPoint = CGPoint.zero
-        self.gradiant.endPoint = CGPoint(x: 1, y: 1)
-        self.view.layer.insertSublayer(self.gradiant, at: 0)
+        self.gradient.colors = [ startColor, UIColor.white.cgColor]
+        self.gradient.startPoint = CGPoint.zero
+        self.gradient.endPoint = CGPoint(x: 1, y: 1)
+        self.view.layer.insertSublayer(self.gradient, at: 0)
 
         let tocImage = UIImage(
             named: "table_of_contents",
@@ -190,7 +190,7 @@ import MediaPlayer
   
     override public func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.gradiant.frame = self.view.bounds
+        self.gradient.frame = self.view.bounds
     }
     
     override public func viewDidDisappear(_ animated: Bool) {
