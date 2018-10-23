@@ -422,7 +422,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
         guard let currentLoc = self.currentChapter else {
-            NSLog("\(#file): ERROR: tried to skip with no known current chapter location")
+            Log.error(#file, "Trying to skip with no known current chapter location")
             return
         }
 
@@ -451,7 +451,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
         guard let currentLoc = self.currentChapter else {
-            NSLog("\(#file): ERROR: tried to skip with no known current chapter location")
+            Log.error(#file, "Trying to skip with no known current chapter location")
             return
         }
 
@@ -538,6 +538,9 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
         alertController.addAction(UIAlertAction(title: okLocalizedText, style: .cancel, handler: nil))
         alertController.popoverPresentationController?.sourceView = self.view
         self.present(alertController, animated: true, completion: nil)
+
+        let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
+        self.audiobookManager.logHandler?(.error, logString, error)
     }
 }
 
@@ -552,7 +555,7 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
             self.waitingForPlayer = true
             self.updateUI()
         } else {
-            NSLog("\(#file): Undefined state: scrubber attempted to scrub without a current chapter.")
+            Log.error(#file, "Scrubber attempted to scrub without a current chapter.")
         }
     }
 

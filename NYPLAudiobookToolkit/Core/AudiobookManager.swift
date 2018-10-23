@@ -28,15 +28,20 @@ import AVFoundation
     func audiobookManager(_ audiobookManager: AudiobookManager, didUpdate timer: Timer?)
 }
 
+/// A host can optionally pass in a function that receives errors
+/// or other notable log events reported from NYPLAudiobookToolkit
+public typealias LogHandler = (LogLevel, String, NSError?) -> ()
+
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
 /// It is intended to be used by the host app to initiate downloads,
 /// access the player, and manage the filesystem.
 /// This object also manages the remote playback/media info for control
 /// center / airplay.
 @objc public protocol AudiobookManager {
-    weak var refreshDelegate: RefreshDelegate? { get set }
-    weak var timerDelegate: AudiobookManagerTimerDelegate? { get set }
-    
+    var refreshDelegate: RefreshDelegate? { get set }
+    var timerDelegate: AudiobookManagerTimerDelegate? { get set }
+    var logHandler: LogHandler? { get set }
+
     var networkService: AudiobookNetworkService { get }
     var metadata: AudiobookMetadata { get }
     var audiobook: Audiobook { get }
@@ -52,7 +57,8 @@ import AVFoundation
 @objcMembers public final class DefaultAudiobookManager: NSObject, AudiobookManager {
     public weak var timerDelegate: AudiobookManagerTimerDelegate?
     public weak var refreshDelegate: RefreshDelegate?
-    
+    public var logHandler: LogHandler?
+
     public let networkService: AudiobookNetworkService
     public let metadata: AudiobookMetadata
     public let audiobook: Audiobook

@@ -48,6 +48,7 @@
 		7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */; };
 		7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */; };
 		E67888EA214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */; };
+		E67CA9A5215C0D320081A10B /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67CA9A4215C0D320081A10B /* Log.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,6 +121,7 @@
 		7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterInfoStack.swift; sourceTree = "<group>"; };
 		7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeRemaining.swift; sourceTree = "<group>"; };
 		E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTrackTableViewCell.swift; sourceTree = "<group>"; };
+		E67CA9A4215C0D320081A10B /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -244,6 +246,7 @@
 				7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */,
 				7BD8E4F9206EB49D008ED3F1 /* VoiceOverTimestamp.swift */,
 				7BD8E4FB20753BC6008ED3F1 /* Bundle.swift */,
+				E67CA9A4215C0D320081A10B /* Log.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -375,6 +378,7 @@
 			files = (
 				7BD8E4FC20753BC6008ED3F1 /* Bundle.swift in Sources */,
 				7B5441E4200EA82C0047B6C6 /* AudiobookPlayerViewController.swift in Sources */,
+				E67CA9A5215C0D320081A10B /* Log.swift in Sources */,
 				7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */,
 				7B6C1BD0203F1CDA00EB791E /* AudiobookNetworkService.swift in Sources */,
 				7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */,
