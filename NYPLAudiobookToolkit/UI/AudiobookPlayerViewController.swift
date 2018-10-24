@@ -422,7 +422,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
         guard let currentLoc = self.currentChapter else {
-            Log.error(#file, "Trying to skip with no known current chapter location")
+            ATLog(.error, "Trying to skip with no known current chapter location")
             return
         }
 
@@ -451,7 +451,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
         guard let currentLoc = self.currentChapter else {
-            Log.error(#file, "Trying to skip with no known current chapter location")
+            ATLog(.error, "Trying to skip with no known current chapter location")
             return
         }
 
@@ -555,7 +555,7 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
             self.waitingForPlayer = true
             self.updateUI()
         } else {
-            Log.error(#file, "Scrubber attempted to scrub without a current chapter.")
+            ATLog(.error, "Scrubber attempted to scrub without a current chapter.")
         }
     }
 

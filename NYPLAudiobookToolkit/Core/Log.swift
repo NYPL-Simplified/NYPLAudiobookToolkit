@@ -7,46 +7,36 @@ import Foundation
     case error
 }
 
-final class Log {
-
-    fileprivate class func levelToString(_ level: LogLevel) -> String {
-        switch level {
-        case .debug:
-            return "DEBUG"
-        case .info:
-            return "INFO"
-        case .warn:
-            return "WARNING"
-        case .error:
-            return "ERROR"
-        }
+private func levelToString(_ level: LogLevel) -> String {
+    switch level {
+    case .debug:
+        return "DEBUG"
+    case .info:
+        return "INFO"
+    case .warn:
+        return "WARNING"
+    case .error:
+        return "ERROR"
     }
+}
     
-    class func log(_ level: LogLevel, _ tag: String, _ message: String, error: Error? = nil) {
-        #if DEBUG
-        let shouldLog = true
-        #else
-        let shouldLog = level != .debug
-        #endif
+func ATLog(
+    file: String = #file,
+    line: Int = #line,
+    _ level: LogLevel,
+    _ message: String,
+    error: Error? = nil)
+{
+    #if DEBUG
+    let shouldLog = true
+    #else
+    let shouldLog = level != .debug
+    #endif
 
-        if shouldLog {
-            NSLog("[\(levelToString(level))] \(tag): \(message)\(error == nil ? "" : "\n\(error!)")")
-        }
-    }
+    let url = URL(fileURLWithPath: file)
+    let filename = url.lastPathComponent
 
-    class func debug(_ tag: String, _ message: String, error: Error? = nil) {
-        log(.debug, tag, message, error: error)
-    }
-
-    class func info(_ tag: String, _ message: String, error: Error? = nil) {
-        log(.info, tag, message, error: error)
-    }
-
-    class func warn(_ tag: String, _ message: String, error: Error? = nil) {
-        log(.warn, tag, message, error: error)
-    }
-
-    class func error(_ tag: String, _ message: String, error: Error? = nil) {
-        log(.error, tag, message, error: error)
+    if shouldLog {
+        NSLog("[\(levelToString(level))] \(filename):\(line): \(message)\(error == nil ? "" : "\n\(error!)")")
     }
 }
