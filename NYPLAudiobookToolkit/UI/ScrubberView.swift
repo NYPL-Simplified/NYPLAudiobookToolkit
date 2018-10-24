@@ -294,7 +294,7 @@ final class ScrubberView: UIView {
             } else if position.x > self.progressBarWidth {
                 percentage = 1.0
             } else {
-                Log.error(#file, "Unknown scrub state")
+                ATLog(.error, "Unknown scrub state")
                 return
             }
             self.state = ScrubberUIState(
