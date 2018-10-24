@@ -13,27 +13,27 @@ class AudiobookTrackTableViewCell: UITableViewCell {
         let progress = spineElement.downloadTask.downloadProgress
         let title = spineElement.chapter.title
         let detailLabel: String
-        let backgroundColor: UIColor
+        let labelAlpha: CGFloat
         if progress == 0 {
             let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).timecode
-            let labelFormat = NSLocalizedString("%@ (Not Downloaded)", bundle: Bundle.audiobookToolkit()!, value: "%@ (Not Downloaded)", comment: "Track has not been downloaded to the user's phone")
+            let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
             detailLabel = String(format: labelFormat, duration)
-            backgroundColor = .white
+            labelAlpha = 0.4
         } else if progress > 0 && progress < 1  {
             let percentage = HumanReadablePercentage(percentage: progress).value
             let labelFormat = NSLocalizedString("Downloading: %@%%", bundle: Bundle.audiobookToolkit()!, value: "Downloading: %@%%", comment: "The percentage of the chapter that has been downloaded, formatting for string should be localized at this point.")
             detailLabel = String(format: labelFormat, percentage)
-            backgroundColor = .white
+            labelAlpha = 0.4
         } else {
             let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).timecode
-            let labelFormat = NSLocalizedString("Duration %@", bundle: Bundle.audiobookToolkit()!, value: "Duration %@", comment: "Duration of the track, with formatting for a previously localized string to be inserted.")
+            let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
             detailLabel = String(format: labelFormat, duration)
-            backgroundColor = .white
+            labelAlpha = 1.0
         }
 
         self.textLabel?.text = title
+        self.textLabel?.alpha = labelAlpha
         self.detailTextLabel?.text = detailLabel
-        self.detailTextLabel?.textColor = .black
-        self.backgroundColor = backgroundColor
+        self.backgroundColor = .white
     }
 }

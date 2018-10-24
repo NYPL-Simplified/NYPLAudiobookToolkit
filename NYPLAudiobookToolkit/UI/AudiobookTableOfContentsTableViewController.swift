@@ -17,22 +17,16 @@ public protocol AudiobookTableOfContentsTableViewControllerDelegate {
 public class AudiobookTableOfContentsTableViewController: UITableViewController {
 
     let tableOfContents: AudiobookTableOfContents
-    let delegate: AudiobookTableOfContentsTableViewControllerDelegate?
+    let delegate: AudiobookTableOfContentsTableViewControllerDelegate
     private let activityIndicator: UIActivityIndicatorView
-    public init(tableOfContents: AudiobookTableOfContents, delegate: AudiobookTableOfContentsTableViewControllerDelegate?) {
+    public init(tableOfContents: AudiobookTableOfContents, delegate: AudiobookTableOfContentsTableViewControllerDelegate) {
         self.tableOfContents = tableOfContents
         self.delegate = delegate
         self.activityIndicator = UIActivityIndicatorView(style: .gray)
         self.activityIndicator.hidesWhenStopped = true
         super.init(nibName: nil, bundle: nil)
-        let downloadAllItem = UIBarButtonItem(
-            title: "(Download All)",
-            style: .plain,
-            target: self,
-            action: #selector(AudiobookTableOfContentsTableViewController.downloadAllChaptersRequested(_:)))
-        let activityItem = UIBarButtonItem(
-            customView: self.activityIndicator)
-        self.navigationItem.rightBarButtonItems = [ downloadAllItem, activityItem ]
+        let activityItem = UIBarButtonItem(customView: self.activityIndicator)
+        self.navigationItem.rightBarButtonItems = [activityItem]
         self.tableOfContents.delegate = self
         self.tableView.dataSource = self.tableOfContents
         self.tableView.delegate = self.tableOfContents
@@ -40,22 +34,6 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController 
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    public override func viewDidLoad() {
-        super.viewDidLoad()
-        let container = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.width, height: 80))
-        self.tableView.tableFooterView = container
-
-        let deleteButton = UIButton()
-        container.addSubview(deleteButton)
-
-        let title = NSLocalizedString("Clear Downloads", bundle: Bundle.audiobookToolkit()!, value: "Clear Downloads", comment: "Remove downloaded chapters from the device to save storage space")
-
-        deleteButton.autoCenterInSuperview()
-        deleteButton.setTitle(title, for: .normal)
-        deleteButton.setTitleColor(.red, for: .normal)
-        deleteButton.addTarget(self, action: #selector(deleteChapterRequested(_:)), for: .touchUpInside)
     }
 
     public override func viewWillAppear(_ animated: Bool) {
@@ -67,35 +45,6 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController 
                 self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
             }
         }
-    }
-
-    @objc func deleteChapterRequested(_ sender: Any) {
-        let confirmController = UIAlertController(
-            title: "Clear Files",
-            message: "Delete files from your local device.",
-            preferredStyle: .alert
-        )
-        confirmController.addAction(
-            UIAlertAction(
-                title: "Delete",
-                style: .destructive,
-                handler: { (action) in
-                self.tableOfContents.deleteAll()
-            })
-        )
-        confirmController.addAction(
-            UIAlertAction(
-                title: "Cancel",
-                style: .cancel,
-                handler: nil
-            )
-        )
-        confirmController.popoverPresentationController?.sourceView = self.view
-        self.present(confirmController, animated: true, completion: nil)
-    }
-
-    @objc func downloadAllChaptersRequested(_ sender: Any) {
-        self.tableOfContents.fetch()
     }
 }
 
@@ -118,6 +67,6 @@ extension AudiobookTableOfContentsTableViewController: AudiobookTableOfContentsD
     }
 
     func audiobookTableOfContentsUserSelected(spineItem: SpineElement) {
-        self.delegate?.userSelectedSpineItem(item: spineItem)
+        self.delegate.userSelectedSpineItem(item: spineItem)
     }
 }

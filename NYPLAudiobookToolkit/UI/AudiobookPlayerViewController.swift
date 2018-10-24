@@ -65,6 +65,8 @@ import MediaPlayer
     override public func viewDidLoad() {
         super.viewDidLoad()
 
+        self.audiobookManager.networkService.fetch()
+
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
         self.gradient.colors = [ startColor, UIColor.white.cgColor]
@@ -234,7 +236,8 @@ import MediaPlayer
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents, delegate: self)
+        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents,
+                                                               delegate: self)
         self.navigationController?.pushViewController(tbvc, animated: true)
     }
     

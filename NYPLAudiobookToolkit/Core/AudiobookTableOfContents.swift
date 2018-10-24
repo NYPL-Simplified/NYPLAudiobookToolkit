@@ -14,11 +14,9 @@ protocol AudiobookTableOfContentsDelegate: class {
     func audiobookTableOfContentsUserSelected(spineItem: SpineElement)
 }
 
-/// This class may be used in conjunction with a UITableView
-/// to create a fully functioning Table of Contents UI for the
-/// current audiobook. To get a functioning ToC that works
-/// out of the box, construct a
-/// AudiobookTableOfContentsTableViewController.
+/// This class may be used in conjunction with a UITableView to create a fully functioning Table of
+/// Contents UI for the current audiobook. To get a functioning ToC that works out of the box,
+/// construct a AudiobookTableOfContentsTableViewController.
 public final class AudiobookTableOfContents: NSObject {
     
     public var downloadProgress: Float {
