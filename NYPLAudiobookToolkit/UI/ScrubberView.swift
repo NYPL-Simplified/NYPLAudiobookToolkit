@@ -258,7 +258,12 @@ final class ScrubberView: UIView {
     }
     
     func setupAccessibility() {
-        self.accessibilityTraits = UIAccessibilityTraits.adjustable
+        self.accessibilityTraits = UIAccessibilityTraits(
+            rawValue: super.accessibilityTraits.rawValue |
+            UIAccessibilityTraits.adjustable.rawValue |
+            UIAccessibilityTraits.updatesFrequently.rawValue)
+        self.gripper.isAccessibilityElement = false
+        self.progressBar.isAccessibilityElement = false
     }
     
     override func accessibilityIncrement() {
@@ -267,6 +272,11 @@ final class ScrubberView: UIView {
     
     override func accessibilityDecrement() {
         self.delegate?.scrubberViewDidRequestAccessibilityDecrement(self)
+    }
+
+    override func accessibilityActivate() -> Bool {
+        self.delegate?.scrubberViewDidRequestAccessibilityIncrement(self)
+        return true
     }
     
     override func updateConstraints() {
