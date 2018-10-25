@@ -47,7 +47,10 @@ import MediaPlayer
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
-        imageView.contentMode = UIView.ContentMode.scaleAspectFill
+        imageView.contentMode = .scaleAspectFill
+        if #available(iOS 11.0, *) {
+            imageView.accessibilityIgnoresInvertColors = true
+        }
         return imageView
     }()
 
@@ -121,6 +124,7 @@ import MediaPlayer
         playbackControlViewContainer.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -(self.padding * 2))
 
         let seekBarContainerView = UIView()
+        seekBarContainerView.isAccessibilityElement = false
         self.view.addSubview(seekBarContainerView)
 
         seekBarContainerView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)

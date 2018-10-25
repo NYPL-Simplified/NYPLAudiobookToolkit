@@ -103,6 +103,8 @@ final class PlaybackControlView: UIView {
     }
     
     func setup() {
+        self.isAccessibilityElement = false
+
         self.addSubview(self.playButton)
         self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
@@ -127,7 +129,6 @@ final class PlaybackControlView: UIView {
         self.skipForwardView.autoPinEdge(.bottom, to: .bottom, of: self)
         self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipForwardView.addTarget(self, action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:)), for: .touchUpInside)
-
 
         self.skipBackView.text = "\(self.skipBackValue)"
         let skipBackFormat = NSLocalizedString("Rewind %d seconds", bundle: Bundle.audiobookToolkit()!, value: "Rewind %d seconds", comment: "Rewind a configurable number of seconds")
