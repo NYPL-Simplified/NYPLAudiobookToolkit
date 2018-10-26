@@ -47,7 +47,7 @@ import MediaPlayer
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         if #available(iOS 11.0, *) {
             imageView.accessibilityIgnoresInvertColors = true
         }
@@ -65,6 +65,10 @@ import MediaPlayer
         }
     }
     private var waitingToTogglePlayPause = false
+
+    private var compactWidthConstraints: [NSLayoutConstraint]!
+    private var regularWidthConstraints: [NSLayoutConstraint]!
+
     override public func viewDidLoad() {
         super.viewDidLoad()
 
@@ -97,20 +101,18 @@ import MediaPlayer
         self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
 
         self.view.addSubview(self.chapterInfoStack)
-
-        self.chapterInfoStack.autoPinEdge(toSuperviewEdge: .top, withInset: self.padding, relation: .greaterThanOrEqual)
+        self.chapterInfoStack.autoSetDimension(.width, toSize: 500, relation: .lessThanOrEqual)
         self.chapterInfoStack.autoAlignAxis(toSuperviewAxis: .vertical)
+        self.chapterInfoStack.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
+        self.chapterInfoStack.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
 
         self.view.addSubview(self.coverView)
-
-        self.coverView.autoCenterInSuperview()
         self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
 
         let playbackControlViewContainer = UIView()
         playbackControlViewContainer.addSubview(self.playbackControlView)
         self.view.addSubview(playbackControlViewContainer)
         self.view.addSubview(self.toolbar)
-
         self.playbackControlView.delegate = self
         self.playbackControlView.autoCenterInSuperview()
         self.playbackControlView.autoPinEdge(toSuperviewEdge: .leading, withInset: 0, relation: .greaterThanOrEqual)
@@ -118,33 +120,45 @@ import MediaPlayer
         self.playbackControlView.autoPinEdge(toSuperviewEdge: .top, withInset: 0, relation: .greaterThanOrEqual)
         self.playbackControlView.autoPinEdge(toSuperviewEdge: .bottom, withInset: 0, relation: .greaterThanOrEqual)
 
+        playbackControlViewContainer.autoSetDimension(.height, toSize: 75, relation: .greaterThanOrEqual)
         playbackControlViewContainer.autoPinEdge(toSuperviewEdge: .left)
         playbackControlViewContainer.autoPinEdge(toSuperviewEdge: .right)
-        playbackControlViewContainer.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: (self.padding * 2))
-        playbackControlViewContainer.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -(self.padding * 2))
+        playbackControlViewContainer.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
+        playbackControlViewContainer.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -self.padding * 2)
 
         let seekBarContainerView = UIView()
         seekBarContainerView.isAccessibilityElement = false
         self.view.addSubview(seekBarContainerView)
 
+        seekBarContainerView.autoSetDimension(.height, toSize: 100.0)
         seekBarContainerView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)
         seekBarContainerView.autoPinEdge(.bottom, to: .top, of: self.coverView, withOffset: -self.padding)
         seekBarContainerView.autoPinEdge(toSuperviewEdge: .leading)
         seekBarContainerView.autoPinEdge(toSuperviewEdge: .trailing)
 
         seekBarContainerView.addSubview(self.seekBar)
-
         self.seekBar.delegate = self;
         self.seekBar.autoCenterInSuperview()
         self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 2, relation: .greaterThanOrEqual)
         self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 2, relation: .greaterThanOrEqual)
         
         NSLayoutConstraint.autoSetPriority(.defaultHigh) {
+            self.chapterInfoStack.autoSetDimension(.height, toSize: 50)
+            playbackControlViewContainer.autoSetDimension(.height, toSize: 100.0)
             self.seekBar.autoSetDimension(.width, toSize: 500)
             self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 6)
-            if (self.view.traitCollection.horizontalSizeClass == .regular) {
-                self.coverView.autoSetDimension(.width, toSize: 500)
-            }
+        }
+
+        compactWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
+            self.coverView.autoAlignAxis(toSuperviewAxis: .vertical)
+            self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
+            self.chapterInfoStack.autoSetDimension(.height, toSize: 60.0, relation: .lessThanOrEqual)
+        }
+
+        regularWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
+            self.coverView.autoCenterInSuperview()
+            self.coverView.autoSetDimension(.width, toSize: 500.0)
+            self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding, relation: .greaterThanOrEqual)
         }
 
         self.coverView.addGestureRecognizer(
@@ -218,6 +232,22 @@ import MediaPlayer
         }
 
         self.updateUI()
+    }
+
+    override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        if traitCollection.horizontalSizeClass == .regular {
+            if compactWidthConstraints.count > 0 && compactWidthConstraints[0].isActive {
+                NSLayoutConstraint.deactivate(compactWidthConstraints)
+            }
+            NSLayoutConstraint.activate(regularWidthConstraints)
+        } else {
+            if regularWidthConstraints.count > 0 && regularWidthConstraints[0].isActive {
+                NSLayoutConstraint.deactivate(regularWidthConstraints)
+            }
+            NSLayoutConstraint.activate(compactWidthConstraints)
+        }
     }
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {

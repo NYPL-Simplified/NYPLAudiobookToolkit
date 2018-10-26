@@ -49,18 +49,29 @@ class ChapterInfoStack: UIView {
         self.topLabel.autoPinEdge(.top, to: .top, of: self)
         self.topLabel.autoPinEdge(.left, to: .left, of: self)
         self.topLabel.autoPinEdge(.right, to: .right, of: self)
+        self.topLabel.numberOfLines = 2
         self.topLabel.textAlignment = .center
-        self.topLabel.font = UIFont.boldSystemFont(ofSize: 16)
         self.topLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
+        self.topLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         self.bottomLabel.autoPinEdge(.top, to: .bottom, of: self.topLabel)
         self.bottomLabel.autoPinEdge(.left, to: .left, of: self)
         self.bottomLabel.autoPinEdge(.right, to: .right, of: self)
         self.bottomLabel.autoPinEdge(.bottom, to: .bottom, of: self)
         self.bottomLabel.textAlignment = .center
-        self.bottomLabel.font = UIFont.systemFont(ofSize: 16)
         self.bottomLabel.textColor = UIColor.darkGray
         self.bottomLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
+        self.bottomLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        if traitCollection.verticalSizeClass == .regular && traitCollection.horizontalSizeClass == .regular {
+            self.topLabel.font = UIFont.boldSystemFont(ofSize: 22)
+            self.bottomLabel.font = UIFont.boldSystemFont(ofSize: 22)
+        } else {
+            self.topLabel.font = UIFont.boldSystemFont(ofSize: 16)
+            self.bottomLabel.font = UIFont.systemFont(ofSize: 16)
+        }
     }
 }
 

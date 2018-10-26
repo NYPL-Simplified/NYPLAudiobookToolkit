@@ -53,7 +53,7 @@ final class PlaybackControlView: UIView {
         self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
     }
 
-    private var horizontalPadding = CGFloat(25)
+    private var horizontalPadding = CGFloat(30)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
         view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)
@@ -88,6 +88,9 @@ final class PlaybackControlView: UIView {
         return imageView
     }()
 
+    private var regularConstraints: [NSLayoutConstraint]!
+    private var compactConstraints: [NSLayoutConstraint]!
+
     override public init(frame: CGRect) {
         super.init(frame: frame)
         self.setup()
@@ -108,26 +111,21 @@ final class PlaybackControlView: UIView {
         self.addSubview(self.playButton)
         self.playButton.image = self.playImage
         self.playButton.autoAlignAxis(.vertical, toSameAxisOf: self)
-        self.playButton.autoSetDimensions(to: CGSize(width: 56, height: 56))
         self.playButton.accessibilityLabel = NSLocalizedString("Play", bundle: Bundle.audiobookToolkit()!, value: "Play", comment: "Play")
         self.playButton.addTarget(self, action: #selector(PlaybackControlView.playButtonWasTapped(_:)), for: .touchUpInside)
 
         self.addSubview(self.skipBackView)
         self.skipBackView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.horizontalPadding)
         self.skipBackView.autoPinEdge(.left, to: .left, of: self, withOffset: 0)
         self.skipBackView.autoPinEdge(.top, to: .top, of: self)
         self.skipBackView.autoPinEdge(.bottom, to: .bottom, of: self)
-        self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipBackView.addTarget(self, action: #selector(PlaybackControlView.skipBackButtonWasTapped(_:)), for: .touchUpInside)
 
         self.addSubview(self.skipForwardView)
         self.skipForwardView.autoAlignAxis(.horizontal, toSameAxisOf: self.playButton)
-        self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.horizontalPadding)
         self.skipForwardView.autoPinEdge(.right, to: .right, of: self, withOffset: 0)
         self.skipForwardView.autoPinEdge(.top, to: .top, of: self)
         self.skipForwardView.autoPinEdge(.bottom, to: .bottom, of: self)
-        self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
         self.skipForwardView.addTarget(self, action: #selector(PlaybackControlView.skipForwardButtonWasTapped(_:)), for: .touchUpInside)
 
         self.skipBackView.text = "\(self.skipBackValue)"
@@ -137,6 +135,22 @@ final class PlaybackControlView: UIView {
         self.skipForwardView.text = "\(self.skipForwardValue)"
         let skipFrowardFormat = NSLocalizedString("Fast Forward %d seconds", bundle: Bundle.audiobookToolkit()!, value: "Fast Forward %d seconds", comment: "Fast forward a configurable number of seconds")
         self.skipForwardView.accessibilityLabel = String(format: skipFrowardFormat, self.skipForwardValue)
+
+        compactConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
+            self.playButton.autoSetDimensions(to: CGSize(width: 56, height: 56))
+            self.skipBackView.autoSetDimensions(to: CGSize(width: 66, height: 66))
+            self.skipForwardView.autoSetDimensions(to: CGSize(width: 66, height: 66))
+            self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.horizontalPadding)
+            self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.horizontalPadding)
+        }
+
+        regularConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
+            self.playButton.autoSetDimensions(to: CGSize(width: 80, height: 80))
+            self.skipBackView.autoSetDimensions(to: CGSize(width: 96, height: 96))
+            self.skipForwardView.autoSetDimensions(to: CGSize(width: 96, height: 96))
+            self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.horizontalPadding * 2)
+            self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.horizontalPadding * 2)
+        }
     }
     
     @objc public func playButtonWasTapped(_ sender: Any) {
@@ -149,5 +163,19 @@ final class PlaybackControlView: UIView {
 
     @objc public func skipForwardButtonWasTapped(_ sender: Any) {
         self.delegate?.playbackControlViewSkipForwardButtonWasTapped(self)
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        if traitCollection.verticalSizeClass == .regular && traitCollection.horizontalSizeClass == .regular {
+            if compactConstraints.count > 0 && compactConstraints[0].isActive {
+                NSLayoutConstraint.deactivate(compactConstraints)
+            }
+            NSLayoutConstraint.activate(regularConstraints)
+        } else {
+            if regularConstraints.count > 0 && regularConstraints[0].isActive {
+                NSLayoutConstraint.deactivate(regularConstraints)
+            }
+            NSLayoutConstraint.activate(compactConstraints)
+        }
     }
 }
