@@ -25,6 +25,22 @@ class HumanReadablePlaybackRate {
         }
         return output
     }()
+    lazy var accessibleDescription: String = {
+        let output: String
+        switch rate {
+        case .threeQuartersTime:
+            output = NSLocalizedString("Slowest. Three quarters of normal speed.", bundle: Bundle.audiobookToolkit()!, value: "Slower. Three quarters of normal speed.", comment: "")
+        case .normalTime:
+            output = NSLocalizedString("Normal speed.", bundle: Bundle.audiobookToolkit()!, value: "Normal speed.", comment: "")
+        case .oneAndAQuarterTime:
+            output = NSLocalizedString("One and one quarter faster than normal speed.", bundle: Bundle.audiobookToolkit()!, value: "One and one quarter faster than normal speed.", comment: "")
+        case .oneAndAHalfTime:
+            output = NSLocalizedString("One and a half times faster than normal speed.", bundle: Bundle.audiobookToolkit()!, value: "One and a half times faster than normal speed.", comment: "")
+        case .doubleTime:
+            output = NSLocalizedString("Fastest. Two times normal speed.", bundle: Bundle.audiobookToolkit()!, value: "Fastest. Two times normal speed.", comment: "")
+        }
+        return output
+    }()
     let rate: PlaybackRate
     init(rate: PlaybackRate) {
         self.rate = rate

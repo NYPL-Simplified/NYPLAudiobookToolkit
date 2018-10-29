@@ -86,16 +86,24 @@ import MediaPlayer
             in: Bundle.audiobookToolkit(),
             compatibleWith: nil
         )
-        let bbi = UIBarButtonItem(
+        let tocBbi = UIBarButtonItem(
             image: tocImage,
             style: .plain,
             target: self,
             action: #selector(AudiobookPlayerViewController.tocWasPressed)
         )
+        tocBbi.accessibilityLabel = NSLocalizedString("Table of Contents",
+                                                   bundle: Bundle.audiobookToolkit()!,
+                                                   value: "Table of Contents",
+                                                   comment: "Title to describe the list of chapters or tracks.")
+        tocBbi.accessibilityHint = NSLocalizedString("Select a chapter or track from a list.",
+                                                  bundle: Bundle.audiobookToolkit()!,
+                                                  value: "Select a chapter or track from a list.",
+                                                  comment: "Explain what a table of contents is.")
 
         self.activityIndicator.hidesWhenStopped = true
         let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
-        self.navigationItem.rightBarButtonItems = [ bbi, indicatorBbi ]
+        self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
 
         self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
         self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
@@ -107,7 +115,9 @@ import MediaPlayer
         self.chapterInfoStack.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
 
         self.view.addSubview(self.coverView)
-        self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
+
+        self.coverView .autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
+        self.coverView .autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
 
         let playbackControlViewContainer = UIView()
         playbackControlViewContainer.addSubview(self.playbackControlView)
@@ -143,6 +153,7 @@ import MediaPlayer
         self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 2, relation: .greaterThanOrEqual)
         
         NSLayoutConstraint.autoSetPriority(.defaultHigh) {
+            self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
             self.chapterInfoStack.autoSetDimension(.height, toSize: 50)
             playbackControlViewContainer.autoSetDimension(.height, toSize: 100.0)
             self.seekBar.autoSetDimension(.width, toSize: 500)
@@ -182,7 +193,9 @@ import MediaPlayer
             target: self,
             action: #selector(AudiobookPlayerViewController.speedWasPressed(_:))
         )
-        speed.accessibilityLabel = self.playbackSpeedTextFor(speedText: playbackSpeedText)
+        speed.width = 50.0
+        let speedAccessibleText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
+        speed.accessibilityLabel = self.playbackSpeedTextFor(speedText: speedAccessibleText)
         speed.tintColor = self.view.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
@@ -195,6 +208,7 @@ import MediaPlayer
             target: self,
             action: #selector(AudiobookPlayerViewController.sleepTimerWasPressed(_:))
         )
+        sleepTimer.width = 50.0
         sleepTimer.tintColor = self.view.tintColor
         sleepTimer.accessibilityLabel = texts.accessibilityLabel
 
@@ -282,7 +296,10 @@ import MediaPlayer
                 self.updateSpeedButtonIfNeeded(rate: rate)
             }
             let title = HumanReadablePlaybackRate(rate: rate).value
-            return UIAlertAction(title: title, style: .default, handler: handler)
+            let action = UIAlertAction(title: title, style: .default, handler: handler)
+            let accessibleText = HumanReadablePlaybackRate(rate: rate).accessibleDescription
+            action.accessibilityLabel = self.playbackSpeedTextFor(speedText: accessibleText)
+            return action
         }
         
         let actionSheetTitle = NSLocalizedString("Set Your Play Speed", bundle: Bundle.audiobookToolkit()!, value: "Set Your Play Speed", comment: "Set Your Play Speed")
@@ -299,9 +316,12 @@ import MediaPlayer
         self.present(actionSheet, animated: true, completion: nil)
     }
 
-    private func updateSleepTimerIfNeeded() {
+    private func updateSleepTimerIfNeeded(firstUpdate: Bool = false) {
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex],
         let chapter = self.currentChapter {
+            if firstUpdate {
+                barButtonItem.width = 80.0
+            }
             let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
             barButtonItem.title = texts.title
             barButtonItem.accessibilityLabel = texts.accessibilityLabel
@@ -310,9 +330,9 @@ import MediaPlayer
 
     private func updateSpeedButtonIfNeeded(rate: PlaybackRate) {
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
-            let playbackSpeedText = HumanReadablePlaybackRate(rate: rate).value
-            buttonItem.title = playbackSpeedText
-            buttonItem.accessibilityLabel = self.playbackSpeedTextFor(speedText: playbackSpeedText)
+            buttonItem.title = HumanReadablePlaybackRate(rate: rate).value
+            let accessibleText = HumanReadablePlaybackRate(rate: rate).accessibleDescription
+            buttonItem.accessibilityLabel = self.playbackSpeedTextFor(speedText: accessibleText)
         }
     }
 
@@ -320,7 +340,7 @@ import MediaPlayer
         func actionFrom(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 sleepTimer.setTimerTo(trigger: trigger)
-                self.updateSleepTimerIfNeeded()
+                self.updateSleepTimerIfNeeded(firstUpdate: true)
             }
             var action: UIAlertAction! = nil
             switch trigger {
@@ -372,8 +392,8 @@ import MediaPlayer
         view.tintColor = self.view.tintColor
         let buttonItem = UIBarButtonItem(customView: view)
         buttonItem.isAccessibilityElement = true
-        buttonItem.accessibilityLabel = NSLocalizedString("Airplay", bundle: Bundle.audiobookToolkit()!, value: "Airplay", comment: "Airplay")
-        buttonItem.accessibilityHint = NSLocalizedString("Send audio to another airplay-compatible device.", bundle: Bundle.audiobookToolkit()!, value: "Send audio to another airplay-compatible device.", comment: "Longer description to identify airplay button.")
+        buttonItem.accessibilityLabel = NSLocalizedString("Playback Destination", bundle: Bundle.audiobookToolkit()!, value: "Playback Destination", comment: "Describe where the sound can be sent. Example: Bluetooth Speakers.")
+        buttonItem.accessibilityHint = NSLocalizedString("If another device is available, send the audio over Bluetooth or Airplay. Otherwise do nothing.", bundle: Bundle.audiobookToolkit()!, value: "If another device is available, send the audio over Bluetooth or Airplay. Otherwise do nothing.", comment: "Longer description to describe action of the button.")
         buttonItem.accessibilityTraits = UIAccessibilityTraits.button
         return buttonItem
     }
@@ -406,7 +426,7 @@ import MediaPlayer
         let title: String
         let accessibilityLabel: String
         if sleepTimer.isActive {
-            title = HumanReadableTimestamp(timeInterval: sleepTimer.timeRemaining).stringDescription
+            title = HumanReadableTimestamp(timeInterval: sleepTimer.timeRemaining).timecode
             let voiceOverTimeRemaining = VoiceOverTimestamp(
                 timeInterval: sleepTimer.timeRemaining
             ).value
@@ -425,7 +445,7 @@ import MediaPlayer
     }
 
     func playbackSpeedTextFor(speedText: String) -> String {
-        let speedAccessibilityFormatString = NSLocalizedString("Playback speed %@", bundle: Bundle.audiobookToolkit()!, value: "Playback speed %@", comment: "Playback speed with localized format, used for voice over")
+        let speedAccessibilityFormatString = NSLocalizedString("Playback Speed: %@", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed: %@", comment: "Announce how fast the speaking in the audiobook plays.")
         return String(format: speedAccessibilityFormatString, speedText)
     }
 }
