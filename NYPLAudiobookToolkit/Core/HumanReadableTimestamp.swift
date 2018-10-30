@@ -37,6 +37,20 @@ class HumanReadableTimestamp {
         return timeString
     }()
 
+    lazy var accessibleDescription: String = {
+        let interval = Int(self.timeInterval)
+        let seconds = interval % 60
+        let minutes = (interval / 60) % 60
+        let hours = (interval / 3600)
+        let formatStringWithoutHours = NSLocalizedString("%02d minutes and %02d seconds", bundle: Bundle.audiobookToolkit()!, value: "%02d minutes and %02d seconds", comment: "The number of minutes and seconds")
+        var timeString = String(format: formatStringWithoutHours, minutes, seconds)
+        if hours > 0 {
+            let formatStringWithHours = NSLocalizedString("%02d hours, %02d minutes and %02d seconds", bundle: Bundle.audiobookToolkit()!, value: "%02d hours, %02d minutes and %02d seconds", comment: "The number of hours minutes and seconds")
+            timeString = String(format: formatStringWithHours, hours, minutes, seconds)
+        }
+        return timeString
+    }()
+
     private let timeInterval: TimeInterval
     init(timeInterval: TimeInterval) {
         self.timeInterval = timeInterval

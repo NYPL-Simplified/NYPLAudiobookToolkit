@@ -30,11 +30,12 @@ import MediaPlayer
         fatalError("init(coder:) has not been implemented")
     }
 
-    private let activityIndicator = UIActivityIndicatorView(style: .gray)
+    private let activityIndicator = BufferActivityIndicatorView(style: .gray)
     private let gradient = CAGradientLayer()
     private let padding = CGFloat(12)
     private let seekBar = ScrubberView()
     private let playbackControlView = PlaybackControlView()
+    private let toolbarButtonWidth: CGFloat = 100.0
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
     private let audioRoutingBarButtonIndex = 3
@@ -47,7 +48,7 @@ import MediaPlayer
         imageView.accessibilityIdentifier = "cover_art"
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         if #available(iOS 11.0, *) {
             imageView.accessibilityIgnoresInvertColors = true
         }
@@ -186,14 +187,20 @@ import MediaPlayer
         self.toolbar.autoSetDimension(.height, toSize: self.toolbarHeight)
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
-        let playbackSpeedText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value
+        var playbackSpeedText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value
+        if self.audiobookManager.audiobook.player.playbackRate == .normalTime {
+            playbackSpeedText = NSLocalizedString("1.0×",
+                                                  bundle: Bundle.audiobookToolkit()!,
+                                                  value: "1.0×",
+                                                  comment: "Default title to explain that button changes the speed of playback.")
+        }
         let speed =  UIBarButtonItem(
             title: playbackSpeedText,
             style: .plain,
             target: self,
             action: #selector(AudiobookPlayerViewController.speedWasPressed(_:))
         )
-        speed.width = 50.0
+        speed.width = toolbarButtonWidth
         let speedAccessibleText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
         speed.accessibilityLabel = self.playbackSpeedTextFor(speedText: speedAccessibleText)
         speed.tintColor = self.view.tintColor
@@ -208,7 +215,7 @@ import MediaPlayer
             target: self,
             action: #selector(AudiobookPlayerViewController.sleepTimerWasPressed(_:))
         )
-        sleepTimer.width = 50.0
+        sleepTimer.width = toolbarButtonWidth
         sleepTimer.tintColor = self.view.tintColor
         sleepTimer.accessibilityLabel = texts.accessibilityLabel
 
@@ -316,21 +323,27 @@ import MediaPlayer
         self.present(actionSheet, animated: true, completion: nil)
     }
 
-    private func updateSleepTimerIfNeeded(firstUpdate: Bool = false) {
+    private func updateSleepTimerIfNeeded() {
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex],
         let chapter = self.currentChapter {
-            if firstUpdate {
-                barButtonItem.width = 80.0
-            }
             let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
+            barButtonItem.width = toolbarButtonWidth
             barButtonItem.title = texts.title
             barButtonItem.accessibilityLabel = texts.accessibilityLabel
         }
     }
 
     private func updateSpeedButtonIfNeeded(rate: PlaybackRate) {
+        var buttonTitle = HumanReadablePlaybackRate(rate: rate).value
+        if self.audiobookManager.audiobook.player.playbackRate == .normalTime {
+            buttonTitle = NSLocalizedString("1.0×",
+                                            bundle: Bundle.audiobookToolkit()!,
+                                            value: "1.0×",
+                                            comment: "Default title to explain that button changes the speed of playback.")
+        }
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
-            buttonItem.title = HumanReadablePlaybackRate(rate: rate).value
+            buttonItem.width = toolbarButtonWidth
+            buttonItem.title = buttonTitle
             let accessibleText = HumanReadablePlaybackRate(rate: rate).accessibleDescription
             buttonItem.accessibilityLabel = self.playbackSpeedTextFor(speedText: accessibleText)
         }
@@ -340,7 +353,7 @@ import MediaPlayer
         func actionFrom(trigger: SleepTimerTriggerAt, sleepTimer: SleepTimer) -> UIAlertAction {
             let handler = { (_ action: UIAlertAction) -> Void in
                 sleepTimer.setTimerTo(trigger: trigger)
-                self.updateSleepTimerIfNeeded(firstUpdate: true)
+                self.updateSleepTimerIfNeeded()
             }
             var action: UIAlertAction! = nil
             switch trigger {

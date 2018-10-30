@@ -11,11 +11,13 @@ class AudiobookTrackTableViewCell: UITableViewCell {
 
     func configureFor(_ spineElement: SpineElement) {
         let progress = spineElement.downloadTask.downloadProgress
+        let spineDuration = spineElement.chapter.duration
         let title = spineElement.chapter.title
         let detailLabel: String
         let labelAlpha: CGFloat
         if progress == 0 {
-            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).timecode
+            let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
+            self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
             let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
             detailLabel = String(format: labelFormat, duration)
             labelAlpha = 0.4
@@ -25,7 +27,8 @@ class AudiobookTrackTableViewCell: UITableViewCell {
             detailLabel = String(format: labelFormat, percentage)
             labelAlpha = 0.4
         } else {
-            let duration = HumanReadableTimestamp(timeInterval: spineElement.chapter.duration).timecode
+            let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
+            self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
             let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
             detailLabel = String(format: labelFormat, duration)
             labelAlpha = 1.0

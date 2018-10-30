@@ -275,7 +275,7 @@ final class ScrubberView: UIView {
     }
 
     override func accessibilityActivate() -> Bool {
-        return false
+        return true
     }
     
     override func updateConstraints() {

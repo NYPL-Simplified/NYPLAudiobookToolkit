@@ -13,15 +13,15 @@ class HumanReadablePlaybackRate {
         let output: String
         switch rate {
         case .threeQuartersTime:
-            output = NSLocalizedString("0.75x", bundle: Bundle.audiobookToolkit()!, value: "0.75x", comment: "Three quaters time")
+            output = NSLocalizedString("0.75×", bundle: Bundle.audiobookToolkit()!, value: "0.75×", comment: "Three quaters time")
         case .normalTime:
-            output = NSLocalizedString("1x", bundle: Bundle.audiobookToolkit()!, value: "1x", comment: "Normal time")
+            output = NSLocalizedString("1.0× (Normal)", bundle: Bundle.audiobookToolkit()!, value: "1.0× (Normal)", comment: "Normal time")
         case .oneAndAQuarterTime:
-            output = NSLocalizedString("1.25x", bundle: Bundle.audiobookToolkit()!, value: "1.25x", comment: "One and a quarter time")
+            output = NSLocalizedString("1.25×", bundle: Bundle.audiobookToolkit()!, value: "1.25×", comment: "One and a quarter time")
         case .oneAndAHalfTime:
-            output = NSLocalizedString("1.50x", bundle: Bundle.audiobookToolkit()!, value: "1.50x", comment: "One and a half time")
+            output = NSLocalizedString("1.50×", bundle: Bundle.audiobookToolkit()!, value: "1.50×", comment: "One and a half time")
         case .doubleTime:
-            output = NSLocalizedString("2x", bundle: Bundle.audiobookToolkit()!, value: "2x", comment: "Double time")
+            output = NSLocalizedString("2.0×", bundle: Bundle.audiobookToolkit()!, value: "2.0×", comment: "Double time")
         }
         return output
     }()
