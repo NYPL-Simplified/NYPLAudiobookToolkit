@@ -140,6 +140,14 @@ import Foundation
     public override var description: String {
         return "ChapterLocation P \(self.part) CN \(self.number); PH \(self.playheadOffset) D \(self.duration)"
     }
+    
+    public func toData() -> Data {
+        return try! JSONEncoder().encode(self)
+    }
+    
+    public class func fromData(_ data: Data) -> ChapterLocation? {
+        return try? JSONDecoder().decode(ChapterLocation.self, from: data)
+    }
 }
 
 public typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElement>)
