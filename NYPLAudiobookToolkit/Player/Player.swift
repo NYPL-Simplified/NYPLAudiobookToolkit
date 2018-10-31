@@ -54,11 +54,10 @@ import Foundation
     /// Pause playback
     func pause()
     
-    /// Skip forward 15 seconds and start playback
-    func skipForward()
-
-    /// Skip back 15 seconds and start playback
-    func skipBack()
+    /// Skip forward or backward with the desired interval in seconds,
+    /// returns the actual time interval delivered to the Player.
+    @discardableResult
+    func skipPlayhead(_ timeInterval: TimeInterval) -> TimeInterval
     
     /// Move playhead and immediately start playing
     /// This method is useful for scenarios like a table of contents

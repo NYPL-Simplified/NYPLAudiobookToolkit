@@ -12,9 +12,9 @@ import PureLayout
 import AVKit
 import MediaPlayer
 
-@objcMembers public final class AudiobookPlayerViewController: UIViewController {
+let SkipTimeInterval: Double = 15
 
-    private let SkipTimeInterval: Double = 15
+@objcMembers public final class AudiobookPlayerViewController: UIViewController {
 
     private let audiobookManager: AudiobookManager
     public var currentChapter: ChapterLocation? {
@@ -514,7 +514,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
             middleText: self.middleTextFor(chapter: currentLoc)
         )
 
-        self.audiobookManager.audiobook.player.skipBack()
+        self.audiobookManager.audiobook.player.skipPlayhead(-SkipTimeInterval)
         self.updateUI()
     }
     
@@ -542,7 +542,8 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
             timeLeftInBook: newTimeLeftInBook,
             middleText: self.middleTextFor(chapter: currentLoc)
         )
-        self.audiobookManager.audiobook.player.skipForward()
+
+        self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval)
         self.updateUI()
     }
 
@@ -630,11 +631,11 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
     }
 
     func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {
-        self.audiobookManager.audiobook.player.skipForward()
+        self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval)
     }
 
     func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView) {
-        self.audiobookManager.audiobook.player.skipBack()
+        self.audiobookManager.audiobook.player.skipPlayhead(-SkipTimeInterval)
     }
 }
 

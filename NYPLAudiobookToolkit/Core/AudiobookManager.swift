@@ -94,10 +94,10 @@ public typealias LogHandler = (LogLevel, String, NSError?) -> ()
                 }
                 return .success
         }, skipForwardHandler: { (_) -> MPRemoteCommandHandlerStatus in
-            audiobook.player.skipForward()
+            audiobook.player.skipPlayhead(SkipTimeInterval)
             return .success
         }, skipBackHandler: { (_) -> MPRemoteCommandHandlerStatus in
-            audiobook.player.skipBack()
+            audiobook.player.skipPlayhead(-SkipTimeInterval)
             return .success
         })
         super.init()

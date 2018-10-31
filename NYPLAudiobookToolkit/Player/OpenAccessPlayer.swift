@@ -34,12 +34,8 @@ final class OpenAccessPlayer: NSObject, Player {
 
     }
     
-    func skipForward() {
-
-    }
-    
-    func skipBack() {
-
+    func skipPlayhead(_ timeInterval: TimeInterval) -> TimeInterval {
+        return 0
     }
     
     var isPlaying: Bool {
