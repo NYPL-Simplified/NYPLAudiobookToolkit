@@ -18,6 +18,7 @@ let SkipTimeInterval: Double = 15
 
     private let audiobookManager: AudiobookManager
     public var currentChapterLocation: ChapterLocation? {
+//        NSLog("Current Chapter Location: %@", self.audiobookManager.audiobook.player.currentChapterLocation ?? 0)
         return self.audiobookManager.audiobook.player.currentChapterLocation
     }
 
@@ -491,56 +492,34 @@ extension AudiobookPlayerViewController: AudiobookManagerTimerDelegate {
 extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
-//        guard let currentLocation = self.currentChapterLocation else {
-//            ATLog(.error, "Trying to skip with no known current chapter location")
-//            return
-//        }
-
         self.waitingForPlayer = true
         if self.audiobookManager.audiobook.player.isPlaying {
             self.activityIndicator.startAnimating()
         }
 
-        self.audiobookManager.audiobook.player.skipPlayhead(-SkipTimeInterval)
-        guard let adjustedChapterLocation = self.currentChapterLocation else {
-            ATLog(.error, "Internal Inconsistency: New chapter location could not be created from adjusted offset.")
-            return
+        self.audiobookManager.audiobook.player.skipPlayhead(-SkipTimeInterval) { adjustedLocation in
+            self.seekBar.setOffset(adjustedLocation.playheadOffset,
+                                   duration: adjustedLocation.duration,
+                                   timeLeftInBook: self.timeLeftAfter(chapter: adjustedLocation),
+                                   middleText: self.middleTextFor(chapter: adjustedLocation)
+            )
         }
-
-        self.seekBar.setOffset(adjustedChapterLocation.playheadOffset,
-                               duration: adjustedChapterLocation.duration,
-                               timeLeftInBook: self.timeLeftAfter(chapter: adjustedChapterLocation),
-                               middleText: self.middleTextFor(chapter: adjustedChapterLocation)
-        )
-
-        self.updateUI()
     }
     
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView) {
 
-//        guard let currentLocation = self.currentChapterLocation else {
-//            ATLog(.error, "Trying to skip with no known current chapter location")
-//            return
-//        }
-
         self.waitingForPlayer = true
         if self.audiobookManager.audiobook.player.isPlaying {
             self.activityIndicator.startAnimating()
         }
 
-        self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval)
-        guard let adjustedChapterLocation = self.currentChapterLocation else {
-            ATLog(.error, "Internal Inconsistency: New chapter location could not be created from adjusted offset.")
-            return
+        self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval) { adjustedLocation in
+            self.seekBar.setOffset(adjustedLocation.playheadOffset,
+                                   duration: adjustedLocation.duration,
+                                   timeLeftInBook: self.timeLeftAfter(chapter: adjustedLocation),
+                                   middleText: self.middleTextFor(chapter: adjustedLocation)
+            )
         }
-
-        self.seekBar.setOffset(adjustedChapterLocation.playheadOffset,
-                               duration: adjustedChapterLocation.duration,
-                               timeLeftInBook: self.timeLeftAfter(chapter: adjustedChapterLocation),
-                               middleText: self.middleTextFor(chapter: adjustedChapterLocation)
-        )
-
-        self.updateUI()
     }
 
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {

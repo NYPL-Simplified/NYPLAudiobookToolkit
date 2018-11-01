@@ -58,6 +58,9 @@ import Foundation
     /// returns the actual time interval delivered to the Player.
     @discardableResult
     func skipPlayhead(_ timeInterval: TimeInterval) -> TimeInterval
+
+    func skipPlayhead(_ timeInterval: TimeInterval, completion: @escaping (ChapterLocation)->()) -> ()
+
     
     /// Move playhead and immediately start playing
     /// This method is useful for scenarios like a table of contents
