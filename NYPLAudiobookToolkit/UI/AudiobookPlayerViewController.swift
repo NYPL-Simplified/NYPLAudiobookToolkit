@@ -427,10 +427,13 @@ let SkipTimeInterval: Double = 15
                     barButtonItem.title = texts.title
                     barButtonItem.accessibilityLabel = texts.accessibilityLabel
                 }
-                if self.audiobookManager.audiobook.player.isPlaying {
-                    self.playbackControlView.showPauseButtonIfNeeded()
-                } else {
-                    self.playbackControlView.showPlayButtonIfNeeded()
+                if (chapter.playheadOffset > chapter.startOffset &&
+                    chapter.playheadOffset < chapter.duration) {
+                    if self.audiobookManager.audiobook.player.isPlaying {
+                        self.playbackControlView.showPauseButtonIfNeeded()
+                    } else {
+                        self.playbackControlView.showPlayButtonIfNeeded()
+                    }
                 }
             }
         }
@@ -561,10 +564,14 @@ extension AudiobookPlayerViewController: PlayerDelegate {
     }
 
     private func updatePlayPauseButtonIfNeeded() {
-        if self.audiobookManager.audiobook.player.isPlaying {
-            self.playbackControlView.showPauseButtonIfNeeded()
-        } else {
-            self.playbackControlView.showPlayButtonIfNeeded()
+        guard let currentChapter = self.currentChapterLocation else { return }
+        if (currentChapter.playheadOffset > currentChapter.startOffset &&
+            currentChapter.playheadOffset < currentChapter.duration) {
+            if self.audiobookManager.audiobook.player.isPlaying {
+                self.playbackControlView.showPauseButtonIfNeeded()
+            } else {
+                self.playbackControlView.showPlayButtonIfNeeded()
+            }
         }
     }
 }

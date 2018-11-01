@@ -182,6 +182,11 @@ public typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElem
 /// - Returns:
 ///  The `Playhead` where the location represents the chapter the playhead is located in, and a cursor that points to that chapter.
 public func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
+    if abs(cursor.index - Int(destination.number)) >= 2 {
+        let cursor = Cursor(data: cursor.data, index: Int(destination.number) - 1)!
+        return (destination, cursor)
+    }
+
     let newPlayhead: Playhead
     // Check to see if our playback location is in the next chapter
     if let nextPlayhead = attemptToMove(cursor: cursor, forwardTo: destination) {
