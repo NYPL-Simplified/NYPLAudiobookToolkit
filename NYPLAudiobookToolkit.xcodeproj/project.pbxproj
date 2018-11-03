@@ -30,8 +30,6 @@
 		7B7B370F20227A8200030A1E /* OpenAccessPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */; };
 		7B8026A3206AB0AF00012808 /* HumanReadablePlaybackRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */; };
 		7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */; };
-		7BA55A3720A34DC200712CAC /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; };
-		7BA55A3820A34DCA00712CAC /* PureLayout.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 7BA55A3620A34DB900712CAC /* PureLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFB20506FF600700731 /* SleepTimer.swift */; };
 		7BBF4DFE2050850A00700731 /* SleepTimerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */; };
 		7BBF4E002050856400700731 /* PlayerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBF4DFF2050856400700731 /* PlayerMock.swift */; };
@@ -50,6 +48,7 @@
 		E6160DFF2188EBFE0048755C /* BufferActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6160DFE2188EBFE0048755C /* BufferActivityIndicator.swift */; };
 		E67888EA214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */; };
 		E67CA9A5215C0D320081A10B /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67CA9A4215C0D320081A10B /* Log.swift */; };
+		E6EF9A1B218CE5BF000CE559 /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6EF9A1A218CE5BF000CE559 /* PureLayout.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,7 +68,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				7BA55A3820A34DCA00712CAC /* PureLayout.framework in Copy Files */,
 			);
 			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -104,7 +102,6 @@
 		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManipulationTest.swift; sourceTree = "<group>"; };
 		7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
-		7BA55A3620A34DB900712CAC /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
 		7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerTests.swift; sourceTree = "<group>"; };
 		7BBF4DFF2050856400700731 /* PlayerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerMock.swift; sourceTree = "<group>"; };
@@ -124,6 +121,7 @@
 		E6160DFE2188EBFE0048755C /* BufferActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferActivityIndicator.swift; sourceTree = "<group>"; };
 		E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTrackTableViewCell.swift; sourceTree = "<group>"; };
 		E67CA9A4215C0D320081A10B /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		E6EF9A1A218CE5BF000CE559 /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,8 +129,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E6EF9A1B218CE5BF000CE559 /* PureLayout.framework in Frameworks */,
 				7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */,
-				7BA55A3720A34DC200712CAC /* PureLayout.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,7 +214,7 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				7BA55A3620A34DB900712CAC /* PureLayout.framework */,
+				E6EF9A1A218CE5BF000CE559 /* PureLayout.framework */,
 				7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */,
 				7BD759CB20191980004CE65F /* CoreData.framework */,
 				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
@@ -287,6 +285,7 @@
 				7B544189200EA7C20047B6C6 /* Headers */,
 				7B54418A200EA7C20047B6C6 /* Resources */,
 				7B5441EB200EA8810047B6C6 /* Copy Files */,
+				E6EF9A1C218CE5D9000CE559 /* Copy Frameworks (Carthage) */,
 			);
 			buildRules = (
 			);
@@ -373,6 +372,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E6EF9A1C218CE5D9000CE559 /* Copy Frameworks (Carthage) */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Frameworks (Carthage)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7B544187200EA7C20047B6C6 /* Sources */ = {
