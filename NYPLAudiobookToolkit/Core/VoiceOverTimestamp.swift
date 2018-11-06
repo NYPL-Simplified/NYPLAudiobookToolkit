@@ -17,7 +17,7 @@ class VoiceOverTimestamp: NSObject {
         if hours > 0 {
             return self.stringsForHours(hours: hours, minutes: minutes)
         } else if minutes > 0 {
-            return self.stringForMinutes(minutes: minutes)
+            return "\(self.stringForMinutes(minutes: minutes)) and \(self.stringForSeconds(seconds: seconds))"
         } else {
             return self.stringForSeconds(seconds: seconds)
         }
@@ -38,7 +38,7 @@ class VoiceOverTimestamp: NSObject {
         if seconds != 1 {
             format = NSLocalizedString("%d seconds", bundle: Bundle.audiobookToolkit()!, value: "%d seconds", comment: "Plural seconds with formatting")
         } else {
-            format = NSLocalizedString("%d second", bundle: Bundle.audiobookToolkit()!, value: "%d second", comment: "Singular minutes")
+            format = NSLocalizedString("%d second", bundle: Bundle.audiobookToolkit()!, value: "%d second", comment: "Singular seconds")
         }
         return String(format: format, seconds)
     }

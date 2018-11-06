@@ -18,7 +18,6 @@ let SkipTimeInterval: Double = 15
 
     private let audiobookManager: AudiobookManager
     public var currentChapterLocation: ChapterLocation? {
-//        NSLog("Current Chapter Location: %@", self.audiobookManager.audiobook.player.currentChapterLocation ?? 0)
         return self.audiobookManager.audiobook.player.currentChapterLocation
     }
 
@@ -37,6 +36,7 @@ let SkipTimeInterval: Double = 15
     private let seekBar = ScrubberView()
     private let playbackControlView = PlaybackControlView()
     private let toolbarButtonWidth: CGFloat = 100.0
+    private let audioRouteButtonWidth: CGFloat = 50.0
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
     private let audioRoutingBarButtonIndex = 3
@@ -50,6 +50,7 @@ let SkipTimeInterval: Double = 15
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFill
+        imageView.accessibilityLabel = NSLocalizedString("Cover Image", bundle: Bundle.audiobookToolkit()!, value: "Cover Image", comment:"Name of the art on the album or book cover image")
         if #available(iOS 11.0, *) {
             imageView.accessibilityIgnoresInvertColors = true
         }
@@ -94,6 +95,7 @@ let SkipTimeInterval: Double = 15
             target: self,
             action: #selector(AudiobookPlayerViewController.tocWasPressed)
         )
+        tocBbi.width = audioRouteButtonWidth
         tocBbi.accessibilityLabel = NSLocalizedString("Table of Contents",
                                                    bundle: Bundle.audiobookToolkit()!,
                                                    value: "Table of Contents",
@@ -203,7 +205,7 @@ let SkipTimeInterval: Double = 15
         )
         speed.width = toolbarButtonWidth
         let speedAccessibleText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
-        speed.accessibilityLabel = self.playbackSpeedTextFor(speedText: speedAccessibleText)
+        speed.accessibilityLabel = speedAccessibleText
         speed.tintColor = self.view.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
@@ -305,12 +307,11 @@ let SkipTimeInterval: Double = 15
             }
             let title = HumanReadablePlaybackRate(rate: rate).value
             let action = UIAlertAction(title: title, style: .default, handler: handler)
-            let accessibleText = HumanReadablePlaybackRate(rate: rate).accessibleDescription
-            action.accessibilityLabel = self.playbackSpeedTextFor(speedText: accessibleText)
+            action.accessibilityLabel = HumanReadablePlaybackRate(rate: rate).accessibleDescription
             return action
         }
         
-        let actionSheetTitle = NSLocalizedString("Set Your Play Speed", bundle: Bundle.audiobookToolkit()!, value: "Set Your Play Speed", comment: "Set Your Play Speed")
+        let actionSheetTitle = NSLocalizedString("Playback Speed", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed", comment: "Title to set how fast the audio plays")
         let actionSheet = UIAlertController(title: actionSheetTitle, message: nil, preferredStyle: .actionSheet)
         let triggers: [PlaybackRate] = [.threeQuartersTime, .normalTime, .oneAndAQuarterTime, .oneAndAHalfTime, .doubleTime ]
         triggers.forEach { (trigger)  in
@@ -345,8 +346,7 @@ let SkipTimeInterval: Double = 15
         if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
             buttonItem.width = toolbarButtonWidth
             buttonItem.title = buttonTitle
-            let accessibleText = HumanReadablePlaybackRate(rate: rate).accessibleDescription
-            buttonItem.accessibilityLabel = self.playbackSpeedTextFor(speedText: accessibleText)
+            buttonItem.accessibilityLabel = HumanReadablePlaybackRate(rate: rate).accessibleDescription
         }
     }
 
@@ -400,11 +400,21 @@ let SkipTimeInterval: Double = 15
             let volumeView = MPVolumeView()
             volumeView.showsVolumeSlider = false
             volumeView.showsRouteButton = true
+            volumeView.tintColor = self.view.tintColor
+            // Set tint of route button: https://stackoverflow.com/a/33016391
+            for view in volumeView.subviews {
+                if view.isKind(of: UIButton.self) {
+                    let buttonOnVolumeView = view as! UIButton
+                    volumeView.setRouteButtonImage(buttonOnVolumeView.currentImage?.withRenderingMode(.alwaysTemplate), for: .normal)
+                    break
+                }
+            }
             volumeView.sizeToFit()
             view = volumeView
         }
         view.tintColor = self.view.tintColor
         let buttonItem = UIBarButtonItem(customView: view)
+        buttonItem.width = audioRouteButtonWidth
         buttonItem.isAccessibilityElement = true
         buttonItem.accessibilityLabel = NSLocalizedString("Playback Destination", bundle: Bundle.audiobookToolkit()!, value: "Playback Destination", comment: "Describe where the sound can be sent. Example: Bluetooth Speakers.")
         buttonItem.accessibilityHint = NSLocalizedString("If another device is available, send the audio over Bluetooth or Airplay. Otherwise do nothing.", bundle: Bundle.audiobookToolkit()!, value: "If another device is available, send the audio over Bluetooth or Airplay. Otherwise do nothing.", comment: "Longer description to describe action of the button.")
@@ -587,7 +597,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
             message: error.localizedDescription,
             preferredStyle: .alert
         )
-        let okLocalizedText = NSLocalizedString("Ok", bundle: Bundle.audiobookToolkit()!, value: "Ok", comment: "Okay")
+        let okLocalizedText = NSLocalizedString("OK", bundle: Bundle.audiobookToolkit()!, value: "OK", comment: "Okay")
         alertController.addAction(UIAlertAction(title: okLocalizedText, style: .cancel, handler: nil))
         alertController.popoverPresentationController?.sourceView = self.view
         self.present(alertController, animated: true, completion: nil)

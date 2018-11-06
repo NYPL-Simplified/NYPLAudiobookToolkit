@@ -110,9 +110,9 @@ final class ScrubberView: UIView {
 
     override var accessibilityLabel: String? {
         get {
-            let playheadVoiceOver = VoiceOverTimestamp(timeInterval: self.state.progress.offset).value
-            let durationVoiceOver = VoiceOverTimestamp(timeInterval: self.state.progress.duration).value
-            return "\(self.state.middleText ?? "") \(playheadVoiceOver) of \(durationVoiceOver) remaining"
+            let timeRemaining = self.state.progress.duration - self.state.progress.offset
+            let accessibleDescription = VoiceOverTimestamp(timeInterval: timeRemaining)
+            return "\(self.state.middleText ?? ""). \(accessibleDescription) remaining"
         }
         set(newLabel) {
             // throw an error?
