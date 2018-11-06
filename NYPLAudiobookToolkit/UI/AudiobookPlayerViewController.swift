@@ -67,15 +67,19 @@ let SkipTimeInterval: Double = 15
             }
         }
     }
-    private var waitingToTogglePlayPause = false
+
+    private var shouldBeginToAutoPlay = false
 
     private var compactWidthConstraints: [NSLayoutConstraint]!
     private var regularWidthConstraints: [NSLayoutConstraint]!
+
+    //MARK:-
 
     override public func viewDidLoad() {
         super.viewDidLoad()
 
         self.audiobookManager.networkService.fetch()
+        self.shouldBeginToAutoPlay = true
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -152,6 +156,7 @@ let SkipTimeInterval: Double = 15
 
         seekBarContainerView.addSubview(self.seekBar)
         self.seekBar.delegate = self;
+        self.seekBar.isUserInteractionEnabled = false
         self.seekBar.autoCenterInSuperview()
         self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 2, relation: .greaterThanOrEqual)
         self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 2, relation: .greaterThanOrEqual)
@@ -176,12 +181,6 @@ let SkipTimeInterval: Double = 15
             self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding, relation: .greaterThanOrEqual)
         }
 
-        self.coverView.addGestureRecognizer(
-            UITapGestureRecognizer(
-                target: self,
-                action: #selector(AudiobookPlayerViewController.coverArtWasPressed(_:))
-            )
-        )
         guard let chapter = self.currentChapterLocation else { return }
 
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
@@ -237,13 +236,6 @@ let SkipTimeInterval: Double = 15
         self.gradient.frame = self.view.bounds
     }
     
-    override public func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        self.audiobookManager.timerDelegate = nil
-        self.audiobookManager.audiobook.player.removeDelegate(self)
-        self.audiobookManager.networkService.removeDelegate(self)
-    }
-    
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.audiobookManager.timerDelegate = self
@@ -253,9 +245,19 @@ let SkipTimeInterval: Double = 15
         if self.audiobookManager.audiobook.player.isPlaying {
             self.playbackControlView.showPauseButtonIfNeeded()
             self.waitingForPlayer = false
+        } else if self.shouldBeginToAutoPlay {
+            self.audiobookManager.audiobook.player.play()
+            self.shouldBeginToAutoPlay = false
         }
 
         self.updateUI()
+    }
+
+    override public func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.audiobookManager.timerDelegate = nil
+        self.audiobookManager.audiobook.player.removeDelegate(self)
+        self.audiobookManager.networkService.removeDelegate(self)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -273,6 +275,8 @@ let SkipTimeInterval: Double = 15
             NSLayoutConstraint.activate(compactWidthConstraints)
         }
     }
+
+    //MARK:-
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine
@@ -390,8 +394,6 @@ let SkipTimeInterval: Double = 15
         self.present(actionSheet, animated: true, completion: nil)
     }
 
-    @objc func coverArtWasPressed(_ sender: Any) { }
-    
     func audioRoutingBarButtonItem() -> UIBarButtonItem {
         let view: UIView
         if #available(iOS 11.0, *) {
@@ -423,28 +425,33 @@ let SkipTimeInterval: Double = 15
     }
     
     func updateUI() {
-        if let chapter = self.currentChapterLocation {
-            if !self.seekBar.scrubbing && !self.waitingForPlayer {
-                let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
-                self.seekBar.setOffset(
-                    chapter.playheadOffset,
-                    duration: chapter.duration,
-                    timeLeftInBook: timeLeftInBook,
-                    middleText: self.middleTextFor(chapter: chapter)
-                )
-                if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
-                    let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
-                    barButtonItem.title = texts.title
-                    barButtonItem.accessibilityLabel = texts.accessibilityLabel
-                }
-                if (chapter.playheadOffset > chapter.startOffset &&
-                    chapter.playheadOffset < chapter.duration) {
-                    if self.audiobookManager.audiobook.player.isPlaying {
-                        self.playbackControlView.showPauseButtonIfNeeded()
-                    } else {
-                        self.playbackControlView.showPlayButtonIfNeeded()
-                    }
-                }
+        guard let currentLocation = self.currentChapterLocation else {
+            return
+        }
+        if !(self.seekBar.scrubbing || self.waitingForPlayer) {
+            let timeLeftInBook = self.timeLeftAfter(chapter: currentLocation)
+            self.seekBar.setOffset(
+                currentLocation.playheadOffset,
+                duration: currentLocation.duration,
+                timeLeftInBook: timeLeftInBook,
+                middleText: self.middleTextFor(chapter: currentLocation)
+            )
+            if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
+                let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: currentLocation)
+                barButtonItem.title = texts.title
+                barButtonItem.accessibilityLabel = texts.accessibilityLabel
+            }
+            self.updatePlayPauseButtonIfNeeded()
+        }
+    }
+
+    private func updatePlayPauseButtonIfNeeded() {
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.playbackControlView.showPauseButtonIfNeeded()
+        } else {
+            self.playbackControlView.showPlayButtonIfNeeded()
+            if activityIndicator.isAnimating {
+                activityIndicator.stopAnimating()
             }
         }
     }
@@ -493,6 +500,13 @@ extension AudiobookPlayerViewController: AudiobookTableOfContentsTableViewContro
             timeLeftInBook: timeLeftInBook,
             middleText: self.middleTextFor(chapter: selectedChapter)
         )
+
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.shouldBeginToAutoPlay = true
+        } else {
+            self.shouldBeginToAutoPlay = false
+        }
+        self.navigationController?.popViewController(animated: true)
     }
 }
 
@@ -561,6 +575,9 @@ extension AudiobookPlayerViewController: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
         self.updatePlayPauseButtonIfNeeded()
+        if !self.seekBar.isUserInteractionEnabled {
+            self.seekBar.isUserInteractionEnabled = true
+        }
     }
 
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
@@ -570,19 +587,6 @@ extension AudiobookPlayerViewController: PlayerDelegate {
 
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         self.waitingForPlayer = false
-        self.updatePlayPauseButtonIfNeeded()
-    }
-
-    private func updatePlayPauseButtonIfNeeded() {
-        guard let currentChapter = self.currentChapterLocation else { return }
-        if (currentChapter.playheadOffset > currentChapter.startOffset &&
-            currentChapter.playheadOffset < currentChapter.duration) {
-            if self.audiobookManager.audiobook.player.isPlaying {
-                self.playbackControlView.showPauseButtonIfNeeded()
-            } else {
-                self.playbackControlView.showPlayButtonIfNeeded()
-            }
-        }
     }
 }
 
@@ -609,18 +613,28 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
 
 extension AudiobookPlayerViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
-        if let chapter = self.currentChapterLocation?.chapterWith(offset) {
-            if self.audiobookManager.audiobook.player.isPlaying {
-                self.audiobookManager.audiobook.player.playAtLocation(chapter)
-            } else {
-                self.audiobookManager.audiobook.player.movePlayheadToLocation(chapter)
-            }
-            self.waitingForPlayer = true
-            self.updateUI()
-        } else {
+
+        guard let requestedOffset = self.currentChapterLocation?.chapterWith(offset),
+        let currentOffset = self.currentChapterLocation else {
             ATLog(.error, "Scrubber attempted to scrub without a current chapter.")
+            return
         }
-    }
+
+        self.waitingForPlayer = true
+        if self.audiobookManager.audiobook.player.isPlaying {
+            self.activityIndicator.startAnimating()
+        }
+
+        let offsetMovement = requestedOffset.playheadOffset - currentOffset.playheadOffset
+
+        self.audiobookManager.audiobook.player.skipPlayhead(offsetMovement) { adjustedLocation in
+            self.seekBar.setOffset(adjustedLocation.playheadOffset,
+                                   duration: adjustedLocation.duration,
+                                   timeLeftInBook: self.timeLeftAfter(chapter: adjustedLocation),
+                                   middleText: self.middleTextFor(chapter: adjustedLocation)
+            )
+        }
+     }
 
     func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {
         self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval)
