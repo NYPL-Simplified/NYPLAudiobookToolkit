@@ -18,6 +18,7 @@ import UIKit
     var uniqueIdentifier: String { get }
     var spine: [SpineElement] { get }
     var player: Player { get }
+    func deleteLocalContent()
     init?(JSON: Any?)
 }
 
@@ -50,6 +51,9 @@ private final class OpenAccessAudiobook: Audiobook {
     let player: Player
     var spine: [SpineElement]
     let uniqueIdentifier: String
+    public func deleteLocalContent() {
+        // TODO
+    }
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any] else { return nil }
         guard let metadata = payload["metadata"] as? [String: Any] else { return nil }
