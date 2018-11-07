@@ -50,7 +50,8 @@ let SkipTimeInterval: Double = 15
         imageView.layer.cornerRadius = 10
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFill
-        imageView.accessibilityLabel = NSLocalizedString("Cover Image", bundle: Bundle.audiobookToolkit()!, value: "Cover Image", comment:"Name of the art on the album or book cover image")
+        imageView.isAccessibilityElement = true
+        imageView.accessibilityLabel = NSLocalizedString("Cover", bundle: Bundle.audiobookToolkit()!, value: "Cover", comment:"The art on an album cover.")
         if #available(iOS 11.0, *) {
             imageView.accessibilityIgnoresInvertColors = true
         }
@@ -124,8 +125,8 @@ let SkipTimeInterval: Double = 15
 
         self.view.addSubview(self.coverView)
 
-        self.coverView .autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
-        self.coverView .autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
+        self.coverView.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
+        self.coverView.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
 
         let playbackControlViewContainer = UIView()
         playbackControlViewContainer.addSubview(self.playbackControlView)
@@ -203,8 +204,9 @@ let SkipTimeInterval: Double = 15
             action: #selector(AudiobookPlayerViewController.speedWasPressed(_:))
         )
         speed.width = toolbarButtonWidth
-        let speedAccessibleText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
-        speed.accessibilityLabel = speedAccessibleText
+        let playbackButtonName = NSLocalizedString("Playback Speed", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed", comment: "Title to set how fast the audio plays")
+        let playbackRateDescription = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
+        speed.accessibilityLabel = "\(playbackButtonName): Currently \(playbackRateDescription)"
         speed.tintColor = self.view.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
@@ -341,7 +343,7 @@ let SkipTimeInterval: Double = 15
 
     private func updateSpeedButtonIfNeeded(rate: PlaybackRate) {
         var buttonTitle = HumanReadablePlaybackRate(rate: rate).value
-        if self.audiobookManager.audiobook.player.playbackRate == .normalTime {
+        if rate == .normalTime {
             buttonTitle = NSLocalizedString("1.0×",
                                             bundle: Bundle.audiobookToolkit()!,
                                             value: "1.0×",
