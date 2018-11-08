@@ -56,12 +56,8 @@ import Foundation
     
     /// Skip forward or backward with the desired interval in seconds,
     /// returns the actual time interval delivered to the Player.
-    @discardableResult
-    func skipPlayhead(_ timeInterval: TimeInterval) -> TimeInterval
+    func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())?) -> ()
 
-    func skipPlayhead(_ timeInterval: TimeInterval, completion: @escaping (ChapterLocation)->()) -> ()
-
-    
     /// Move playhead and immediately start playing
     /// This method is useful for scenarios like a table of contents
     /// where you select a new chapter and wish to immediately start

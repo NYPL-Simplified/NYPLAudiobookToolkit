@@ -639,11 +639,11 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
      }
 
     func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView) {
-        self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval)
+        self.audiobookManager.audiobook.player.skipPlayhead(SkipTimeInterval, completion: nil)
     }
 
     func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView) {
-        self.audiobookManager.audiobook.player.skipPlayhead(-SkipTimeInterval)
+        self.audiobookManager.audiobook.player.skipPlayhead(-SkipTimeInterval, completion: nil)
     }
 }
 

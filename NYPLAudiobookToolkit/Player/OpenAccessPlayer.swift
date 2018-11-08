@@ -34,14 +34,9 @@ final class OpenAccessPlayer: NSObject, Player {
 
     }
     
-    func skipPlayhead(_ timeInterval: TimeInterval) -> TimeInterval {
-        return 0
-    }
-
-    func skipPlayhead(_ timeInterval: TimeInterval, completion: @escaping (ChapterLocation)->()) -> () {
+    func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())? = nil) -> () {
         
     }
-
     
     var isPlaying: Bool {
         return false
