@@ -49,4 +49,8 @@ final class OpenAccessPlayer: NSObject, Player {
     func pause() {
         
     }
+  
+    func unload() {
+
+    }
 }

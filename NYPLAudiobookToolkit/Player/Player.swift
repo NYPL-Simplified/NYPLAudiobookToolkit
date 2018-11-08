@@ -53,6 +53,10 @@ import Foundation
     
     /// Pause playback
     func pause()
+  
+    /// End playback and free resources; the `Player` is not expected to be
+    /// usable after this method is called
+    func unload()
     
     /// Skip forward or backward with the desired interval in seconds,
     /// returns the actual time interval delivered to the Player.
