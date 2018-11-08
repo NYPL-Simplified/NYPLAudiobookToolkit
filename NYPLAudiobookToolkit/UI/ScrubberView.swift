@@ -96,36 +96,16 @@ final class ScrubberView: UIView {
     let gripper = UIView()
     let leftLabel = UILabel()
     let rightLabel = UILabel()
-    let middleLabel = UILabel()
-    let topLabel = { () -> UILabel in
-        let label = UILabel()
+    let topLabel = { () -> UIScrubberLabel in
+        let label = UIScrubberLabel()
         label.font = UIFont.systemFont(ofSize: 12)
         label.textAlignment = .center
         return label
     }()
+    let middleLabel = UIScrubberLabel()
     
     var scrubbing: Bool {
         return self.state.scrubbing
-    }
-
-    override var accessibilityLabel: String? {
-        get {
-            let timeRemaining = self.state.progress.duration - self.state.progress.offset
-            let accessibleDescription = VoiceOverTimestamp(timeInterval: timeRemaining).value
-            return "\(self.state.middleText ?? ""). \(accessibleDescription) remaining"
-        }
-        set(newLabel) {
-            // throw an error?
-        }
-    }
-
-    override var isAccessibilityElement: Bool {
-        get {
-            return true
-        }
-        set(newValue) {
-            // throw an error?
-        }
     }
 
     var barWidthConstraint: NSLayoutConstraint?
@@ -133,7 +113,6 @@ final class ScrubberView: UIView {
         return self.progressBackground.bounds.size.width
     }
 
-    
     var labelWidthConstraints: [NSLayoutConstraint] = []
     var state: ScrubberUIState = ScrubberUIState(
         gripperHeight: 36,
@@ -161,6 +140,8 @@ final class ScrubberView: UIView {
         self.leftLabel.text = self.state.progress.playheadText
         self.rightLabel.text = self.state.progress.timeLeftText
         self.topLabel.text = self.state.progress.timeLeftInBookText
+        self.topLabel.accessibilityLabel = topLabelVoiceOverDescription()
+        self.progressBackground.accessibilityLabel = progressBackgroundVoiceOverDescription()
         self.middleLabel.text = self.state.middleText
         self.setNeedsUpdateConstraints()
         self.layoutIfNeeded()
@@ -173,7 +154,7 @@ final class ScrubberView: UIView {
         self.setupAccessibility()
     }
     
-    func setupView () {
+    private func setupView () {
         self.accessibilityIdentifier = "scrubber_container"
         self.addSubview(self.topLabel)
         self.addSubview(self.progressBackground)
@@ -257,27 +238,17 @@ final class ScrubberView: UIView {
         self.gripper.accessibilityIdentifier = "progress_grip"
     }
     
-    func setupAccessibility() {
-        self.accessibilityTraits = UIAccessibilityTraits(
-            rawValue: super.accessibilityTraits.rawValue |
-            UIAccessibilityTraits.adjustable.rawValue |
-            UIAccessibilityTraits.updatesFrequently.rawValue)
+    private func setupAccessibility() {
+        self.leftLabel.isAccessibilityElement = false
+        self.rightLabel.isAccessibilityElement = false
+        self.progressBackground.isAccessibilityElement = true
+        self.progressBackground.accessibilityTraits = UIAccessibilityTraits(
+            rawValue: super.accessibilityTraits.rawValue | UIAccessibilityTraits.updatesFrequently.rawValue
+        )
         self.gripper.isAccessibilityElement = false
         self.progressBar.isAccessibilityElement = false
     }
-    
-    override func accessibilityIncrement() {
-        self.delegate?.scrubberViewDidRequestAccessibilityIncrement(self)
-    }
-    
-    override func accessibilityDecrement() {
-        self.delegate?.scrubberViewDidRequestAccessibilityDecrement(self)
-    }
 
-    override func accessibilityActivate() -> Bool {
-        return true
-    }
-    
     override func updateConstraints() {
         self.barWidthConstraint?.constant = self.state.progressLocationFor(self.progressBarWidth)
         self.progressBar.backgroundColor = self.state.progressColor
@@ -324,6 +295,27 @@ final class ScrubberView: UIView {
         }
     }
 
+    private func topLabelVoiceOverDescription() -> String {
+        let accessibleString = NSLocalizedString("%@ remaining in the book.",
+                                                 bundle: Bundle.audiobookToolkit()!,
+                                                 value: "%@ remaining in the book.",
+                                                 comment: "How much time is left in the entire book, not just the chapter.")
+        let timestamp = VoiceOverTimestamp(timeInterval: self.state.progress.timeLeftInBook).value
+        return String(format: accessibleString, timestamp)
+    }
+
+    private func progressBackgroundVoiceOverDescription() -> String {
+        let offset = HumanReadableTimestamp(timeInterval: self.state.progress.offset).accessibleDescription
+        let remaining = HumanReadableTimestamp(timeInterval: self.state.progress.timeLeft).accessibleDescription
+        let accessibleString = NSLocalizedString("%@ played. %@ remaining.",
+                                                 bundle: Bundle.audiobookToolkit()!,
+                                                 value: "%@ played. %@ remaining.",
+                                                 comment: "Time into the current chapter, then time remaining in the current chapter.")
+        return String(format: accessibleString, offset, remaining)
+    }
+
+    //MARK:-
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.scrub(touch: touches.first, currentlyScrubbing: true)
     }
@@ -340,5 +332,11 @@ final class ScrubberView: UIView {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.scrub(touch: touches.first, currentlyScrubbing: false)
         self.delegate?.scrubberView(self, didRequestScrubTo: self.state.progress.offset)
+    }
+}
+
+final class UIScrubberLabel: UILabel {
+    override func accessibilityActivate() -> Bool {
+        return true
     }
 }

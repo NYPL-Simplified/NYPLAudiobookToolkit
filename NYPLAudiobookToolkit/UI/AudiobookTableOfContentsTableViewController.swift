@@ -43,6 +43,20 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController 
             if self.tableView.numberOfRows(inSection: 0) > index {
                 let indexPath = IndexPath(row: index, section: 0)
                 self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: .top)
+                self.announceTrackIfNeeded(track: indexPath)
+            }
+        }
+    }
+
+    private func announceTrackIfNeeded(track: IndexPath) {
+        if UIAccessibility.isVoiceOverRunning {
+            let cell = self.tableView.cellForRow(at: track)
+            let accessibleString = NSLocalizedString("Currently Playing: %@",
+                                                     bundle: Bundle.audiobookToolkit()!,
+                                                     value: "Currently Playing: %@",
+                                                     comment: "Announce which track is highlighted in the table of contents.")
+            if let text = cell?.textLabel?.text {
+                UIAccessibility.post(notification: .screenChanged, argument: String(format: accessibleString, text))
             }
         }
     }
