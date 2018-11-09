@@ -11,6 +11,8 @@ import UIKit
 final class OpenAccessPlayer: NSObject, Player {
     var playbackRate: PlaybackRate = .normalTime
     
+    var isLoaded = true
+    
     func movePlayheadToLocation(_ location: ChapterLocation) {
         
     }
@@ -51,6 +53,6 @@ final class OpenAccessPlayer: NSObject, Player {
     }
   
     func unload() {
-
+        self.isLoaded = false
     }
 }

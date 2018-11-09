@@ -48,6 +48,9 @@ import Foundation
     var currentChapterLocation: ChapterLocation? { get }
     var playbackRate: PlaybackRate { get set }
     
+    /// `false` after `unload` is called, else `true`.
+    var isLoaded: Bool { get }
+    
     /// Play at current playhead location
     func play()
     
