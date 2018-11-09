@@ -80,7 +80,6 @@ let SkipTimeInterval: Double = 15
         super.viewDidLoad()
 
         self.audiobookManager.networkService.fetch()
-        self.shouldBeginToAutoPlay = true
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
