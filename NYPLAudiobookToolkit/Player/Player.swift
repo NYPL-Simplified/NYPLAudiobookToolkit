@@ -185,24 +185,30 @@ public typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElem
 /// - Returns:
 ///  The `Playhead` where the location represents the chapter the playhead is located in, and a cursor that points to that chapter.
 public func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
-    if abs(cursor.index - Int(destination.number)) >= 2 {
-        let cursor = Cursor(data: cursor.data, index: Int(destination.number) - 1)!
-        return (destination, cursor)
-    }
 
-    let newPlayhead: Playhead
     // Check to see if our playback location is in the next chapter
     if let nextPlayhead = attemptToMove(cursor: cursor, forwardTo: destination) {
-        newPlayhead = nextPlayhead
+        return nextPlayhead
     // Check if playback location is in the previous chapter
     } else if let prevPlayhead = attemptToMove(cursor: cursor, backTo: destination) {
-        newPlayhead = prevPlayhead
-    // We are already in the correct chapter. Pass the playhead on as is.
-    } else {
-        newPlayhead = (location: destination, cursor: cursor)
+        return prevPlayhead
     }
 
-    return newPlayhead
+    // Find the desired spine index based on the destination chapter number
+    var foundIndex: Int? = nil
+    for (i, element) in cursor.data.enumerated() {
+        if element.chapter.number == destination.number {
+            foundIndex = i
+            break
+        }
+    }
+    if let foundIndex = foundIndex {
+        let cursor = Cursor(data: cursor.data, index: foundIndex)!
+        return (destination, cursor)
+    } else {
+        ATLog(.error, "Cursor move failure")
+        return (cursor.currentElement.chapter, cursor)
+    }
 }
 
 private func chapterAt(cursor: Cursor<SpineElement>) -> ChapterLocation {

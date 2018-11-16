@@ -475,13 +475,26 @@ let SkipTimeInterval: Double = 15
     }
 
     func middleTextFor(chapter: ChapterLocation) -> String {
-        let middleTextFormat = NSLocalizedString("Part %d of %d", bundle: Bundle.audiobookToolkit()!, value: "Part %d of %d", comment: "Current chapter and the amount of chapters left in the book")
-        return String(format: middleTextFormat, chapter.number, self.audiobookManager.audiobook.spine.count)
+        let middleTextFormat = NSLocalizedString("Part %@ of %d", bundle: Bundle.audiobookToolkit()!, value: "Part %@ of %d", comment: "Current chapter and the amount of chapters left in the book")
+        let indexString = oneBasedSpineIndex() ?? "--"
+        return String(format: middleTextFormat, indexString, self.audiobookManager.audiobook.spine.count)
     }
 
     func playbackSpeedTextFor(speedText: String) -> String {
         let speedAccessibilityFormatString = NSLocalizedString("Playback Speed: %@", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed: %@", comment: "Announce how fast the speaking in the audiobook plays.")
         return String(format: speedAccessibilityFormatString, speedText)
+    }
+
+    private func oneBasedSpineIndex() -> String? {
+        if let currentChapter = self.currentChapterLocation {
+            let spine = self.audiobookManager.audiobook.spine
+            for index in 0..<spine.count {
+                if currentChapter.inSameChapter(other: spine[index].chapter) {
+                    return String(index + 1)
+                }
+            }
+        }
+        return nil
     }
 }
 
