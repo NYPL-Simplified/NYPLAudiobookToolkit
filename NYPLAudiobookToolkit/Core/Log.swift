@@ -1,5 +1,7 @@
 import Foundation
 
+public typealias LogHandler = (LogLevel, String, NSError?) -> ()
+
 @objc public enum LogLevel: Int {
     case debug
     case info
@@ -19,24 +21,26 @@ private func levelToString(_ level: LogLevel) -> String {
         return "ERROR"
     }
 }
-    
-func ATLog(
+
+public func ATLog(
     file: String = #file,
     line: Int = #line,
     _ level: LogLevel,
     _ message: String,
     error: Error? = nil)
 {
-    #if DEBUG
-    let shouldLog = true
-    #else
-    let shouldLog = level != .debug
-    #endif
-
     let url = URL(fileURLWithPath: file)
     let filename = url.lastPathComponent
+    let logOutput = "[\(levelToString(level))] \(filename):\(line): \(message)\(error == nil ? "" : "\n\(error!)")"
 
-    if shouldLog {
-        NSLog("[\(levelToString(level))] \(filename):\(line): \(message)\(error == nil ? "" : "\n\(error!)")")
+    #if DEBUG
+    NSLog(logOutput)
+    #else
+    if level != .debug {
+        NSLog(logOutput)
     }
+    if ((level != .debug) && (level != .info)) {
+        sharedLogHandler?(level, logOutput, error as NSError?)
+    }
+    #endif
 }

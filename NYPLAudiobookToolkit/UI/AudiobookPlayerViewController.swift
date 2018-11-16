@@ -608,7 +608,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
         self.present(alertController, animated: true, completion: nil)
 
         let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
-        self.audiobookManager.logHandler?(.error, logString, error)
+        ATLog(.error, logString, error: error)
     }
 }
 
