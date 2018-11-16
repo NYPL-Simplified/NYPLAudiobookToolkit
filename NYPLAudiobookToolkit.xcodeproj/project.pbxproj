@@ -45,6 +45,7 @@
 		7BDD33B320470A7100CC8807 /* HumanReadablePercentage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */; };
 		7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */; };
 		7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */; };
+		A94E769C219F7B4200E943A2 /* AudiobookCoverImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94E769B219F7B4200E943A2 /* AudiobookCoverImageView.swift */; };
 		E6160DFF2188EBFE0048755C /* BufferActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6160DFE2188EBFE0048755C /* BufferActivityIndicator.swift */; };
 		E67888EA214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */; };
 		E67CA9A5215C0D320081A10B /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67CA9A4215C0D320081A10B /* Log.swift */; };
@@ -118,6 +119,7 @@
 		7BDD33B220470A7000CC8807 /* HumanReadablePercentage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePercentage.swift; sourceTree = "<group>"; };
 		7BF18B2A205C467C0001992C /* ChapterInfoStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterInfoStack.swift; sourceTree = "<group>"; };
 		7BF3C445205B0A010056D46B /* HumanReadableTimeRemaining.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadableTimeRemaining.swift; sourceTree = "<group>"; };
+		A94E769B219F7B4200E943A2 /* AudiobookCoverImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookCoverImageView.swift; sourceTree = "<group>"; };
 		E6160DFE2188EBFE0048755C /* BufferActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferActivityIndicator.swift; sourceTree = "<group>"; };
 		E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTrackTableViewCell.swift; sourceTree = "<group>"; };
 		E67CA9A4215C0D320081A10B /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 		7B3BD9C62011737B002C5416 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				A94E769B219F7B4200E943A2 /* AudiobookCoverImageView.swift */,
 				7B5441DD200EA82C0047B6C6 /* AudiobookPlayerViewController.swift */,
 				7B6C1BD1203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift */,
 				E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */,
@@ -420,6 +423,7 @@
 				7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */,
 				7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */,
 				E6160DFF2188EBFE0048755C /* BufferActivityIndicator.swift in Sources */,
+				A94E769C219F7B4200E943A2 /* AudiobookCoverImageView.swift in Sources */,
 				7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */,
 				7BDD33AF204461A000CC8807 /* HumanReadableTimestamp.swift in Sources */,
 				7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */,

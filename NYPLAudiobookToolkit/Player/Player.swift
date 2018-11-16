@@ -8,7 +8,7 @@
 
 import Foundation
 
-@objc public enum PlaybackRate: Int {
+@objc public enum PlaybackRate: Int, CaseIterable {
     case threeQuartersTime = 75
     case normalTime = 100
     case oneAndAQuarterTime = 125

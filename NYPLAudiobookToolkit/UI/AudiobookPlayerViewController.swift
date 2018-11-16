@@ -42,19 +42,9 @@ let SkipTimeInterval: Double = 15
     private let audioRoutingBarButtonIndex = 3
     private let sleepTimerDefaultText = "☾"
     private let sleepTimerDefaultAccessibilityLabel = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment:"Sleep Timer")
-    public let coverView: UIImageView = { () -> UIImageView in
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
-        imageView.isUserInteractionEnabled = true
-        imageView.accessibilityIdentifier = "cover_art"
-        imageView.layer.cornerRadius = 10
-        imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        imageView.isAccessibilityElement = true
-        imageView.accessibilityLabel = NSLocalizedString("Cover", bundle: Bundle.audiobookToolkit()!, value: "Cover", comment:"The art on an album cover.")
-        if #available(iOS 11.0, *) {
-            imageView.accessibilityIgnoresInvertColors = true
-        }
+    public var coverView: AudiobookCoverImageView = { () -> AudiobookCoverImageView in
+        let image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
+        let imageView = AudiobookCoverImageView.init(image: image)
         return imageView
     }()
 

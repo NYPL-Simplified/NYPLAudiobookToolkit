@@ -148,7 +148,6 @@ extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.mediaControlHandler.enableCommands()
     }
-
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
 }
@@ -170,6 +169,11 @@ private class MediaControlHandler {
         self.command.skipBackwardCommand.isEnabled = true
         self.command.skipForwardCommand.preferredIntervals = [15]
         self.command.skipBackwardCommand.preferredIntervals = [15]
+        var supportedRates = [NSNumber]()
+        PlaybackRate.allCases.forEach {
+            supportedRates.append(NSNumber(value: PlaybackRate.convert(rate: $0)))
+        }
+        self.command.changePlaybackRateCommand.supportedPlaybackRates = supportedRates
     }
     
     init(togglePlaybackHandler: @escaping RemoteEventHandler, skipForwardHandler: @escaping RemoteEventHandler, skipBackHandler: @escaping RemoteEventHandler) {
@@ -177,6 +181,8 @@ private class MediaControlHandler {
         self.skipForwardHandler = skipForwardHandler
         self.skipBackHandler = skipBackHandler
         self.command.togglePlayPauseCommand.addTarget(handler: self.togglePlaybackHandler)
+        self.command.playCommand.addTarget(handler: self.togglePlaybackHandler)
+        self.command.pauseCommand.addTarget(handler: self.togglePlaybackHandler)
         self.command.skipForwardCommand.addTarget(handler: self.skipForwardHandler)
         self.command.skipBackwardCommand.addTarget(handler: self.skipBackHandler)
     }
@@ -185,6 +191,8 @@ private class MediaControlHandler {
     // so that handlers for multiple books are not called at the same time
     deinit {
         self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.playCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.pauseCommand.removeTarget(self.togglePlaybackHandler)
         self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
         self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
     }
