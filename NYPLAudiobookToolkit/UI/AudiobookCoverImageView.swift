@@ -31,8 +31,18 @@ public class AudiobookCoverImageView: UIImageView {
 
     private func updateLockScreenCoverArtwork(image: UIImage?) {
         if let image = image {
+            var itemArtwork: MPMediaItemArtwork
+            if #available(iOS 10.0, *) {
+                itemArtwork = MPMediaItemArtwork.init(boundsSize: image.size) { requestedSize -> UIImage in
+                    let rect = CGRect(origin: .zero, size: requestedSize)
+                    let imageRef = image.cgImage!.cropping(to: rect)!
+                    return UIImage(cgImage:imageRef)
+                } 
+            } else {
+                itemArtwork = MPMediaItemArtwork(image: image)
+            }
+
             var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
-            let itemArtwork = MPMediaItemArtwork.init(image: image)
             info[MPMediaItemPropertyArtwork] = itemArtwork
             MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         }

@@ -105,6 +105,14 @@ public var sharedLogHandler: LogHandler?
         }, skipBackHandler: { (_) -> MPRemoteCommandHandlerStatus in
             audiobook.player.skipPlayhead(-SkipTimeInterval, completion: nil)
             return .success
+        }, playbackRateHandler: { (rateEvent) -> MPRemoteCommandHandlerStatus in
+            if let rate = rateEvent as? MPChangePlaybackRateCommandEvent,
+            let intRate = PlaybackRate(rawValue: Int(rate.playbackRate * 100)) {
+                audiobook.player.playbackRate = intRate
+                return .success
+            } else {
+                return .commandFailed
+            }
         })
         super.init()
         self.audiobook.player.registerDelegate(self)
@@ -159,11 +167,14 @@ private class MediaControlHandler {
     private let togglePlaybackHandler: RemoteEventHandler
     private let skipForwardHandler: RemoteEventHandler
     private let skipBackHandler: RemoteEventHandler
+    private let playbackRateHandler: RemoteEventHandler
     private var command: MPRemoteCommandCenter {
         return MPRemoteCommandCenter.shared()
     }
 
     func enableCommands() {
+        self.command.playCommand.isEnabled = true
+        self.command.pauseCommand.isEnabled = true
         self.command.togglePlayPauseCommand.isEnabled = true
         self.command.skipForwardCommand.isEnabled = true
         self.command.skipBackwardCommand.isEnabled = true
@@ -176,24 +187,30 @@ private class MediaControlHandler {
         self.command.changePlaybackRateCommand.supportedPlaybackRates = supportedRates
     }
     
-    init(togglePlaybackHandler: @escaping RemoteEventHandler, skipForwardHandler: @escaping RemoteEventHandler, skipBackHandler: @escaping RemoteEventHandler) {
+    init(togglePlaybackHandler: @escaping RemoteEventHandler,
+         skipForwardHandler: @escaping RemoteEventHandler,
+         skipBackHandler: @escaping RemoteEventHandler,
+         playbackRateHandler: @escaping RemoteEventHandler) {
         self.togglePlaybackHandler = togglePlaybackHandler
         self.skipForwardHandler = skipForwardHandler
         self.skipBackHandler = skipBackHandler
+        self.playbackRateHandler = playbackRateHandler
         self.command.togglePlayPauseCommand.addTarget(handler: self.togglePlaybackHandler)
         self.command.playCommand.addTarget(handler: self.togglePlaybackHandler)
         self.command.pauseCommand.addTarget(handler: self.togglePlaybackHandler)
         self.command.skipForwardCommand.addTarget(handler: self.skipForwardHandler)
         self.command.skipBackwardCommand.addTarget(handler: self.skipBackHandler)
+        self.command.changePlaybackRateCommand.addTarget(handler: self.playbackRateHandler)
     }
 
     // We ought to remove targets from the command center when this object is garbage collected
     // so that handlers for multiple books are not called at the same time
     deinit {
-        self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
         self.command.playCommand.removeTarget(self.togglePlaybackHandler)
         self.command.pauseCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
         self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
         self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
+        self.command.changePlaybackRateCommand.removeTarget(self.playbackRateHandler)
     }
 }

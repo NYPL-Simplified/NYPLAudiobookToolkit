@@ -241,6 +241,7 @@ let SkipTimeInterval: Double = 15
             self.shouldBeginToAutoPlay = false
         }
 
+        self.updateSpeedButtonIfNeeded()
         self.updateUI()
     }
 
@@ -330,19 +331,23 @@ let SkipTimeInterval: Double = 15
         }
     }
 
-    private func updateSpeedButtonIfNeeded(rate: PlaybackRate) {
+    private func updateSpeedButtonIfNeeded(rate: PlaybackRate? = nil) {
+        let rate = rate ?? self.audiobookManager.audiobook.player.playbackRate
         var buttonTitle = HumanReadablePlaybackRate(rate: rate).value
+        guard let buttonItem = self.toolbar.items?[self.speedBarButtonIndex],
+        buttonItem.title != buttonTitle else {
+            return
+        }
+
         if rate == .normalTime {
             buttonTitle = NSLocalizedString("1.0×",
                                             bundle: Bundle.audiobookToolkit()!,
                                             value: "1.0×",
                                             comment: "Default title to explain that button changes the speed of playback.")
         }
-        if let buttonItem = self.toolbar.items?[self.speedBarButtonIndex] {
-            buttonItem.width = toolbarButtonWidth
-            buttonItem.title = buttonTitle
-            buttonItem.accessibilityLabel = HumanReadablePlaybackRate(rate: rate).accessibleDescription
-        }
+        buttonItem.width = toolbarButtonWidth
+        buttonItem.title = buttonTitle
+        buttonItem.accessibilityLabel = HumanReadablePlaybackRate(rate: rate).accessibleDescription
     }
 
     @objc public func sleepTimerWasPressed(_ sender: Any) {
