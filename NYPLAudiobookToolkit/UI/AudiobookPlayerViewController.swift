@@ -196,7 +196,6 @@ let SkipTimeInterval: Double = 15
         let playbackButtonName = NSLocalizedString("Playback Speed", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed", comment: "Title to set how fast the audio plays")
         let playbackRateDescription = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
         speed.accessibilityLabel = "\(playbackButtonName): Currently \(playbackRateDescription)"
-        speed.tintColor = self.view.tintColor
         items.insert(speed, at: self.speedBarButtonIndex)
 
         let audioRoutingItem = self.audioRoutingBarButtonItem()
@@ -209,7 +208,6 @@ let SkipTimeInterval: Double = 15
             action: #selector(AudiobookPlayerViewController.sleepTimerWasPressed(_:))
         )
         sleepTimer.width = toolbarButtonWidth
-        sleepTimer.tintColor = self.view.tintColor
         sleepTimer.accessibilityLabel = texts.accessibilityLabel
 
         items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
@@ -398,19 +396,9 @@ let SkipTimeInterval: Double = 15
             let volumeView = MPVolumeView()
             volumeView.showsVolumeSlider = false
             volumeView.showsRouteButton = true
-            volumeView.tintColor = self.view.tintColor
-            // Set tint of route button: https://stackoverflow.com/a/33016391
-            for view in volumeView.subviews {
-                if view.isKind(of: UIButton.self) {
-                    let buttonOnVolumeView = view as! UIButton
-                    volumeView.setRouteButtonImage(buttonOnVolumeView.currentImage?.withRenderingMode(.alwaysTemplate), for: .normal)
-                    break
-                }
-            }
             volumeView.sizeToFit()
             view = volumeView
         }
-        view.tintColor = self.view.tintColor
         let buttonItem = UIBarButtonItem(customView: view)
         buttonItem.width = audioRouteButtonWidth
         buttonItem.isAccessibilityElement = true
