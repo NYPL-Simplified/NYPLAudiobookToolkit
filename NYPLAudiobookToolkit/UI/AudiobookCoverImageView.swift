@@ -34,10 +34,18 @@ public class AudiobookCoverImageView: UIImageView {
             var itemArtwork: MPMediaItemArtwork
             if #available(iOS 10.0, *) {
                 itemArtwork = MPMediaItemArtwork.init(boundsSize: image.size) { requestedSize -> UIImage in
-                    let rect = CGRect(origin: .zero, size: requestedSize)
-                    let imageRef = image.cgImage!.cropping(to: rect)!
-                    return UIImage(cgImage:imageRef)
-                } 
+                    // Scale aspect fit to size requested by system
+                    let rect = AVMakeRect(aspectRatio: image.size, insideRect: CGRect(origin: .zero, size: requestedSize))
+                    UIGraphicsBeginImageContextWithOptions(rect.size, true, 0.0)
+                    image.draw(in: CGRect(origin: .zero, size: rect.size))
+                    let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
+                    UIGraphicsEndImageContext()
+                    if let scaledImage = scaledImage {
+                        return scaledImage
+                    } else {
+                        return image
+                    }
+                }
             } else {
                 itemArtwork = MPMediaItemArtwork(image: image)
             }
