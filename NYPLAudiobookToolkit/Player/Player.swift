@@ -38,6 +38,10 @@ import Foundation
     /// after the next chapter has begun playing. This should arrive before
     /// `player:didBeginPlaybackOf:` is called.
     func player(_ player: Player, didComplete chapter: ChapterLocation)
+
+    /// Called by the host when we're done with the audiobook, to perform necessary cleanup.
+    /// TODO: Ideally, the client should be talking to the manager directly for this action.
+    func playerDidBeginUnload(_ player: Player)
 }
 
 /// Objects that impelment Player should wrap a PlaybackEngine.

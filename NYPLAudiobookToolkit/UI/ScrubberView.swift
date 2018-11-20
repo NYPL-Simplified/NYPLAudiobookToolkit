@@ -87,7 +87,7 @@ struct ScrubberUIState {
 }
 
 final class ScrubberView: UIView {
-    var delegate: ScrubberViewDelegate?
+    weak var delegate: ScrubberViewDelegate?
     let trimColor: UIColor
     let barHeight = 16
     let padding: CGFloat = 8

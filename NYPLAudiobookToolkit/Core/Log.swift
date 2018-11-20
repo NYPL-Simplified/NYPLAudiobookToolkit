@@ -33,14 +33,9 @@ public func ATLog(
     let filename = url.lastPathComponent
     let logOutput = "[\(levelToString(level))] \(filename):\(line): \(message)\(error == nil ? "" : "\n\(error!)")"
 
-    #if DEBUG
+    //TODO: Until someone can get the #if DEBUG macro working, just log it all..
     NSLog(logOutput)
-    #else
-    if level != .debug {
-        NSLog(logOutput)
-    }
     if ((level != .debug) && (level != .info)) {
         sharedLogHandler?(level, logOutput, error as NSError?)
     }
-    #endif
 }

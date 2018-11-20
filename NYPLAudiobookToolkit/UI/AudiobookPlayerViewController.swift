@@ -585,6 +585,8 @@ extension AudiobookPlayerViewController: PlayerDelegate {
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         self.waitingForPlayer = false
     }
+
+    public func playerDidBeginUnload(_ player: Player) { }
 }
 
 extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {

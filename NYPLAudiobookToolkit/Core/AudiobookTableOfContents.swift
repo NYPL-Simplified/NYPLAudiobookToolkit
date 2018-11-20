@@ -109,6 +109,7 @@ extension AudiobookTableOfContents: PlayerDelegate {
     }
 
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
+    public func playerDidBeginUnload(_ player: Player) { }
 }
 
 extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {

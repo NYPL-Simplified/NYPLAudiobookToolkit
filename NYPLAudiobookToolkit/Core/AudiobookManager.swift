@@ -109,8 +109,10 @@ public var sharedLogHandler: LogHandler?
             if let rate = rateEvent as? MPChangePlaybackRateCommandEvent,
             let intRate = PlaybackRate(rawValue: Int(rate.playbackRate * 100)) {
                 audiobook.player.playbackRate = intRate
+                ATLog(.debug, "Media Control setting Playback Rate: float:\(rate) int:\(intRate)")
                 return .success
             } else {
+                ATLog(.error, "Media Control failed setting Playback Rate")
                 return .commandFailed
             }
         })
@@ -125,6 +127,10 @@ public var sharedLogHandler: LogHandler?
                 repeats: true
             )
         }
+    }
+
+    deinit {
+        ATLog(.debug, "DefaultAudiobookManager is deinitializing.")
     }
 
     public convenience init(metadata: AudiobookMetadata, audiobook: Audiobook) {
@@ -154,16 +160,21 @@ public var sharedLogHandler: LogHandler?
 
 extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        self.mediaControlHandler.enableCommands()
+        self.mediaControlHandler.enableMediaControlCommands()
     }
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
+    public func playerDidBeginUnload(_ player: Player) {
+      self.mediaControlHandler.teardown()
+      self.timer?.invalidate()
+    }
 }
 
 typealias RemoteEventHandler = (_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
 
 private class MediaControlHandler {
 
+    private var commandsHaveBeenEnabled = false
     private let togglePlaybackHandler: RemoteEventHandler
     private let skipForwardHandler: RemoteEventHandler
     private let skipBackHandler: RemoteEventHandler
@@ -172,19 +183,34 @@ private class MediaControlHandler {
         return MPRemoteCommandCenter.shared()
     }
 
-    func enableCommands() {
-        self.command.playCommand.isEnabled = true
-        self.command.pauseCommand.isEnabled = true
-        self.command.togglePlayPauseCommand.isEnabled = true
-        self.command.skipForwardCommand.isEnabled = true
-        self.command.skipBackwardCommand.isEnabled = true
-        self.command.skipForwardCommand.preferredIntervals = [15]
-        self.command.skipBackwardCommand.preferredIntervals = [15]
-        var supportedRates = [NSNumber]()
-        PlaybackRate.allCases.forEach {
-            supportedRates.append(NSNumber(value: PlaybackRate.convert(rate: $0)))
+    func enableMediaControlCommands() {
+        if !self.commandsHaveBeenEnabled {
+            self.setMediaControlCommands(enabled: true)
+            self.command.skipForwardCommand.preferredIntervals = [15]
+            self.command.skipBackwardCommand.preferredIntervals = [15]
+            var supportedRates = [NSNumber]()
+            PlaybackRate.allCases.forEach {
+                let rate = PlaybackRate.convert(rate: $0)
+                supportedRates.append(NSNumber(value: rate))
+                ATLog(.debug, "Supported playback rate: \(rate)")
+            }
+            self.command.changePlaybackRateCommand.supportedPlaybackRates = supportedRates
+
+            self.commandsHaveBeenEnabled = true
         }
-        self.command.changePlaybackRateCommand.supportedPlaybackRates = supportedRates
+    }
+
+    func teardown() {
+        self.setMediaControlCommands(enabled: false)
+        if (MPNowPlayingInfoCenter.default().nowPlayingInfo != nil) {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        }
+        self.command.playCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.pauseCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
+        self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
+        self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
+        self.command.changePlaybackRateCommand.removeTarget(self.playbackRateHandler)
     }
     
     init(togglePlaybackHandler: @escaping RemoteEventHandler,
@@ -203,14 +229,17 @@ private class MediaControlHandler {
         self.command.changePlaybackRateCommand.addTarget(handler: self.playbackRateHandler)
     }
 
-    // We ought to remove targets from the command center when this object is garbage collected
-    // so that handlers for multiple books are not called at the same time
     deinit {
-        self.command.playCommand.removeTarget(self.togglePlaybackHandler)
-        self.command.pauseCommand.removeTarget(self.togglePlaybackHandler)
-        self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
-        self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
-        self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
-        self.command.changePlaybackRateCommand.removeTarget(self.playbackRateHandler)
+        ATLog(.debug, "MediaControlHandler is deinitializing.")
+    }
+
+    private func setMediaControlCommands(enabled: Bool) {
+        ATLog(.debug, "MediaControlHandler commands toggled to \(enabled)")
+        self.command.playCommand.isEnabled = enabled
+        self.command.pauseCommand.isEnabled = enabled
+        self.command.togglePlayPauseCommand.isEnabled = enabled
+        self.command.skipForwardCommand.isEnabled = enabled
+        self.command.skipBackwardCommand.isEnabled = enabled
+        self.command.changePlaybackRateCommand.isEnabled = enabled
     }
 }

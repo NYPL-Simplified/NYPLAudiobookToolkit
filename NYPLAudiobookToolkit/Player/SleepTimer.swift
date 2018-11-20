@@ -226,6 +226,8 @@ extension SleepTimer: PlayerDelegate {
             }
         }
     }
+
+    public func playerDidBeginUnload(_ player: Player) { }
 }
 
 
