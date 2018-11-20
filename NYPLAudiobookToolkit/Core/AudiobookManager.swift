@@ -201,16 +201,17 @@ private class MediaControlHandler {
     }
 
     func teardown() {
+        //Per Apple's doc comment, specifying to nil removes all targets.
+        self.command.playCommand.removeTarget(nil)
+        self.command.pauseCommand.removeTarget(nil)
+        self.command.togglePlayPauseCommand.removeTarget(nil)
+        self.command.skipForwardCommand.removeTarget(nil)
+        self.command.skipBackwardCommand.removeTarget(nil)
+        self.command.changePlaybackRateCommand.removeTarget(nil)
         self.setMediaControlCommands(enabled: false)
         if (MPNowPlayingInfoCenter.default().nowPlayingInfo != nil) {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         }
-        self.command.playCommand.removeTarget(self.togglePlaybackHandler)
-        self.command.pauseCommand.removeTarget(self.togglePlaybackHandler)
-        self.command.togglePlayPauseCommand.removeTarget(self.togglePlaybackHandler)
-        self.command.skipForwardCommand.removeTarget(self.skipForwardHandler)
-        self.command.skipBackwardCommand.removeTarget(self.skipBackHandler)
-        self.command.changePlaybackRateCommand.removeTarget(self.playbackRateHandler)
     }
     
     init(togglePlaybackHandler: @escaping RemoteEventHandler,
