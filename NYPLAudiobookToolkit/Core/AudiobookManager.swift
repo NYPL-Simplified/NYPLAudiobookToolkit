@@ -164,7 +164,8 @@ extension DefaultAudiobookManager: PlayerDelegate {
     }
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
-    public func playerDidBeginUnload(_ player: Player) {
+    public func playerDidUnload(_ player: Player) {
+      ATLog(.debug, "Audiobook Manager received message to teardown.")
       self.mediaControlHandler.teardown()
       self.timer?.invalidate()
     }

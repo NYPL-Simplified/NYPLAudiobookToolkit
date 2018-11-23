@@ -66,6 +66,11 @@ let SkipTimeInterval: Double = 15
 
     //MARK:-
 
+    deinit {
+        ATLog(.debug, "AudiobookPlayerViewController has deinitialized.")
+        self.audiobookManager.audiobook.player.unload()
+    }
+
     override public func viewDidLoad() {
         super.viewDidLoad()
 
@@ -586,7 +591,7 @@ extension AudiobookPlayerViewController: PlayerDelegate {
         self.waitingForPlayer = false
     }
 
-    public func playerDidBeginUnload(_ player: Player) { }
+    public func playerDidUnload(_ player: Player) { }
 }
 
 extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {

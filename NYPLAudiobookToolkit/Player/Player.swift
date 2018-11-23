@@ -41,7 +41,7 @@ import Foundation
 
     /// Called by the host when we're done with the audiobook, to perform necessary cleanup.
     /// TODO: Ideally, the client should be talking to the manager directly for this action.
-    func playerDidBeginUnload(_ player: Player)
+    func playerDidUnload(_ player: Player)
 }
 
 /// Objects that impelment Player should wrap a PlaybackEngine.
