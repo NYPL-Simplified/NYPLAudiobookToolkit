@@ -430,6 +430,7 @@ let SkipTimeInterval: Double = 15
                 barButtonItem.title = texts.title
                 barButtonItem.accessibilityLabel = texts.accessibilityLabel
             }
+            self.updateSpeedButtonIfNeeded()
             self.updatePlayPauseButtonIfNeeded()
         }
     }

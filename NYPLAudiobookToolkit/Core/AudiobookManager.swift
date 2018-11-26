@@ -106,15 +106,24 @@ public var sharedLogHandler: LogHandler?
             audiobook.player.skipPlayhead(-SkipTimeInterval, completion: nil)
             return .success
         }, playbackRateHandler: { (rateEvent) -> MPRemoteCommandHandlerStatus in
-            if let rate = rateEvent as? MPChangePlaybackRateCommandEvent,
-            let intRate = PlaybackRate(rawValue: Int(rate.playbackRate * 100)) {
-                audiobook.player.playbackRate = intRate
-                ATLog(.debug, "Media Control setting Playback Rate: float:\(rate) int:\(intRate)")
-                return .success
-            } else {
-                ATLog(.error, "Media Control failed setting Playback Rate")
+            guard let mpRateCommand = rateEvent as? MPChangePlaybackRateCommandEvent else {
+                ATLog(.error, "MPRemoteCommand could not cast to playback rate event.")
                 return .commandFailed
             }
+            let intValue = Int(mpRateCommand.playbackRate * 100)
+            guard let playbackRate = PlaybackRate(rawValue: intValue) else {
+                if (intValue < 100) && (intValue >= 50) {
+                    audiobook.player.playbackRate = .threeQuartersTime
+                    return .success
+                } else {
+                    audiobook.player.playbackRate = .normalTime
+                    ATLog(.error, "Failed to create PlaybackRate from rawValue: \(intValue)")
+                    return .commandFailed
+                }
+            }
+            audiobook.player.playbackRate = playbackRate
+            ATLog(.debug, "Media Control changed playback rate: float:\(mpRateCommand.playbackRate) int:\(playbackRate.rawValue)")
+            return .success
         })
         super.init()
         self.audiobook.player.registerDelegate(self)
@@ -153,6 +162,14 @@ public var sharedLogHandler: LogHandler?
             info[MPMediaItemPropertyAlbumTitle] = self.metadata.authors.joined(separator: ", ")
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = chapter.playheadOffset
             info[MPMediaItemPropertyPlaybackDuration] = chapter.duration
+            var rate = NSNumber(value: PlaybackRate.convert(rate: self.audiobook.player.playbackRate))
+            if self.audiobook.player.playbackRate == .threeQuartersTime {
+                // Map to visible rates on Apple Watch interface [0.5, 1.0, 1.5, 2.0]
+                rate = NSNumber(value: 0.5)
+            }
+            info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = rate
+            info[MPNowPlayingInfoPropertyPlaybackRate] = rate
+
             MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         }
     }
@@ -171,32 +188,33 @@ extension DefaultAudiobookManager: PlayerDelegate {
     }
 }
 
-typealias RemoteEventHandler = (_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
+typealias RemoteCommandHandler = (_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus
 
 private class MediaControlHandler {
 
     private var commandsHaveBeenEnabled = false
-    private let togglePlaybackHandler: RemoteEventHandler
-    private let skipForwardHandler: RemoteEventHandler
-    private let skipBackHandler: RemoteEventHandler
-    private let playbackRateHandler: RemoteEventHandler
+    private let togglePlaybackHandler: RemoteCommandHandler
+    private let skipForwardHandler: RemoteCommandHandler
+    private let skipBackHandler: RemoteCommandHandler
+    private let playbackRateHandler: RemoteCommandHandler
     private var command: MPRemoteCommandCenter {
         return MPRemoteCommandCenter.shared()
     }
 
     func enableMediaControlCommands() {
         if !self.commandsHaveBeenEnabled {
-            self.setMediaControlCommands(enabled: true)
             self.command.skipForwardCommand.preferredIntervals = [15]
             self.command.skipBackwardCommand.preferredIntervals = [15]
-            var supportedRates = [NSNumber]()
-            PlaybackRate.allCases.forEach {
-                let rate = PlaybackRate.convert(rate: $0)
-                supportedRates.append(NSNumber(value: rate))
-                ATLog(.debug, "Supported playback rate: \(rate)")
-            }
-            self.command.changePlaybackRateCommand.supportedPlaybackRates = supportedRates
 
+            var rates = [NSNumber]()
+            for playbackRate in PlaybackRate.allCases {
+                let floatRate = PlaybackRate.convert(rate: playbackRate)
+                rates.append(NSNumber(value: floatRate))
+            }
+            ATLog(.debug, "Setting Supported Playback Rates: \(rates)")
+            self.command.changePlaybackRateCommand.supportedPlaybackRates = rates
+
+            self.setMediaControlCommands(enabled: true)
             self.commandsHaveBeenEnabled = true
         }
     }
@@ -215,10 +233,10 @@ private class MediaControlHandler {
         }
     }
     
-    init(togglePlaybackHandler: @escaping RemoteEventHandler,
-         skipForwardHandler: @escaping RemoteEventHandler,
-         skipBackHandler: @escaping RemoteEventHandler,
-         playbackRateHandler: @escaping RemoteEventHandler) {
+    init(togglePlaybackHandler: @escaping RemoteCommandHandler,
+         skipForwardHandler: @escaping RemoteCommandHandler,
+         skipBackHandler: @escaping RemoteCommandHandler,
+         playbackRateHandler: @escaping RemoteCommandHandler) {
         self.togglePlaybackHandler = togglePlaybackHandler
         self.skipForwardHandler = skipForwardHandler
         self.skipBackHandler = skipBackHandler
