@@ -108,6 +108,7 @@ extension AudiobookTableOfContents: PlayerDelegate {
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
 
+    public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
     public func playerDidUnload(_ player: Player) { }
 }

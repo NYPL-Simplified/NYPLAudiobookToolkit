@@ -485,6 +485,22 @@ let SkipTimeInterval: Double = 15
         }
         return nil
     }
+
+    fileprivate func presentAlertAndLog(error: NSError?) {
+        let errorLocalizedText = NSLocalizedString("A Problem Has Occurred", bundle: Bundle.audiobookToolkit()!, value: "A Problem Has Occurred", comment: "A Problem Has Occurred")
+        let alertController = UIAlertController(title: errorLocalizedText, message: error?.localizedDescription ?? "Please try again later.", preferredStyle: .alert)
+        let okLocalizedText = NSLocalizedString("OK", bundle: Bundle.audiobookToolkit()!, value: "OK", comment: "Okay")
+
+        let alertAction = UIAlertAction(title: okLocalizedText, style: .default) { _ in
+            self.waitingForPlayer = false
+        }
+        alertController.addAction(alertAction)
+
+        self.present(alertController, animated: true)
+
+        let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
+        ATLog(.error, logString, error: error)
+    }
 }
 
 extension AudiobookPlayerViewController: AudiobookTableOfContentsTableViewControllerDelegate {
@@ -588,6 +604,10 @@ extension AudiobookPlayerViewController: PlayerDelegate {
         self.updatePlayPauseButtonIfNeeded()
     }
 
+    public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) {
+        presentAlertAndLog(error: error)
+    }
+
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         self.waitingForPlayer = false
     }
@@ -600,19 +620,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
-        let errorLocalizedText = NSLocalizedString("A Problem Has Occurred", bundle: Bundle.audiobookToolkit()!, value: "A Problem Has Occurred", comment: "A Problem Has Occurred")
-        let alertController = UIAlertController(title: errorLocalizedText, message: error.localizedDescription, preferredStyle: .alert)
-        let okLocalizedText = NSLocalizedString("OK", bundle: Bundle.audiobookToolkit()!, value: "OK", comment: "Okay")
-
-        let alertAction = UIAlertAction(title: okLocalizedText, style: .default) { _ in
-            self.waitingForPlayer = false
-        }
-        alertController.addAction(alertAction)
-
-        self.present(alertController, animated: true)
-
-        let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
-        ATLog(.error, logString, error: error)
+        presentAlertAndLog(error: error)
     }
 }
 

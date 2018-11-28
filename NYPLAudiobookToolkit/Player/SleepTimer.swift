@@ -227,6 +227,7 @@ extension SleepTimer: PlayerDelegate {
         }
     }
 
+    public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
     public func playerDidUnload(_ player: Player) { }
 }
 

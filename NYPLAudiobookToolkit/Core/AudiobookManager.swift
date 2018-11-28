@@ -180,6 +180,7 @@ extension DefaultAudiobookManager: PlayerDelegate {
         self.mediaControlHandler.enableMediaControlCommands()
     }
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
+    public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
     public func playerDidUnload(_ player: Player) {
       ATLog(.debug, "Audiobook Manager received message to teardown.")
