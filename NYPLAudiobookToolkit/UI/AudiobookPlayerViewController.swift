@@ -601,15 +601,15 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         let errorLocalizedText = NSLocalizedString("A Problem Has Occurred", bundle: Bundle.audiobookToolkit()!, value: "A Problem Has Occurred", comment: "A Problem Has Occurred")
-        let alertController = UIAlertController(
-            title: errorLocalizedText,
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
+        let alertController = UIAlertController(title: errorLocalizedText, message: error.localizedDescription, preferredStyle: .alert)
         let okLocalizedText = NSLocalizedString("OK", bundle: Bundle.audiobookToolkit()!, value: "OK", comment: "Okay")
-        alertController.addAction(UIAlertAction(title: okLocalizedText, style: .cancel, handler: nil))
-        alertController.popoverPresentationController?.sourceView = self.view
-        self.present(alertController, animated: true, completion: nil)
+
+        let alertAction = UIAlertAction(title: okLocalizedText, style: .default) { _ in
+            self.waitingForPlayer = false
+        }
+        alertController.addAction(alertAction)
+
+        self.present(alertController, animated: true)
 
         let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
         ATLog(.error, logString, error: error)
