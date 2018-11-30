@@ -401,6 +401,14 @@ let SkipTimeInterval: Double = 15
             let volumeView = MPVolumeView()
             volumeView.showsVolumeSlider = false
             volumeView.showsRouteButton = true
+            // Set tint of route button: https://stackoverflow.com/a/33016391
+            for view in volumeView.subviews {
+                if view.isKind(of: UIButton.self) {
+                    let buttonOnVolumeView = view as! UIButton
+                    volumeView.setRouteButtonImage(buttonOnVolumeView.currentImage?.withRenderingMode(.alwaysTemplate), for: .normal)
+                    break
+                }
+            }
             volumeView.sizeToFit()
             view = volumeView
         }
