@@ -108,8 +108,8 @@ let SkipTimeInterval: Double = 15
         let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
         self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
 
-        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title
-        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors
+        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title ?? "Audiobook"
+        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors ?? [""]
 
         self.view.addSubview(self.chapterInfoStack)
         self.chapterInfoStack.autoSetDimension(.width, toSize: 500, relation: .lessThanOrEqual)

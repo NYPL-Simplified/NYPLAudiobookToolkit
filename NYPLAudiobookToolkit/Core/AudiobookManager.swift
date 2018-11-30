@@ -159,7 +159,7 @@ public var sharedLogHandler: LogHandler?
                 info[MPMediaItemPropertyTitle] = title
             }
             info[MPMediaItemPropertyArtist] = self.metadata.title
-            info[MPMediaItemPropertyAlbumTitle] = self.metadata.authors.joined(separator: ", ")
+            info[MPMediaItemPropertyAlbumTitle] = self.metadata.authors?.joined(separator: ", ")
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = chapter.playheadOffset
             info[MPMediaItemPropertyPlaybackDuration] = chapter.duration
             var rate = NSNumber(value: PlaybackRate.convert(rate: self.audiobook.player.playbackRate))
