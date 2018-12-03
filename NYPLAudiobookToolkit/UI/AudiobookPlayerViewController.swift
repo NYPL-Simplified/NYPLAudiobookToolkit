@@ -33,24 +33,27 @@ let SkipTimeInterval: Double = 15
     private let activityIndicator = BufferActivityIndicatorView(style: .gray)
     private let gradient = CAGradientLayer()
     private let padding = CGFloat(12)
-    private let seekBar = ScrubberView()
-    private let playbackControlView = PlaybackControlView()
+
+    private let toolbar = UIToolbar()
+    private let toolbarHeight: CGFloat = 44
     private let toolbarButtonWidth: CGFloat = 100.0
+
     private let audioRouteButtonWidth: CGFloat = 50.0
+    private let audioRoutingBarButtonIndex = 3
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
-    private let audioRoutingBarButtonIndex = 3
     private let sleepTimerDefaultText = "☾"
     private let sleepTimerDefaultAccessibilityLabel = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment:"Sleep Timer")
+
+    private let chapterInfoStack = ChapterInfoStack()
     public var coverView: AudiobookCoverImageView = { () -> AudiobookCoverImageView in
         let image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         let imageView = AudiobookCoverImageView.init(image: image)
         return imageView
     }()
+    private let seekBar = ScrubberView()
+    private let playbackControlView = PlaybackControlView()
 
-    private let toolbar = UIToolbar()
-    private let chapterInfoStack = ChapterInfoStack()
-    private let toolbarHeight: CGFloat = 44
     private var waitingForPlayer = false {
         didSet {
             if !waitingForPlayer {
@@ -58,7 +61,6 @@ let SkipTimeInterval: Double = 15
             }
         }
     }
-
     private var shouldBeginToAutoPlay = false
 
     private var compactWidthConstraints: [NSLayoutConstraint]!
