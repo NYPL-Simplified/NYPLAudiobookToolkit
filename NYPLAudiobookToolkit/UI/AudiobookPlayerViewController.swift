@@ -589,16 +589,6 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
 }
 
 extension AudiobookPlayerViewController: PlayerDelegate {
-    // It may seem like we want to update the UI in these delegates, but we do not.
-    // Sometimes the FindawayPlayer sends
-    // `didBeginPlaybackOf`, `didStopPlaybackOf`,  `didComplete` before the player
-    // has actually updated it's currentOffset. If the user has scrubbed the
-    // seek bar to a new playhead, and then we update on `didBeginPlaybackOf`,
-    // our playhead might momenterally flash at the old playhead.
-    //
-    // This a known bug in the AudioEngine player. It has been reported
-    // to them and will hopefully be fixed.
-
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.waitingForPlayer = false
         self.updatePlayPauseButtonIfNeeded()

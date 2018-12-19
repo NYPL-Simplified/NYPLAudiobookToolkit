@@ -43,7 +43,6 @@ import Foundation
     func player(_ player: Player, didComplete chapter: ChapterLocation)
 
     /// Called by the host when we're done with the audiobook, to perform necessary cleanup.
-    /// TODO: Ideally, the client should be talking to the manager directly for this action.
     func playerDidUnload(_ player: Player)
 }
 
@@ -88,7 +87,7 @@ import Foundation
 }
 
 /// This class represents a location in a book.
-@objcMembers public final class ChapterLocation: NSObject, Codable {
+@objcMembers public final class ChapterLocation: NSObject, Comparable, Codable {
     public let title: String?
     public let number: UInt
     public let part: UInt
@@ -160,6 +159,16 @@ import Foundation
     
     public class func fromData(_ data: Data) -> ChapterLocation? {
         return try? JSONDecoder().decode(ChapterLocation.self, from: data)
+    }
+
+    public static func < (lhs: ChapterLocation, rhs: ChapterLocation) -> Bool {
+        if lhs.part != rhs.part {
+            return lhs.part < rhs.part
+        } else if lhs.number != rhs.number {
+            return lhs.number < rhs.number
+        } else {
+            return lhs.playheadOffset < rhs.playheadOffset
+        }
     }
 }
 

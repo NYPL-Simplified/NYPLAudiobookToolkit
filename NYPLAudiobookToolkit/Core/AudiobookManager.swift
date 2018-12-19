@@ -51,6 +51,7 @@ public var sharedLogHandler: LogHandler?
     var timer: Timer? { get }
 
     static func setLogHandler(_ handler: @escaping LogHandler)
+    var playbackCompletionHandler: (() -> ())? { get set }
 }
 
 /// Implementation of the AudiobookManager intended for use by clients. Also intended
@@ -64,6 +65,7 @@ public var sharedLogHandler: LogHandler?
     static public func setLogHandler(_ handler: @escaping LogHandler) {
         sharedLogHandler = handler
     }
+    public var playbackCompletionHandler: (() -> ())?
 
     public let networkService: AudiobookNetworkService
     public let metadata: AudiobookMetadata
@@ -181,9 +183,13 @@ extension DefaultAudiobookManager: PlayerDelegate {
     }
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
-    public func player(_ player: Player, didComplete chapter: ChapterLocation) { }
+    public func player(_ player: Player, didComplete chapter: ChapterLocation) {
+        let lastChapter = self.networkService.spine.map{ $0.chapter }.sorted{ $0 < $1 }.last
+        if lastChapter?.inSameChapter(other: chapter) ?? false {
+            self.playbackCompletionHandler?()
+        }
+    }
     public func playerDidUnload(_ player: Player) {
-      ATLog(.debug, "Audiobook Manager received message to teardown.")
       self.mediaControlHandler.teardown()
       self.timer?.invalidate()
     }
@@ -198,23 +204,21 @@ private class MediaControlHandler {
     private let skipForwardHandler: RemoteCommandHandler
     private let skipBackHandler: RemoteCommandHandler
     private let playbackRateHandler: RemoteCommandHandler
-    private var command: MPRemoteCommandCenter {
-        return MPRemoteCommandCenter.shared()
-    }
+    private let commandCenter = MPRemoteCommandCenter.shared()
 
     func enableMediaControlCommands() {
         if !self.commandsHaveBeenEnabled {
-            self.command.skipForwardCommand.preferredIntervals = [15]
-            self.command.skipBackwardCommand.preferredIntervals = [15]
+            self.commandCenter.skipForwardCommand.preferredIntervals = [15]
+            self.commandCenter.skipBackwardCommand.preferredIntervals = [15]
 
             var rates = [NSNumber]()
             for playbackRate in PlaybackRate.allCases {
                 let floatRate = PlaybackRate.convert(rate: playbackRate)
                 rates.append(NSNumber(value: floatRate))
             }
-            ATLog(.debug, "Setting Supported Playback Rates: \(rates)")
-            self.command.changePlaybackRateCommand.supportedPlaybackRates = rates
 
+            ATLog(.debug, "Setting Supported Playback Rates: \(rates)")
+            self.commandCenter.changePlaybackRateCommand.supportedPlaybackRates = rates
             self.setMediaControlCommands(enabled: true)
             self.commandsHaveBeenEnabled = true
         }
@@ -222,12 +226,12 @@ private class MediaControlHandler {
 
     func teardown() {
         //Per Apple's doc comment, specifying to nil removes all targets.
-        self.command.playCommand.removeTarget(nil)
-        self.command.pauseCommand.removeTarget(nil)
-        self.command.togglePlayPauseCommand.removeTarget(nil)
-        self.command.skipForwardCommand.removeTarget(nil)
-        self.command.skipBackwardCommand.removeTarget(nil)
-        self.command.changePlaybackRateCommand.removeTarget(nil)
+        self.commandCenter.playCommand.removeTarget(nil)
+        self.commandCenter.pauseCommand.removeTarget(nil)
+        self.commandCenter.togglePlayPauseCommand.removeTarget(nil)
+        self.commandCenter.skipForwardCommand.removeTarget(nil)
+        self.commandCenter.skipBackwardCommand.removeTarget(nil)
+        self.commandCenter.changePlaybackRateCommand.removeTarget(nil)
         self.setMediaControlCommands(enabled: false)
         if (MPNowPlayingInfoCenter.default().nowPlayingInfo != nil) {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
@@ -242,12 +246,12 @@ private class MediaControlHandler {
         self.skipForwardHandler = skipForwardHandler
         self.skipBackHandler = skipBackHandler
         self.playbackRateHandler = playbackRateHandler
-        self.command.togglePlayPauseCommand.addTarget(handler: self.togglePlaybackHandler)
-        self.command.playCommand.addTarget(handler: self.togglePlaybackHandler)
-        self.command.pauseCommand.addTarget(handler: self.togglePlaybackHandler)
-        self.command.skipForwardCommand.addTarget(handler: self.skipForwardHandler)
-        self.command.skipBackwardCommand.addTarget(handler: self.skipBackHandler)
-        self.command.changePlaybackRateCommand.addTarget(handler: self.playbackRateHandler)
+        self.commandCenter.togglePlayPauseCommand.addTarget(handler: self.togglePlaybackHandler)
+        self.commandCenter.playCommand.addTarget(handler: self.togglePlaybackHandler)
+        self.commandCenter.pauseCommand.addTarget(handler: self.togglePlaybackHandler)
+        self.commandCenter.skipForwardCommand.addTarget(handler: self.skipForwardHandler)
+        self.commandCenter.skipBackwardCommand.addTarget(handler: self.skipBackHandler)
+        self.commandCenter.changePlaybackRateCommand.addTarget(handler: self.playbackRateHandler)
     }
 
     deinit {
@@ -256,11 +260,11 @@ private class MediaControlHandler {
 
     private func setMediaControlCommands(enabled: Bool) {
         ATLog(.debug, "MediaControlHandler commands toggled to \(enabled)")
-        self.command.playCommand.isEnabled = enabled
-        self.command.pauseCommand.isEnabled = enabled
-        self.command.togglePlayPauseCommand.isEnabled = enabled
-        self.command.skipForwardCommand.isEnabled = enabled
-        self.command.skipBackwardCommand.isEnabled = enabled
-        self.command.changePlaybackRateCommand.isEnabled = enabled
+        self.commandCenter.playCommand.isEnabled = enabled
+        self.commandCenter.pauseCommand.isEnabled = enabled
+        self.commandCenter.togglePlayPauseCommand.isEnabled = enabled
+        self.commandCenter.skipForwardCommand.isEnabled = enabled
+        self.commandCenter.skipBackwardCommand.isEnabled = enabled
+        self.commandCenter.changePlaybackRateCommand.isEnabled = enabled
     }
 }
