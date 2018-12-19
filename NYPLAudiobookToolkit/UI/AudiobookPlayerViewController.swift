@@ -205,7 +205,7 @@ let SkipTimeInterval: Double = 15
 
         let audioRoutingItem = self.audioRoutingBarButtonItem()
         items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
-        let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
+        let texts = self.sleepTimerTextFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
         let sleepTimer = UIBarButtonItem(
             title: texts.title,
             style: .plain,
@@ -311,7 +311,14 @@ let SkipTimeInterval: Double = 15
         }
         
         let actionSheetTitle = NSLocalizedString("Playback Speed", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed", comment: "Title to set how fast the audio plays")
-        let actionSheet = UIAlertController(title: actionSheetTitle, message: nil, preferredStyle: .actionSheet)
+
+        let actionSheet: UIAlertController
+        if self.traitCollection.horizontalSizeClass == .regular && UIAccessibility.isVoiceOverRunning {
+            actionSheet = UIAlertController(title: actionSheetTitle, message: nil, preferredStyle: .alert)
+        } else {
+            actionSheet = UIAlertController(title: actionSheetTitle, message: nil, preferredStyle: .actionSheet)
+        }
+
         let triggers: [PlaybackRate] = [.threeQuartersTime, .normalTime, .oneAndAQuarterTime, .oneAndAHalfTime, .doubleTime ]
         triggers.forEach { (trigger)  in
             let alert = actionFrom(rate: trigger, player: self.audiobookManager.audiobook.player)
@@ -327,7 +334,7 @@ let SkipTimeInterval: Double = 15
     private func updateSleepTimerIfNeeded() {
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex],
         let chapter = self.currentChapterLocation {
-            let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
+            let texts = self.sleepTimerTextFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
             barButtonItem.width = toolbarButtonWidth
             barButtonItem.title = texts.title
             barButtonItem.accessibilityLabel = texts.accessibilityLabel
@@ -380,7 +387,14 @@ let SkipTimeInterval: Double = 15
             return action
         }
         let title = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment: "Sleep Timer")
-        let actionSheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+
+        let actionSheet: UIAlertController
+        if self.traitCollection.horizontalSizeClass == .regular && UIAccessibility.isVoiceOverRunning {
+            actionSheet = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+        } else {
+            actionSheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+        }
+
         let triggers: [SleepTimerTriggerAt] = [.never, .fifteenMinutes, .thirtyMinutes, .oneHour, .endOfChapter]
         triggers.forEach { (trigger)  in
             let alert = actionFrom(trigger: trigger, sleepTimer: self.audiobookManager.sleepTimer)
@@ -434,7 +448,7 @@ let SkipTimeInterval: Double = 15
                 middleText: self.middleTextFor(chapter: currentLocation)
             )
             if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
-                let texts = self.textsFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: currentLocation)
+                let texts = self.sleepTimerTextFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: currentLocation)
                 barButtonItem.title = texts.title
                 barButtonItem.accessibilityLabel = texts.accessibilityLabel
             }
@@ -453,8 +467,8 @@ let SkipTimeInterval: Double = 15
             }
         }
     }
-    
-    func textsFor(sleepTimer: SleepTimer, chapter: ChapterLocation) -> (title: String, accessibilityLabel: String) {
+
+    func sleepTimerTextFor(sleepTimer: SleepTimer, chapter: ChapterLocation) -> (title: String, accessibilityLabel: String) {
         let title: String
         let accessibilityLabel: String
         if sleepTimer.isActive {
