@@ -9,8 +9,8 @@
 
 /// Notifications about the status of the download.
 @objc public protocol DownloadTaskDelegate: class {
-    func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
+    func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
     func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError)
 }

@@ -10,7 +10,8 @@ import UIKit
 
 @objc public protocol AudiobookNetworkServiceDelegate: class {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement)
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement)
 }
@@ -27,7 +28,7 @@ import UIKit
     var spine: [SpineElement] { get }
     var downloadProgress: Float { get }
     
-    /// Implmenters of this should attempt to download all
+    /// Implementers of this should attempt to download all
     /// spine elements in a serial order. Once the
     /// implementer has begun requesting files, calling this
     /// again should not fire more requests. If no request is
@@ -58,6 +59,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         let taskCompletedPercentage = self.spine.reduce(0) { (memo: Float, element: SpineElement) -> Float in
             return memo + element.downloadTask.downloadProgress
         }
+        ATLog(.debug, "ANS: Overall Progress: \(taskCompletedPercentage / Float(self.spine.count))")
         return taskCompletedPercentage / Float(self.spine.count)
     }
     
@@ -106,21 +108,6 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
 }
 
 extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
-    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
-        self.cursor = nil
-        if let spineElement = self.spineElementByKey[downloadTask.key] {
-            DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
-            }
-        }
-    }
-
-    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError) {
-        self.delegates.allObjects.forEach { (delegate) in
-            delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
-        }
-    }
-    
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
         self.cursor = self.cursor?.next()
         self.cursor?.currentElement.downloadTask.fetch()
@@ -130,10 +117,12 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
             }
         }
     }
-    
-    func notifyDelegatesThatPlaybackIsReadyFor(_ spineElement: SpineElement) {
-        self.delegates.allObjects.forEach { (delegate) in
-            delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
+
+    public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            DispatchQueue.main.async { [weak self] () -> Void in
+                self?.notifyDelegatesOfDeleteFor(spineElement)
+            }
         }
     }
 
@@ -144,18 +133,33 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
             }
         }
     }
-    
-    func notifyDelegatesOfDownloadPercentFor(_ spineElement: SpineElement) {
-        self.delegates.allObjects.forEach { (delegate) in
-            delegate.audiobookNetworkService(self, didUpdateDownloadPercentageFor: spineElement)
+
+    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
+        self.cursor = nil
+        if let spineElement = self.spineElementByKey[downloadTask.key] {
+            DispatchQueue.main.async { [weak self] () -> Void in
+                self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
+            }
         }
     }
 
-    public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
-        if let spineElement = self.spineElementByKey[downloadTask.key] {
-            DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesOfDeleteFor(spineElement)
-            }
+    func notifyDelegatesThatPlaybackIsReadyFor(_ spineElement: SpineElement) {
+        self.delegates.allObjects.forEach { (delegate) in
+            delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
+            delegate.audiobookNetworkService(self, didUpdateOverallDownloadProgress: self.downloadProgress)
+        }
+    }
+
+    func notifyDelegatesOfDownloadPercentFor(_ spineElement: SpineElement) {
+        self.delegates.allObjects.forEach { (delegate) in
+            delegate.audiobookNetworkService(self, didUpdateProgressFor: spineElement)
+            delegate.audiobookNetworkService(self, didUpdateOverallDownloadProgress: self.downloadProgress)
+        }
+    }
+
+    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError) {
+        self.delegates.allObjects.forEach { (delegate) in
+            delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
         }
     }
     

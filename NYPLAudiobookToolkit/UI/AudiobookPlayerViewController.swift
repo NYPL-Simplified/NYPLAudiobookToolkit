@@ -45,6 +45,7 @@ let SkipTimeInterval: Double = 15
     private let sleepTimerDefaultText = "☾"
     private let sleepTimerDefaultAccessibilityLabel = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment:"Sleep Timer")
 
+    private var downloadProgressView = UIProgressView()
     private let chapterInfoStack = ChapterInfoStack()
     public var coverView: AudiobookCoverImageView = { () -> AudiobookCoverImageView in
         let image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
@@ -110,6 +111,11 @@ let SkipTimeInterval: Double = 15
         let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
         self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
 
+        self.view.addSubview(self.downloadProgressView)
+        self.downloadProgressView.autoSetDimension(.height, toSize: 6.0)
+        self.downloadProgressView.autoPin(toTopLayoutGuideOf: self, withInset: 0)
+        self.downloadProgressView.autoPinEdge(toSuperviewEdge: .leading)
+        self.downloadProgressView.autoPinEdge(toSuperviewEdge: .trailing)
         self.chapterInfoStack.titleText = self.audiobookManager.metadata.title ?? "Audiobook"
         self.chapterInfoStack.authors = self.audiobookManager.metadata.authors ?? [""]
 
@@ -168,14 +174,14 @@ let SkipTimeInterval: Double = 15
 
         compactWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
             self.coverView.autoAlignAxis(toSuperviewAxis: .vertical)
-            self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
+            self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.downloadProgressView, withOffset: self.padding)
             self.chapterInfoStack.autoSetDimension(.height, toSize: 60.0, relation: .lessThanOrEqual)
         }
 
         regularWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
             self.coverView.autoCenterInSuperview()
             self.coverView.autoSetDimension(.width, toSize: 500.0)
-            self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding, relation: .greaterThanOrEqual)
+            self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.downloadProgressView, withOffset: self.padding, relation: .greaterThanOrEqual)
         }
 
         guard let chapter = self.currentChapterLocation else { return }
@@ -631,10 +637,13 @@ extension AudiobookPlayerViewController: PlayerDelegate {
 
 extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {}
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {}
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         presentAlertAndLog(error: error)
+    }
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) {
+        self.downloadProgressView.progress = progress
     }
 }
 
