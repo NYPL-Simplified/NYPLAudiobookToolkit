@@ -5,8 +5,9 @@ final class DownloadProgressView: UIView {
     private let ViewHeight: CGFloat = 30.0
     private let SubviewPadding: CGFloat = 8.0
 
-    let progressView = UIProgressView()
-    private let label = UILabel()
+    private let progressView = UIProgressView()
+    private let downloadLabel = UILabel()
+    private let percentageLabel = UILabel()
     private var heightConstraint: NSLayoutConstraint?
 
     required init() {
@@ -19,40 +20,56 @@ final class DownloadProgressView: UIView {
     }
 
     private func setupView() {
-        backgroundColor = .white
+        backgroundColor = tintColor
         isHidden = true
         heightConstraint = autoSetDimension(.height, toSize: 0.0)
 
-        label.clipsToBounds = true
-        label.text = NSLocalizedString("Downloading", comment: "")
-        label.font = UIFont.systemFont(ofSize: 12.0)
+        downloadLabel.clipsToBounds = true
+        downloadLabel.text = NSLocalizedString("Downloading", comment: "")
+        downloadLabel.textColor = .white
+        downloadLabel.font = UIFont.systemFont(ofSize: 12.0)
+
+        percentageLabel.clipsToBounds = true
+        percentageLabel.text = NSLocalizedString("--", comment: "")
+        percentageLabel.textColor = .white
+        percentageLabel.font = UIFont.systemFont(ofSize: 12.0)
 
         progressView.clipsToBounds = true
-        progressView.tintColor = tintColor
+        progressView.progressTintColor = .white
+        progressView.trackTintColor = .darkGray
 
-        addSubview(label)
+        addSubview(downloadLabel)
         addSubview(progressView)
-        label.autoAlignAxis(toSuperviewAxis: .horizontal)
-        label.autoPinEdge(toSuperviewEdge: .leading, withInset: SubviewPadding)
-        label.autoPinEdge(.trailing, to: .leading, of: progressView, withOffset: -SubviewPadding)
+        addSubview(percentageLabel)
+        downloadLabel.autoAlignAxis(toSuperviewAxis: .horizontal)
+        downloadLabel.autoPinEdge(toSuperviewEdge: .leading, withInset: SubviewPadding)
+        downloadLabel.autoPinEdge(.trailing, to: .leading, of: progressView, withOffset: -SubviewPadding)
+        percentageLabel.autoAlignAxis(toSuperviewAxis: .horizontal)
+        percentageLabel.autoPinEdge(.leading, to: .trailing, of: progressView, withOffset: SubviewPadding)
+        percentageLabel.autoPinEdge(toSuperviewEdge: .trailing, withInset: SubviewPadding)
         progressView.autoAlignAxis(toSuperviewAxis: .horizontal)
-        progressView.autoPinEdge(toSuperviewEdge: .trailing, withInset: SubviewPadding)
-        progressView.autoSetDimension(.height, toSize: 6.0)
+        progressView.autoSetDimension(.height, toSize: 5.0)
     }
 
     func beginShowingProgress() {
         isHidden = false
-        self.heightConstraint?.constant = self.ViewHeight
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: {
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
+            self.heightConstraint?.constant = self.ViewHeight
             self.superview?.layoutIfNeeded()
         })
     }
 
     func stopShowingProgress() {
         isHidden = true
-        self.heightConstraint?.constant = 0.0
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: {
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {
+            self.heightConstraint?.constant = 0.0
             self.superview?.layoutIfNeeded()
         })
+    }
+
+    func updateProgress(_ progress: Float) {
+        progressView.progress = progress
+        let percent = Int(progress * 100)
+        percentageLabel.text = "\(percent)%"
     }
 }

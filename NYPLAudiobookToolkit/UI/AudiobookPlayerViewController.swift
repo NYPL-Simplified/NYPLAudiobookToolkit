@@ -649,7 +649,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
         } else if (Int(progress) == 1) && (!self.audiobookProgressView.isHidden) {
             self.audiobookProgressView.stopShowingProgress()
         }
-        self.audiobookProgressView.progressView.progress = progress
+        self.audiobookProgressView.updateProgress(progress)
     }
 }
 
