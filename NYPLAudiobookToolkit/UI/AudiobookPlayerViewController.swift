@@ -33,24 +33,29 @@ let SkipTimeInterval: Double = 15
     private let activityIndicator = BufferActivityIndicatorView(style: .gray)
     private let gradient = CAGradientLayer()
     private let padding = CGFloat(12)
-    private let seekBar = ScrubberView()
-    private let playbackControlView = PlaybackControlView()
+
+    private let toolbar = UIToolbar()
+    private let toolbarHeight: CGFloat = 44
     private let toolbarButtonWidth: CGFloat = 100.0
+
     private let audioRouteButtonWidth: CGFloat = 50.0
+    private let audioRoutingBarButtonIndex = 3
     private let speedBarButtonIndex = 1
     private let sleepTimerBarButtonIndex = 5
-    private let audioRoutingBarButtonIndex = 3
     private let sleepTimerDefaultText = "☾"
     private let sleepTimerDefaultAccessibilityLabel = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment:"Sleep Timer")
+
+    private var audiobookProgressView = DownloadProgressView()
+
+    private let chapterInfoStack = ChapterInfoStack()
     public var coverView: AudiobookCoverImageView = { () -> AudiobookCoverImageView in
         let image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         let imageView = AudiobookCoverImageView.init(image: image)
         return imageView
     }()
+    private let seekBar = ScrubberView()
+    private let playbackControlView = PlaybackControlView()
 
-    private let toolbar = UIToolbar()
-    private let chapterInfoStack = ChapterInfoStack()
-    private let toolbarHeight: CGFloat = 44
     private var waitingForPlayer = false {
         didSet {
             if !waitingForPlayer {
@@ -58,7 +63,6 @@ let SkipTimeInterval: Double = 15
             }
         }
     }
-
     private var shouldBeginToAutoPlay = false
 
     private var compactWidthConstraints: [NSLayoutConstraint]!
@@ -107,6 +111,11 @@ let SkipTimeInterval: Double = 15
         self.activityIndicator.hidesWhenStopped = true
         let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
         self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
+
+        self.view.addSubview(self.audiobookProgressView)
+        self.audiobookProgressView.autoPin(toTopLayoutGuideOf: self, withInset: 0)
+        self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .leading)
+        self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .trailing)
 
         self.chapterInfoStack.titleText = self.audiobookManager.metadata.title ?? "Audiobook"
         self.chapterInfoStack.authors = self.audiobookManager.metadata.authors ?? [""]
@@ -166,14 +175,14 @@ let SkipTimeInterval: Double = 15
 
         compactWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
             self.coverView.autoAlignAxis(toSuperviewAxis: .vertical)
-            self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding)
+            self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding)
             self.chapterInfoStack.autoSetDimension(.height, toSize: 60.0, relation: .lessThanOrEqual)
         }
 
         regularWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
             self.coverView.autoCenterInSuperview()
             self.coverView.autoSetDimension(.width, toSize: 500.0)
-            self.chapterInfoStack.autoPin(toTopLayoutGuideOf: self, withInset: self.padding, relation: .greaterThanOrEqual)
+            self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding, relation: .greaterThanOrEqual)
         }
 
         guard let chapter = self.currentChapterLocation else { return }
@@ -629,10 +638,18 @@ extension AudiobookPlayerViewController: PlayerDelegate {
 
 extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {}
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {}
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         presentAlertAndLog(error: error)
+    }
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) {
+        if (progress < 1.0) && (self.audiobookProgressView.isHidden) {
+            self.audiobookProgressView.beginShowingProgress()
+        } else if (Int(progress) == 1) && (!self.audiobookProgressView.isHidden) {
+            self.audiobookProgressView.stopShowingProgress()
+        }
+        self.audiobookProgressView.updateProgress(progress)
     }
 }
 

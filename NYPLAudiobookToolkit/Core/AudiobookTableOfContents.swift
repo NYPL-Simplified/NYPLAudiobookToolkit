@@ -123,8 +123,9 @@ extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
         self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
-    
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateDownloadPercentageFor spineElement: SpineElement) {
+
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement)
+ {
         self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
@@ -133,4 +134,5 @@ extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
         self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
         self.delegate?.audiobookTableOfContentsDidRequestReload(self)
     }
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) { }
 }
