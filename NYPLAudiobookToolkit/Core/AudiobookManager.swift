@@ -59,9 +59,7 @@ public var sharedLogHandler: LogHandler?
 @objcMembers public final class DefaultAudiobookManager: NSObject, AudiobookManager {
     public weak var timerDelegate: AudiobookManagerTimerDelegate?
     public weak var refreshDelegate: RefreshDelegate?
-    public var logHandler: LogHandler?
 
-    static private var sharedLogHandler: LogHandler?
     static public func setLogHandler(_ handler: @escaping LogHandler) {
         sharedLogHandler = handler
     }
