@@ -20,7 +20,6 @@ final class DownloadProgressView: UIView {
     }
 
     private func setupView() {
-        backgroundColor = tintColor
         isHidden = true
         heightConstraint = autoSetDimension(.height, toSize: 0.0)
 

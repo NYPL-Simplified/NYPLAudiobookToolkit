@@ -182,9 +182,15 @@ extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
     public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
-        let lastChapter = self.networkService.spine.map{ $0.chapter }.sorted{ $0 < $1 }.last
-        if lastChapter?.inSameChapter(other: chapter) ?? false {
+        let sortedSpine = self.networkService.spine.map{ $0.chapter }.sorted{ $0 < $1 }
+        guard let firstChapter = sortedSpine.first,
+            let lastChapter = sortedSpine.last else {
+                ATLog(.error, "Audiobook Spine is corrupt.")
+                return
+        }
+        if lastChapter.inSameChapter(other: chapter) {
             self.playbackCompletionHandler?()
+            self.audiobook.player.movePlayheadToLocation(firstChapter)
         }
     }
     public func playerDidUnload(_ player: Player) {

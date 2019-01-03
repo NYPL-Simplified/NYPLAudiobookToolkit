@@ -113,6 +113,7 @@ let SkipTimeInterval: Double = 15
         self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
 
         self.view.addSubview(self.audiobookProgressView)
+        self.audiobookProgressView.backgroundColor = view.tintColor
         self.audiobookProgressView.autoPin(toTopLayoutGuideOf: self, withInset: 0)
         self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .leading)
         self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .trailing)
@@ -642,6 +643,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
         presentAlertAndLog(error: error)
+        self.audiobookProgressView.stopShowingProgress()
     }
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) {
         if (progress < 1.0) && (self.audiobookProgressView.isHidden) {
