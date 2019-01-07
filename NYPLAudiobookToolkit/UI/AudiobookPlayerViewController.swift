@@ -261,8 +261,8 @@ let SkipTimeInterval: Double = 15
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.audiobookManager.timerDelegate = nil
+        // The player UI state between transitions relies on this staying:
         self.audiobookManager.audiobook.player.removeDelegate(self)
-        self.audiobookManager.networkService.removeDelegate(self)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
