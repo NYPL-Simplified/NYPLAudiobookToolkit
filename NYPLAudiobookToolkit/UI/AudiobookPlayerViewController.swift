@@ -79,6 +79,7 @@ let SkipTimeInterval: Double = 15
         super.viewDidLoad()
 
         self.audiobookManager.networkService.fetch()
+        self.audiobookManager.networkService.registerDelegate(self)
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -244,7 +245,6 @@ let SkipTimeInterval: Double = 15
         super.viewWillAppear(animated)
         self.audiobookManager.timerDelegate = self
         self.audiobookManager.audiobook.player.registerDelegate(self)
-        self.audiobookManager.networkService.registerDelegate(self)
 
         if self.audiobookManager.audiobook.player.isPlaying {
             self.playbackControlView.showPauseButtonIfNeeded()
