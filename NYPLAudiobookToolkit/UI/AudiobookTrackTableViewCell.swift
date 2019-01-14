@@ -14,7 +14,6 @@ class AudiobookTrackTableViewCell: UITableViewCell {
         let spineDuration = spineElement.chapter.duration
         let title = spineElement.chapter.title
         let detailLabel: String
-        let labelAlpha: CGFloat
         if progress == 0 {
             let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
             self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
