@@ -1,3 +1,8 @@
+enum OpenAccessSpineElementMediaType: String {
+    case audioMPEG = "audio/mpeg"
+    case rbDigital = "vnd.librarysimplified/rbdigital-audiobook-part+json"
+}
+
 final class OpenAccessSpineElement: SpineElement {
     var key: String {
         return self.url.absoluteString
@@ -22,25 +27,60 @@ final class OpenAccessSpineElement: SpineElement {
     let chapterNumber: UInt
     let title: String
     let url: URL
-    let mediaType: String
+    let alternateUrls: [(OpenAccessSpineElementMediaType, URL)]?
+    let mediaType: OpenAccessSpineElementMediaType
     let duration: TimeInterval
     let audiobookID: String
 
     public init?(JSON: Any?, index: UInt, audiobookID: String) {
+        self.chapterNumber = index
+        self.audiobookID = audiobookID
+
         guard let payload = JSON as? [String: Any],
             let title = payload["title"] as? String,
             let urlString = payload["href"] as? String,
             let url = URL(string: urlString),
-            let mediaType = payload["type"] as? String,
             let duration = payload["duration"] as? TimeInterval else {
                 ATLog(.error, "OpenAccessSpineElement failed to init from JSON: \n\(JSON ?? "nil")")
                 return nil
         }
         self.title = title
         self.url = url
-        self.mediaType = mediaType
         self.duration = duration
-        self.chapterNumber = index
-        self.audiobookID = audiobookID
+
+        guard let mediaTypeString = payload["type"] as? String,
+            let mediaType = OpenAccessSpineElementMediaType(rawValue: mediaTypeString) else {
+                ATLog(.error, "Media Type of open acess spine element not supported.")
+                return nil
+        }
+        self.mediaType = mediaType
+
+        let alternatesJson = payload["alternates"] as? [[String:String]]
+        self.alternateUrls = OpenAccessSpineElement.parseAlternateUrls(alternatesJson)
+    }
+
+    private class func parseAlternateUrls(_ json: [[String:String]]?) -> [(OpenAccessSpineElementMediaType, URL)]? {
+        guard let json = json else {
+            ATLog(.debug, "No alternate links provided in spine.")
+            return nil
+        }
+        let alternates = json.compactMap({ (alternateLink) -> (OpenAccessSpineElementMediaType, URL)? in
+            if let typeString = alternateLink["type"],
+                let mediaType = OpenAccessSpineElementMediaType(rawValue: typeString),
+                let urlString = alternateLink["href"],
+                let url = URL(string: urlString) {
+                return (mediaType, url)
+            } else {
+                ATLog(.error, "Invalid alternate type/href thrown out: \n\(alternateLink)")
+                return nil
+            }
+        })
+        if alternates.count >= 1 {
+            return alternates
+        } else {
+            return nil
+        }
     }
 }
+
+
