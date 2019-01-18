@@ -12,13 +12,15 @@ final class OpenAccessDownloadTask: DownloadTask {
 
     let key: String
     let url: URL
-    let alternateUrls: [(OpenAccessSpineElementMediaType, URL)]?
+    let urlMediaType: OpenAccessSpineElementMediaType
+    let alternateLinks: [(OpenAccessSpineElementMediaType, URL)]?
 
     //GODO TODO shouldn't delegate be in the init here?
     public init(spineElement: OpenAccessSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
-        self.alternateUrls = spineElement.alternateUrls
+        self.urlMediaType = spineElement.mediaType
+        self.alternateLinks = spineElement.alternateUrls
     }
 
     /// If the asset is already downloaded, return immediately and update state.
@@ -40,22 +42,70 @@ final class OpenAccessDownloadTask: DownloadTask {
 
         let assetURL = cacheDirectory.appendingPathComponent("\(escapedKey)", isDirectory: false).appendingPathExtension("mp3")
 
-        if fileManager.fileExists(atPath: assetURL.absoluteString) {
+        if fileManager.fileExists(atPath: assetURL.path) {
             downloadProgress = 1.0
             self.delegate?.downloadTaskReadyForPlayback(self)
-        } else {
-            download(toLocalDirectory: assetURL)
+            return
+        }
+
+        switch urlMediaType {
+        case .rbDigital:
+            downloadRBDigitalPartial(toLocalDirectory: assetURL)
+        case .audioMPEG:
+            downloadAsset(fromRemoteURL: self.url, toLocalDirectory: assetURL)
         }
     }
 
     func delete() {
 
         //GODO TODO
+      
     }
 
     //GODO TODO remember to add a method to delete all cached content, which could be called by a host when a user is signing out
 
-    private func download(toLocalDirectory: URL) {
+    /// RBDigital media types first download an intermediate document, which points
+    /// to the url of the actual asset to download.
+    private func downloadRBDigitalPartial(toLocalDirectory localURL: URL) {
+
+        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+
+            guard let data = data,
+                let response = response,
+                (error == nil) else {
+                ATLog(.error, "Network request failed for RBDigital partial file. Error: \(error!.localizedDescription)")
+                return
+            }
+
+            if (response as? HTTPURLResponse)?.statusCode == 200 {
+                do {
+                    if let responseBody = try JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
+                        let typeString = responseBody["type"] as? String,
+                        let mediaType = OpenAccessSpineElementMediaType(rawValue: typeString),
+                        let urlString = responseBody["url"] as? String,
+                        let assetUrl = URL(string: urlString) {
+
+                        switch mediaType {
+                        case .audioMPEG:
+                            self.downloadAsset(fromRemoteURL: assetUrl, toLocalDirectory: localURL)
+                        case .rbDigital:
+                            ATLog(.error, "Wrong media type for download task.")
+                        }
+
+                    } else {
+                        ATLog(.error, "Invalid or missing property in JSON response to download task.")
+                    }
+                } catch {
+                    ATLog(.error, "Error deserializing JSON in download task.")
+                }
+            } else {
+                ATLog(.error, "Failed with server response: \n\(response.description)")
+            }
+        }
+        task.resume()
+    }
+
+    private func downloadAsset(fromRemoteURL remoteURL: URL, toLocalDirectory: URL) {
         //GODO TODO find a way to get a shared session out of each individual download task, perhaps in the manager or network service
         //OR just use the default shared session instead of a custom one, but maybe I can't have a delegate if I do that.
         let config = URLSessionConfiguration.ephemeral
@@ -63,7 +113,7 @@ final class OpenAccessDownloadTask: DownloadTask {
                                  delegate: OpenAccessDownloadTaskURLSessionDelegate(),
                                  delegateQueue: OperationQueue.main)
 
-        let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
+        let request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
 
         let task = session.downloadTask(with: request) { (fileURL, response, error) in
 

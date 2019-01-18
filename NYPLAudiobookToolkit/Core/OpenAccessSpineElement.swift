@@ -1,6 +1,8 @@
 enum OpenAccessSpineElementMediaType: String {
     case audioMPEG = "audio/mpeg"
-    case rbDigital = "vnd.librarysimplified/rbdigital-audiobook-part+json"
+//    case rbDigital = "vnd.librarysimplified/rbdigital-audiobook-part+json"
+    case rbDigital = "vnd.librarysimplified/rbdigital-access-document+json"
+
 }
 
 final class OpenAccessSpineElement: SpineElement {
