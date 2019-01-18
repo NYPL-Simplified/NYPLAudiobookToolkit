@@ -13,7 +13,7 @@ import UIKit
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement)
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement)
 }
 
 
@@ -134,7 +134,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
     }
 
-    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
+    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError?) {
         self.cursor = nil
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
@@ -157,7 +157,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
     }
 
-    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError) {
+    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError?) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
         }
