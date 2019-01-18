@@ -78,8 +78,9 @@ let SkipTimeInterval: Double = 15
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        self.audiobookManager.networkService.fetch()
         self.audiobookManager.networkService.registerDelegate(self)
+        self.audiobookManager.networkService.fetch()
+        
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -187,7 +188,16 @@ let SkipTimeInterval: Double = 15
             self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding, relation: .greaterThanOrEqual)
         }
 
-        guard let chapter = self.currentChapterLocation else { return }
+//        guard let chapter = self.currentChapterLocation else { return }
+
+        let chapter = ChapterLocation(
+            number: 0,
+            part: 0,
+            duration: 4000,
+            startOffset: 0,
+            playheadOffset: 0,
+            title: "test title",
+            audiobookID: "12345")!
 
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
         self.toolbar.autoPinEdge(.left, to: .left, of: self.view)

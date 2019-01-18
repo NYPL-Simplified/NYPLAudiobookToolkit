@@ -4,9 +4,6 @@ enum OpenAccessSpineElementMediaType: String {
 }
 
 final class OpenAccessSpineElement: SpineElement {
-    var key: String {
-        return self.url.absoluteString
-    }
 
     lazy var downloadTask: DownloadTask = {
         return OpenAccessDownloadTask(spineElement: self)
@@ -24,6 +21,7 @@ final class OpenAccessSpineElement: SpineElement {
             )!
     }()
 
+    let key: String
     let chapterNumber: UInt
     let title: String
     let url: URL
@@ -33,6 +31,7 @@ final class OpenAccessSpineElement: SpineElement {
     let audiobookID: String
 
     public init?(JSON: Any?, index: UInt, audiobookID: String) {
+        self.key = "\(audiobookID)-\(index)"
         self.chapterNumber = index
         self.audiobookID = audiobookID
 
@@ -82,5 +81,3 @@ final class OpenAccessSpineElement: SpineElement {
         }
     }
 }
-
-
