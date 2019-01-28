@@ -4,6 +4,7 @@ final class OpenAccessDownloadTask: DownloadTask {
 
     weak var delegate: DownloadTaskDelegate?
 
+    /// Progress should be set to 1 if the file already exists.
     var downloadProgress: Float = 0 {
         didSet {
             self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
@@ -15,7 +16,7 @@ final class OpenAccessDownloadTask: DownloadTask {
     let urlMediaType: OpenAccessSpineElementMediaType
     let alternateLinks: [(OpenAccessSpineElementMediaType, URL)]?
 
-    //GODO TODO shouldn't delegate be in the init here?
+    //GODO TODO shouldn't delegate be in the init here, rather than added as a property later?
     public init(spineElement: OpenAccessSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
@@ -23,26 +24,18 @@ final class OpenAccessDownloadTask: DownloadTask {
         self.alternateLinks = spineElement.alternateUrls
     }
 
-    /// If the asset is already downloaded, return immediately and update state.
-    /// If not, attempt to download the file and move it into position.
+    /// If the asset is already downloaded and verified, return immediately and
+    /// update state to the delegates. Otherwise, attempt to download the file
+    /// referenced in the spine element.
     func fetch() {
 
-        let fileManager = FileManager.default
-        let cacheDirectories = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
-        guard let cacheDirectory = cacheDirectories.first else {
-            ATLog(.error, "Could not find caches directory.")
-            self.delegate?.downloadTask(self, didReceive: nil)
-            return
-        }
-        guard let escapedKey = self.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-            ATLog(.error, "Could not create a valid escaped unique ID for download task.")
-            self.delegate?.downloadTask(self, didReceive: nil)
+        guard let localAssetURL = localDirectory() else {
+            //GODO TODO consider adding progress = 0 even though it's technically covered elsewhere
+            self.delegate?.downloadTaskFailed(self, withError: nil)
             return
         }
 
-        let assetURL = cacheDirectory.appendingPathComponent("\(escapedKey)", isDirectory: false).appendingPathExtension("mp3")
-
-        if fileManager.fileExists(atPath: assetURL.path) {
+        if FileManager.default.fileExists(atPath: localAssetURL.path) {
             downloadProgress = 1.0
             self.delegate?.downloadTaskReadyForPlayback(self)
             return
@@ -50,23 +43,40 @@ final class OpenAccessDownloadTask: DownloadTask {
 
         switch urlMediaType {
         case .rbDigital:
-            downloadRBDigitalPartial(toLocalDirectory: assetURL)
+            downloadAssetForRBDigital(toLocalDirectory: localAssetURL)
         case .audioMPEG:
-            downloadAsset(fromRemoteURL: self.url, toLocalDirectory: assetURL)
+            downloadAsset(fromRemoteURL: self.url, toLocalDirectory: localAssetURL)
         }
     }
 
+    //GODO TODO make sure to surface this somewhere in the UI so the user can at least
+    //delete something that try again without having to sign out/in
     func delete() {
 
         //GODO TODO
       
     }
 
+    public func localDirectory() -> URL? {
+        let fileManager = FileManager.default
+        let cacheDirectories = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
+        guard let cacheDirectory = cacheDirectories.first else {
+            ATLog(.error, "Could not find caches directory.")
+            return nil
+        }
+        let hashedKey = hash(self.key)
+        guard let key = hashedKey else {
+            ATLog(.error, "Could not create a valid hash from download task ID.")
+            return nil
+        }
+        return cacheDirectory.appendingPathComponent("\(key)", isDirectory: false).appendingPathExtension("mp3")
+    }
+
     //GODO TODO remember to add a method to delete all cached content, which could be called by a host when a user is signing out
 
     /// RBDigital media types first download an intermediate document, which points
     /// to the url of the actual asset to download.
-    private func downloadRBDigitalPartial(toLocalDirectory localURL: URL) {
+    private func downloadAssetForRBDigital(toLocalDirectory localURL: URL) {
 
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
 
@@ -91,7 +101,6 @@ final class OpenAccessDownloadTask: DownloadTask {
                         case .rbDigital:
                             ATLog(.error, "Wrong media type for download task.")
                         }
-
                     } else {
                         ATLog(.error, "Invalid or missing property in JSON response to download task.")
                     }
@@ -110,7 +119,7 @@ final class OpenAccessDownloadTask: DownloadTask {
         //OR just use the default shared session instead of a custom one, but maybe I can't have a delegate if I do that.
         let config = URLSessionConfiguration.ephemeral
         let session = URLSession(configuration: config,
-                                 delegate: OpenAccessDownloadTaskURLSessionDelegate(),
+                                 delegate: OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self, delegate: self.delegate),
                                  delegateQueue: OperationQueue.main)
 
         let request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
@@ -141,6 +150,7 @@ final class OpenAccessDownloadTask: DownloadTask {
                 do {
                     try fileManager.moveItem(at: fileURL, to: toLocalDirectory)
                     ATLog(.debug, "File successfully downloaded and moved to: \(toLocalDirectory)")
+                    self.downloadProgress = 1.0
                     self.delegate?.downloadTaskReadyForPlayback(self)
                 }
                 catch let error as NSError {
@@ -162,18 +172,50 @@ final class OpenAccessDownloadTask: DownloadTask {
         }
         task.resume()
     }
+    private func hash(_ key: String) -> String? {
+        guard let escapedKey = key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+            return nil
+        }
+        return escapedKey
+    }
 }
 
 final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
 
+    private let downloadTask: OpenAccessDownloadTask
+    private let delegate: DownloadTaskDelegate?
+
+    required init(downloadTask: OpenAccessDownloadTask, delegate: DownloadTaskDelegate?) {
+        self.downloadTask = downloadTask
+        self.delegate = delegate
+    }
+
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         //GODO TODO
         //Skipped if a completion block is used in download task
+        //Potentially not a needed method
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        //GODO TODO
-        //For download progress
+    func urlSession(_ session: URLSession,
+                    downloadTask: URLSessionDownloadTask,
+                    didWriteData bytesWritten: Int64,
+                    totalBytesWritten: Int64,
+                    totalBytesExpectedToWrite: Int64)
+    {
+        if (totalBytesExpectedToWrite == NSURLSessionTransferSizeUnknown) ||
+            totalBytesExpectedToWrite == 0 {
+            self.downloadTask.downloadProgress = 0.0
+        }
+
+        if totalBytesWritten >= totalBytesExpectedToWrite {
+            self.downloadTask.downloadProgress = 1.0
+        } else if totalBytesWritten <= 0 {
+            self.downloadTask.downloadProgress = 0.0
+        } else {
+            self.downloadTask.downloadProgress = Float(totalBytesWritten / totalBytesExpectedToWrite)
+        }
+
+        self.delegate?.downloadTaskDidUpdateDownloadPercentage(self.downloadTask)
     }
 }
 

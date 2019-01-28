@@ -28,6 +28,7 @@ final class OpenAccessAudiobook: Audiobook {
         }
         self.spine = mappedSpine
         self.uniqueIdentifier = identifier
-        self.player = OpenAccessPlayer()
+        guard let cursor = Cursor(data: self.spine) else { return nil }
+        self.player = OpenAccessPlayer(cursor: cursor, audiobookID: uniqueIdentifier)
     }
 }
