@@ -28,7 +28,10 @@ final class OpenAccessAudiobook: Audiobook {
         }
         self.spine = mappedSpine
         self.uniqueIdentifier = identifier
-        guard let cursor = Cursor(data: self.spine) else { return nil }
+        guard let cursor = Cursor(data: mappedSpine) else {
+            ATLog(.error, "Cursor could not be cast to Cursor<OpenAccessSpineElement>")
+            return nil
+        }
         self.player = OpenAccessPlayer(cursor: cursor, audiobookID: uniqueIdentifier)
     }
 }

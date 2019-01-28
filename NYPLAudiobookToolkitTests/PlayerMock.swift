@@ -27,10 +27,6 @@ class PlayerMock: Player {
     
     private var currentChapter: ChapterLocation?
     
-    func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
-        return currentChapter == location
-    }
-    
     func play() { }
     
     func pause() { }
