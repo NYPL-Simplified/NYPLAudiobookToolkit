@@ -1,11 +1,3 @@
-//
-//  Player.swift
-//  NYPLAudiobookToolkit
-//
-//  Created by Dean Silfen on 1/31/18.
-//  Copyright © 2018 Dean Silfen. All rights reserved.
-//
-
 import Foundation
 
 @objc public enum PlaybackRate: Int, CaseIterable {
@@ -23,6 +15,7 @@ import Foundation
 /// Receive updates from player as events happen
 @objc public protocol PlayerDelegate: class {
 
+    //GODO TODO remember to implement this in the same way, by calling these delegates at the correct times
     /// Guaranteed to be called on the following scenarios:
     ///   * The playhead crossed to a new chapter
     ///   * The play() method was called

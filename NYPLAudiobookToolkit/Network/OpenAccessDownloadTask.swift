@@ -126,7 +126,7 @@ final class OpenAccessDownloadTask: DownloadTask {
                     if let error = error {
                         ATLog(.error, "Specific error reported from download task: \(error.localizedDescription)")
                     }
-                    self.delegate?.downloadTask(self, didReceive: nil)
+                    self.delegate?.downloadTaskFailed(self, withError: nil)
                     return
             }
 
@@ -146,14 +146,16 @@ final class OpenAccessDownloadTask: DownloadTask {
                 catch let error as NSError {
                     //GODO TODO flesh out error handling
                     print("File copy to cache directory error: \(error)")
-                    self.delegate?.downloadTask(self, didReceive: nil)
+                    self.downloadProgress = 0.0
+                    self.delegate?.downloadTaskFailed(self, withError: nil)
                     return
                 }
             }
             else {
                 //GODO TODO record a non-200 result from the server
                 ATLog(.error, "Download Task failed with response: \n\(httpResponse?.description ?? "nil")", error: error)
-                self.delegate?.downloadTask(self, didReceive: nil)
+                self.downloadProgress = 0.0
+                self.delegate?.downloadTaskFailed(self, withError: nil)
                 return
             }
 

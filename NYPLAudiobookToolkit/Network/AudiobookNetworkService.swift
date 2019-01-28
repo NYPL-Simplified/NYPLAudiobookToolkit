@@ -134,7 +134,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
     }
 
-    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError?) {
+    public func downloadTaskFailed(_ downloadTask: DownloadTask, withError error: NSError?) {
         self.cursor = nil
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
