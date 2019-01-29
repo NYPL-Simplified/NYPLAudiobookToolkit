@@ -98,35 +98,32 @@ final class OpenAccessPlayer: NSObject, Player {
                 return
             }
 
-            // Check if the player has an AVItem for this Cursor's spine element
-            // if not, slightly less bad error, just saying the element has not been downloaded yet
-            // godo tood left off here
-
             guard let fileStatus = (newCursor.currentElement.downloadTask as? OpenAccessDownloadTask)?.assetFileStatus() else {
                 //critical error;
                 notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
                 return
             }
 
-            //godo todo don't forget to have a way to update the items array when new things are downloaded after the player is initialized
-
-//this should probably be synchronized
-
             switch fileStatus {
             case .saved(_):
-                //load new avplayer item
-                //apply seek to spot requestsed in chapter location playhead offest
-                let currentPlayerItems = self.avQueuePlayer.items()
-                if newCursor.index < currentPlayerItems.count {
-                    //godo todo wip
-//                    self.queuePlayer.currentItem = currentPlayerItems[newCursor.inex]
+                if newCursor.index < self.avQueuePlayer.items().count {
+                    //godo todo test this
+                    let items = self.buildPlayerItems(cursor: newCursor)
+                    if !items.isEmpty {
+                        self.avQueuePlayer.removeAllItems()
+                        self.avQueuePlayer = AVQueuePlayer(items: items)
+                        self.play()
+                    } else {
+                        //godo todo should be unreachable code...
+                        return
+                    }
                 }
             case .missing(_):
                 //godo todo error or message just to say that the chapter selected has not been downloaded
-                break
+                return
             case .unknown:
                 self.notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
-                break
+                return
             }
         }
     }
@@ -166,7 +163,7 @@ final class OpenAccessPlayer: NSObject, Player {
 
     private let audiobookID: String
     private var cursor: Cursor<OpenAccessSpineElement>
-    private let avQueuePlayer: AVQueuePlayer
+    private var avQueuePlayer: AVQueuePlayer
     private var readyForPlayback: Bool = false
     private var openAccessPlayerContext = 0
 
@@ -176,10 +173,30 @@ final class OpenAccessPlayer: NSObject, Player {
 
         self.cursor = cursor
         self.audiobookID = audiobookID
+        self.avQueuePlayer = AVQueuePlayer()
+
+        super.init()
+
+        let items = self.buildPlayerItems(cursor: self.cursor)
+        self.avQueuePlayer.removeAllItems()
+        self.avQueuePlayer = AVQueuePlayer(items: items)
+
+        self.avQueuePlayer.addObserver(self,
+                                  forKeyPath: #keyPath(AVQueuePlayer.status),
+                                  options: [.old, .new],
+                                  context: &openAccessPlayerContext)
+
+        self.avQueuePlayer.addObserver(self,
+                                  forKeyPath: #keyPath(AVQueuePlayer.rate),
+                                  options: [.old, .new],
+                                  context: &openAccessPlayerContext)
+
+    }
+
+    func buildPlayerItems(cursor: Cursor<OpenAccessSpineElement>?) -> [AVPlayerItem] {
 
         var items = [AVPlayerItem]()
-
-        var cursor: Cursor<OpenAccessSpineElement>? = Cursor.init(data: self.cursor.data, index: 0)
+        var cursor = cursor
 
         // Queue items that are ready to play.
         while (cursor != nil) {
@@ -197,24 +214,9 @@ final class OpenAccessPlayer: NSObject, Player {
                     break
                 }
             }
-
             cursor = cursor?.next()
         }
-
-        self.avQueuePlayer = AVQueuePlayer(items: items)
-
-        super.init()
-
-        self.avQueuePlayer.addObserver(self,
-                                  forKeyPath: #keyPath(AVQueuePlayer.status),
-                                  options: [.old, .new],
-                                  context: &openAccessPlayerContext)
-
-        self.avQueuePlayer.addObserver(self,
-                                  forKeyPath: #keyPath(AVQueuePlayer.rate),
-                                  options: [.old, .new],
-                                  context: &openAccessPlayerContext)
-
+        return items
     }
 }
 
