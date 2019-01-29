@@ -75,7 +75,24 @@ final class OpenAccessPlayer: NSObject, Player {
     }
 
     func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())? = nil) -> () {
+        guard let currentLocation = self.currentChapterLocation else {
+            ATLog(.error, "Invalid chapter information required for skip.")
+            return
+        }
+        let currentPlayheadOffset = currentLocation.playheadOffset
+        let chapterDuration = currentLocation.duration
+        let adjustedSkip = adjustedSkipInterval(currentPlayheadOffset: currentPlayheadOffset,
+                                                currentChapterDuration: chapterDuration,
+                                                requestedSkipDuration: timeInterval)
 
+        if let destinationLocation = currentLocation.chapterWith(adjustedSkip) {
+            self.playAtLocation(destinationLocation)
+            completion?(destinationLocation)
+        } else {
+            ATLog(.error, "New chapter location could not be created from skip.")
+            //todo godo I don't thnk there should be an error to the view controller here...
+            return
+        }
     }
     
     func playAtLocation(_ chapter: ChapterLocation) {
@@ -107,16 +124,16 @@ final class OpenAccessPlayer: NSObject, Player {
             switch fileStatus {
             case .saved(_):
                 if newCursor.index < self.avQueuePlayer.items().count {
-                    //godo todo test this
-                    let items = self.buildPlayerItems(cursor: newCursor)
-                    if !items.isEmpty {
-                        self.avQueuePlayer.removeAllItems()
-                        self.avQueuePlayer = AVQueuePlayer(items: items)
-                        self.play()
-                    } else {
-                        //godo todo should be unreachable code...
-                        return
+                    self.buildNewPlayerQueue(atCursor: newCursor) { (success) in
+                        if success {
+                            self.play()
+                        } else {
+                            //error
+                        }
                     }
+                } else {
+                    //godo todo should be unreachable code...
+                    return
                 }
             case .missing(_):
                 //godo todo error or message just to say that the chapter selected has not been downloaded
@@ -144,7 +161,7 @@ final class OpenAccessPlayer: NSObject, Player {
                 ATLog(.error, "Seek operation failed on AVPlayerItem")
             } else {
                 ATLog(.debug, "Seek operation finished.")
-                //?? anything else?
+                self.notifyDelegatesOfPlaybackFor(chapter: self.cursor.currentElement.chapter)
             }
         }
     }
@@ -163,7 +180,7 @@ final class OpenAccessPlayer: NSObject, Player {
 
     private let audiobookID: String
     private var cursor: Cursor<OpenAccessSpineElement>
-    private var avQueuePlayer: AVQueuePlayer
+    private let avQueuePlayer: AVQueuePlayer
     private var readyForPlayback: Bool = false
     private var openAccessPlayerContext = 0
 
@@ -177,23 +194,44 @@ final class OpenAccessPlayer: NSObject, Player {
 
         super.init()
 
-        let items = self.buildPlayerItems(cursor: self.cursor)
-        self.avQueuePlayer.removeAllItems()
-        self.avQueuePlayer = AVQueuePlayer(items: items)
+        self.buildNewPlayerQueue(atCursor: self.cursor) { (success) in
+            if !success {
+                ATLog(.error, "Could not create a queue for the AVPlayer on init.")
+            }
+        }
 
         self.avQueuePlayer.addObserver(self,
-                                  forKeyPath: #keyPath(AVQueuePlayer.status),
-                                  options: [.old, .new],
-                                  context: &openAccessPlayerContext)
+                                       forKeyPath: #keyPath(AVQueuePlayer.status),
+                                       options: [.old, .new],
+                                       context: &openAccessPlayerContext)
 
         self.avQueuePlayer.addObserver(self,
-                                  forKeyPath: #keyPath(AVQueuePlayer.rate),
-                                  options: [.old, .new],
-                                  context: &openAccessPlayerContext)
+                                       forKeyPath: #keyPath(AVQueuePlayer.rate),
+                                       options: [.old, .new],
+                                       context: &openAccessPlayerContext)
 
     }
 
-    func buildPlayerItems(cursor: Cursor<OpenAccessSpineElement>?) -> [AVPlayerItem] {
+    private func buildNewPlayerQueue(atCursor cursor: Cursor<OpenAccessSpineElement>, completion: (Bool)->()) {
+        let items = self.buildPlayerItems(cursor: cursor)
+        if !items.isEmpty {
+            self.avQueuePlayer.removeAllItems()
+            for item in items {
+                if self.avQueuePlayer.canInsert(item, after: nil) {
+                    self.avQueuePlayer.insert(item, after: nil)
+                } else {
+                    completion(false)
+                    return
+                }
+            }
+            self.cursor = cursor
+            completion(true)
+        } else {
+            completion(false)
+        }
+    }
+
+    private func buildPlayerItems(cursor: Cursor<OpenAccessSpineElement>?) -> [AVPlayerItem] {
 
         var items = [AVPlayerItem]()
         var cursor = cursor

@@ -283,3 +283,25 @@ private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: Chapte
     }
     return playhead(location: possibleDestinationLocation, cursor: newCursor)
 }
+
+// Return an adjusted playhead offset based on the requested time interval shift,
+// as well as any considerations on behalf of a preferred UX.
+public func adjustedSkipInterval(currentPlayheadOffset currentOffset: TimeInterval,
+                                 currentChapterDuration chapterDuration: TimeInterval,
+                                 requestedSkipDuration skipTime: TimeInterval) -> TimeInterval {
+    let requestedPlayheadOffset = currentOffset + skipTime
+    if (currentOffset == chapterDuration) {
+        return requestedPlayheadOffset
+    } else if (skipTime > 0) {
+        return min(requestedPlayheadOffset, chapterDuration)
+    } else {
+        if currentOffset > abs(skipTime) {
+            return requestedPlayheadOffset
+        } else if requestedPlayheadOffset > (skipTime + 4) {
+            return 0
+        } else {
+            return skipTime
+        }
+    }
+}
+
