@@ -22,11 +22,20 @@ final class OpenAccessPlayer: NSObject, Player {
     
     var playbackRate: PlaybackRate = .normalTime {
         didSet {
-            let rate = PlaybackRate.convert(rate: self.playbackRate)
-            //GODO todo listen on KVO for any errors related to changing this
-            self.queuePlayer.rate = rate
+            if self.avQueuePlayer.rate != 0.0 {
+                let rate = PlaybackRate.convert(rate: self.playbackRate)
+                //GODO todo listen on KVO for any errors related to changing this
+                self.avQueuePlayer.rate = rate
+            } else {
+                self.queuedPlaybackRate = self.playbackRate
+            }
         }
     }
+
+    /// The user may set the playback rate independently of actually playing the
+    /// audio. The player should queue the new rate if the current rate is 0
+    /// (paused).
+    private var queuedPlaybackRate: PlaybackRate?
     
     var currentChapterLocation: ChapterLocation? {
         return ChapterLocation(
@@ -34,7 +43,7 @@ final class OpenAccessPlayer: NSObject, Player {
             part: self.chapterAtCursor.part,
             duration: self.chapterAtCursor.duration,
             startOffset: 0,
-            playheadOffset: self.queuePlayer.currentTime().seconds,     //godo todo wip
+            playheadOffset: self.avQueuePlayer.currentTime().seconds,     //godo todo wip
             title: self.chapterAtCursor.title,
             audiobookID: self.audiobookID
         )
@@ -44,7 +53,12 @@ final class OpenAccessPlayer: NSObject, Player {
 
     func play() {
         if self.readyForPlayback {
-            self.queuePlayer.play()
+            self.avQueuePlayer.play()
+            if let queuedRate = self.queuedPlaybackRate {
+                let rate = PlaybackRate.convert(rate: queuedRate)
+                self.avQueuePlayer.rate = rate
+                self.queuedPlaybackRate = nil
+            }
         } else {
             ATLog(.error, "User attempted to play when the player wasn't ready.")
             //godo todo consider doing some kind of queueing here similar to how findawayplayer handles it
@@ -52,14 +66,11 @@ final class OpenAccessPlayer: NSObject, Player {
     }
 
     func pause() {
-        if self.readyForPlayback {
-            self.queuePlayer.pause()
-        } else {
-            ATLog(.error, "User attempted to pause when the player wasn't ready.")
-        }
+        self.avQueuePlayer.pause()
     }
 
     func unload() {
+        //godo todo see if there's any need for unload() on AVPlayer
         self.isLoaded = false
     }
 
@@ -69,10 +80,76 @@ final class OpenAccessPlayer: NSObject, Player {
     
     func playAtLocation(_ chapter: ChapterLocation) {
 
+        let offset = chapter.playheadOffset
+
+        if chapter.inSameChapter(other: self.chapterAtCursor) {
+            self.seek(offset: offset)
+        }
+        else {
+
+            let possibleNewCursor = self.cursor.cursor { spineElement -> Bool in
+                return chapter.inSameChapter(other: spineElement.chapter)
+            }
+
+            guard let newCursor = possibleNewCursor else {
+                //godo todo create an nserror to give a specific message here
+                //also update the player vc to forward those messages to the user
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
+                return
+            }
+
+            // Check if the player has an AVItem for this Cursor's spine element
+            // if not, slightly less bad error, just saying the element has not been downloaded yet
+            // godo tood left off here
+
+            guard let fileStatus = (newCursor.currentElement.downloadTask as? OpenAccessDownloadTask)?.assetFileStatus() else {
+                //critical error;
+                notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
+                return
+            }
+
+            //godo todo don't forget to have a way to update the items array when new things are downloaded after the player is initialized
+
+//this should probably be synchronized
+
+            switch fileStatus {
+            case .saved(_):
+                //load new avplayer item
+                //apply seek to spot requestsed in chapter location playhead offest
+                let currentPlayerItems = self.avQueuePlayer.items()
+                if newCursor.index < currentPlayerItems.count {
+                    //godo todo wip
+//                    self.queuePlayer.currentItem = currentPlayerItems[newCursor.inex]
+                }
+            case .missing(_):
+                //godo todo error or message just to say that the chapter selected has not been downloaded
+                break
+            case .unknown:
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
+                break
+            }
+        }
     }
 
     func movePlayheadToLocation(_ location: ChapterLocation) {
+        //godo todo anything else needed here?
+        self.playAtLocation(location)
+    }
 
+    /// Moving within the current AVPlayerItem.
+    private func seek(offset: TimeInterval) {
+        guard let currentItem = self.avQueuePlayer.currentItem else {
+            ATLog(.error, "No current AVPlayerItem in AVQueuePlayer")
+            return
+        }
+        currentItem.seek(to: CMTimeMakeWithSeconds(Float64(offset), preferredTimescale: Int32(1))) { finished in
+            if !finished {
+                ATLog(.error, "Seek operation failed on AVPlayerItem")
+            } else {
+                ATLog(.debug, "Seek operation finished.")
+                //?? anything else?
+            }
+        }
     }
 
     func registerDelegate(_ delegate: PlayerDelegate) {
@@ -89,13 +166,12 @@ final class OpenAccessPlayer: NSObject, Player {
 
     private let audiobookID: String
     private var cursor: Cursor<OpenAccessSpineElement>
-    private let queuePlayer: AVQueuePlayer
+    private let avQueuePlayer: AVQueuePlayer
     private var readyForPlayback: Bool = false
     private var openAccessPlayerContext = 0
 
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
 
-    //godo todo all a work in progress
     required init(cursor: Cursor<OpenAccessSpineElement>, audiobookID: String) {
 
         self.cursor = cursor
@@ -104,32 +180,40 @@ final class OpenAccessPlayer: NSObject, Player {
         var items = [AVPlayerItem]()
 
         var cursor: Cursor<OpenAccessSpineElement>? = Cursor.init(data: self.cursor.data, index: 0)
-        let currentElement = cursor?.currentElement
-        var assetURL = (currentElement?.downloadTask as? OpenAccessDownloadTask)?.localDirectory()
 
         // Queue items that are ready to play.
-        while (assetURL != nil) {
-            let playerItem = AVPlayerItem(url: assetURL!)
-            items.append(playerItem)
+        while (cursor != nil) {
+            if let downloadTask = cursor!.currentElement.downloadTask as? OpenAccessDownloadTask {
+                switch downloadTask.assetFileStatus() {
+                case .saved(let assetURL):
+                    let playerItem = AVPlayerItem(url: assetURL)
+                    playerItem.audioTimePitchAlgorithm = .timeDomain
+                    items.append(playerItem)
+                case .missing(_):
+                    //godo todo download missing error
+                    fallthrough
+                case .unknown:
+                    //godo todo send error
+                    break
+                }
+            }
 
             cursor = cursor?.next()
-            let nextElement = cursor?.currentElement
-            assetURL = (nextElement?.downloadTask as? OpenAccessDownloadTask)?.localDirectory()
         }
 
-        self.queuePlayer = AVQueuePlayer(items: items)
+        self.avQueuePlayer = AVQueuePlayer(items: items)
 
         super.init()
 
-        self.queuePlayer.addObserver(self,
-                                     forKeyPath: #keyPath(AVQueuePlayer.status),
-                                     options: [.old, .new],
-                                     context: &openAccessPlayerContext)
+        self.avQueuePlayer.addObserver(self,
+                                  forKeyPath: #keyPath(AVQueuePlayer.status),
+                                  options: [.old, .new],
+                                  context: &openAccessPlayerContext)
 
-        self.queuePlayer.addObserver(self,
-                                     forKeyPath: #keyPath(AVQueuePlayer.rate),
-                                     options: [.old, .new],
-                                     context: &openAccessPlayerContext)
+        self.avQueuePlayer.addObserver(self,
+                                  forKeyPath: #keyPath(AVQueuePlayer.rate),
+                                  options: [.old, .new],
+                                  context: &openAccessPlayerContext)
 
     }
 }
@@ -179,8 +263,11 @@ extension OpenAccessPlayer {
                     } else if (oldRate != 0.0) && (newRate == 0.0) {
                         self.avQueuePlayerIsPlaying = false
                     }
+                    return
                 }
             }
+            self.avQueuePlayerIsPlaying = false
+            ATLog(.error, "")
         }
     }
 

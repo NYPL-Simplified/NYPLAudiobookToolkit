@@ -45,6 +45,8 @@ import Foundation
 @objc public protocol Player {
     var isPlaying: Bool { get }
     var currentChapterLocation: ChapterLocation? { get }
+
+    /// The rate at which the audio will play, when playing.
     var playbackRate: PlaybackRate { get set }
     
     /// `false` after `unload` is called, else `true`.

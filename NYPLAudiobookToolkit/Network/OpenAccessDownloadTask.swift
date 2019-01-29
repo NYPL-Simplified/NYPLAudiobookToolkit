@@ -1,5 +1,14 @@
 final class OpenAccessDownloadTask: DownloadTask {
 
+    public enum AssetResult {
+        /// The file exists at the given URL.
+        case saved(URL)
+        /// The file is missing at the given URL.
+        case missing(URL)
+        /// Could not create a valid URL to check.
+        case unknown
+    }
+
     private let DownloadTaskTimeoutValue = 60.0
 
     weak var delegate: DownloadTaskDelegate?
@@ -29,23 +38,21 @@ final class OpenAccessDownloadTask: DownloadTask {
     /// referenced in the spine element.
     func fetch() {
 
-        guard let localAssetURL = localDirectory() else {
-            //GODO TODO consider adding progress = 0 even though it's technically covered elsewhere
-            self.delegate?.downloadTaskFailed(self, withError: nil)
-            return
-        }
-
-        if FileManager.default.fileExists(atPath: localAssetURL.path) {
+        switch self.assetFileStatus() {
+        case .saved(_):
             downloadProgress = 1.0
             self.delegate?.downloadTaskReadyForPlayback(self)
-            return
-        }
-
-        switch urlMediaType {
-        case .rbDigital:
-            downloadAssetForRBDigital(toLocalDirectory: localAssetURL)
-        case .audioMPEG:
-            downloadAsset(fromRemoteURL: self.url, toLocalDirectory: localAssetURL)
+        case .missing(let missingAssetURL):
+            switch urlMediaType {
+            case .rbDigital:
+                self.downloadAssetForRBDigital(toLocalDirectory: missingAssetURL)
+            case .audioMPEG:
+                self.downloadAsset(fromRemoteURL: self.url, toLocalDirectory: missingAssetURL)
+            }
+        case .unknown:
+            //GODO TODO consider adding progress = 0 even though it's technically covered elsewhere
+            //also consider creating a new nserror here
+            self.delegate?.downloadTaskFailed(self, withError: nil)
         }
     }
 
@@ -57,7 +64,18 @@ final class OpenAccessDownloadTask: DownloadTask {
       
     }
 
-    public func localDirectory() -> URL? {
+    public func assetFileStatus() -> AssetResult {
+        guard let localAssetURL = localDirectory() else {
+            return AssetResult.unknown
+        }
+        if FileManager.default.fileExists(atPath: localAssetURL.path) {
+            return AssetResult.saved(localAssetURL)
+        } else {
+            return AssetResult.missing(localAssetURL)
+        }
+    }
+
+    private func localDirectory() -> URL? {
         let fileManager = FileManager.default
         let cacheDirectories = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
         guard let cacheDirectory = cacheDirectories.first else {
@@ -172,6 +190,8 @@ final class OpenAccessDownloadTask: DownloadTask {
         }
         task.resume()
     }
+
+    //GODO FIXME TODO Make hash a sha256 hash like in the main app
     private func hash(_ key: String) -> String? {
         guard let escapedKey = key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
             return nil
