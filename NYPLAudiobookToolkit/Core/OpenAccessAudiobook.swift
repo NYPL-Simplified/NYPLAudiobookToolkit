@@ -21,14 +21,16 @@ final class OpenAccessAudiobook: Audiobook {
                 index: UInt(tupleItem.index),
                 audiobookID: identifier
             )
-        }
+            }.sorted {
+                return $0.chapterNumber < $1.chapterNumber
+            }
         if (mappedSpine.count == 0 || mappedSpine.count != payloadSpine.count) {
-            ATLog(.error, "Failure to create all \"readingOrder\" spine elements from the manifest.")
+            ATLog(.error, "Failure to create any or all \"readingOrder\" spine elements from the manifest.")
             return nil
         }
         self.spine = mappedSpine
         self.uniqueIdentifier = identifier
-        guard let cursor = Cursor(data: mappedSpine) else {
+        guard let cursor = Cursor(data: self.spine) else {
             ATLog(.error, "Cursor could not be cast to Cursor<OpenAccessSpineElement>")
             return nil
         }

@@ -81,11 +81,12 @@ final class OpenAccessPlayer: NSObject, Player {
         }
         let currentPlayheadOffset = currentLocation.playheadOffset
         let chapterDuration = currentLocation.duration
-        let adjustedSkip = adjustedSkipInterval(currentPlayheadOffset: currentPlayheadOffset,
-                                                currentChapterDuration: chapterDuration,
-                                                requestedSkipDuration: timeInterval)
+        let adjustedSkip = adjustedPlayheadOffset(currentPlayheadOffset: currentPlayheadOffset,
+                                                  currentChapterDuration: chapterDuration,
+                                                  requestedSkipDuration: timeInterval)
 
         if let destinationLocation = currentLocation.chapterWith(adjustedSkip) {
+            ATLog(.debug, "this code was hit")
             self.playAtLocation(destinationLocation)
             completion?(destinationLocation)
         } else {
@@ -95,51 +96,54 @@ final class OpenAccessPlayer: NSObject, Player {
         }
     }
     
-    func playAtLocation(_ chapter: ChapterLocation) {
+    func playAtLocation(_ newLocation: ChapterLocation) {
 
-        let offset = chapter.playheadOffset
+        let offset = newLocation.playheadOffset
 
-        if chapter.inSameChapter(other: self.chapterAtCursor) {
+        //godo todo problem actually changing the cursor in this logic if
+        //the playhead offset is negative or past the total duration
+
+        let currentCursor = self.cursor
+        let newCursor = move(cursor: self.cursor, to: newLocation)
+
+        if newLocation.inSameChapter(other: self.chapterAtCursor) {
             self.seek(offset: offset)
         }
         else {
 
             let possibleNewCursor = self.cursor.cursor { spineElement -> Bool in
-                return chapter.inSameChapter(other: spineElement.chapter)
+                return newLocation.inSameChapter(other: spineElement.chapter)
             }
 
             guard let newCursor = possibleNewCursor else {
                 //godo todo create an nserror to give a specific message here
                 //also update the player vc to forward those messages to the user
-                self.notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
                 return
             }
 
             guard let fileStatus = (newCursor.currentElement.downloadTask as? OpenAccessDownloadTask)?.assetFileStatus() else {
                 //critical error;
-                notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
+                notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
                 return
             }
 
             switch fileStatus {
             case .saved(_):
-                if newCursor.index < self.avQueuePlayer.items().count {
-                    self.buildNewPlayerQueue(atCursor: newCursor) { (success) in
-                        if success {
-                            self.play()
-                        } else {
-                            //error
-                        }
+                self.buildNewPlayerQueue(atCursor: newCursor) { (success) in
+                    if success {
+                        self.play()
+                    } else {
+                        ATLog(.error, "Failed to create a new queue for the player. Keeping playback at the current player item.")
+                        self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
                     }
-                } else {
-                    //godo todo should be unreachable code...
-                    return
                 }
             case .missing(_):
                 //godo todo error or message just to say that the chapter selected has not been downloaded
+                //Could eventually handle streaming from here.
                 return
             case .unknown:
-                self.notifyDelegatesOfPlaybackFailureFor(chapter: chapter, nil)
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
                 return
             }
         }
@@ -179,14 +183,15 @@ final class OpenAccessPlayer: NSObject, Player {
     }
 
     private let audiobookID: String
-    private var cursor: Cursor<OpenAccessSpineElement>
+    private var cursor: Cursor<SpineElement>
     private let avQueuePlayer: AVQueuePlayer
     private var readyForPlayback: Bool = false
     private var openAccessPlayerContext = 0
 
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
+    private let queue = DispatchQueue(label: "org.nypl.labs.NYPLAudiobookToolkit.OpenAccessPlayer")
 
-    required init(cursor: Cursor<OpenAccessSpineElement>, audiobookID: String) {
+    required init(cursor: Cursor<SpineElement>, audiobookID: String) {
 
         self.cursor = cursor
         self.audiobookID = audiobookID
@@ -212,7 +217,7 @@ final class OpenAccessPlayer: NSObject, Player {
 
     }
 
-    private func buildNewPlayerQueue(atCursor cursor: Cursor<OpenAccessSpineElement>, completion: (Bool)->()) {
+    private func buildNewPlayerQueue(atCursor cursor: Cursor<SpineElement>, completion: (Bool)->()) {
         let items = self.buildPlayerItems(cursor: cursor)
         if !items.isEmpty {
             self.avQueuePlayer.removeAllItems()
@@ -231,7 +236,7 @@ final class OpenAccessPlayer: NSObject, Player {
         }
     }
 
-    private func buildPlayerItems(cursor: Cursor<OpenAccessSpineElement>?) -> [AVPlayerItem] {
+    private func buildPlayerItems(cursor: Cursor<SpineElement>?) -> [AVPlayerItem] {
 
         var items = [AVPlayerItem]()
         var cursor = cursor
@@ -265,6 +270,18 @@ extension OpenAccessPlayer {
                                change: [NSKeyValueChangeKey : Any]?,
                                context: UnsafeMutableRawPointer?) {
 
+        func updatePlayback(status: Bool) {
+            DispatchQueue.main.async {
+                self.readyForPlayback = status
+            }
+        }
+
+        func avPlayer(isPlaying: Bool) {
+            DispatchQueue.main.async {
+                self.avQueuePlayerIsPlaying = isPlaying
+            }
+        }
+
         guard context == &openAccessPlayerContext else {
             super.observeValue(forKeyPath: keyPath,
                                of: object,
@@ -284,29 +301,32 @@ extension OpenAccessPlayer {
             switch status {
             case .readyToPlay:
                 ATLog(.debug, "AVQueuePlayer status: ready to play.")
-                self.readyForPlayback = true
+                updatePlayback(status: true)
             case .failed:
                 let error = (object as? AVQueuePlayer)?.error.debugDescription ?? "error: nil"
                 ATLog(.error, "AVQueuePlayer status: failed to get ready for playback. Error:\n\(error)")
+                updatePlayback(status: false)
             case .unknown:
                 ATLog(.debug, "AVQueuePlayer status: unknown.")
+                updatePlayback(status: false)
             }
         }
         else if keyPath == #keyPath(AVQueuePlayer.rate) {
-            // godo todo wip
             if let newRate = change?[.newKey] as? Float,
                 let oldRate = change?[.oldKey] as? Float,
                 let player = (object as? AVQueuePlayer) {
                 if (player.error == nil) {
                     if (oldRate == 0.0) && (newRate != 0.0) {
-                        self.avQueuePlayerIsPlaying = true
+                        avPlayer(isPlaying: true)
                     } else if (oldRate != 0.0) && (newRate == 0.0) {
-                        self.avQueuePlayerIsPlaying = false
+                        avPlayer(isPlaying: false)
                     }
                     return
+                } else {
+                    ATLog(.error, "AVPlayer error: \n\(player.error.debugDescription)")
                 }
             }
-            self.avQueuePlayerIsPlaying = false
+            avPlayer(isPlaying: false)
             ATLog(.error, "")
         }
     }
