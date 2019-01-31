@@ -289,7 +289,10 @@ private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: Cha
 private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: ChapterLocation) -> Playhead?  {
 
     // Same chapter, but playhead offset is below lower bound
-    guard let timeIntoPreviousChapter = location.secondsBeforeStart else { return nil }
+    guard let timeIntoPreviousChapter = location.secondsBeforeStart else {
+        debugPrint("No negative time detected.")
+        return nil
+    }
     var possibleDestinationLocation: ChapterLocation?
 
     let newCursor: Cursor<SpineElement>
