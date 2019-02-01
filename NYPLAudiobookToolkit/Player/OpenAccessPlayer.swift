@@ -36,19 +36,21 @@ final class OpenAccessPlayer: NSObject, Player {
     var currentChapterLocation: ChapterLocation? {
         let avPlayerOffset = self.avQueuePlayer.currentTime().seconds
         let playerItemStatus = self.avQueuePlayer.currentItem?.status
+        let offset: TimeInterval
         if !avPlayerOffset.isNaN && playerItemStatus == .readyToPlay {
-            return ChapterLocation(
-                number: self.chapterAtCurrentCursor.number,
-                part: self.chapterAtCurrentCursor.part,
-                duration: self.chapterAtCurrentCursor.duration,
-                startOffset: 0,
-                playheadOffset: avPlayerOffset,
-                title: self.chapterAtCurrentCursor.title,
-                audiobookID: self.audiobookID
-            )
+            offset = avPlayerOffset
         } else {
-            return nil
+            offset = 0
         }
+        return ChapterLocation(
+            number: self.chapterAtCurrentCursor.number,
+            part: self.chapterAtCurrentCursor.part,
+            duration: self.chapterAtCurrentCursor.duration,
+            startOffset: 0,
+            playheadOffset: offset,
+            title: self.chapterAtCurrentCursor.title,
+            audiobookID: self.audiobookID
+        )
     }
 
     //godo todo wip
@@ -84,20 +86,19 @@ final class OpenAccessPlayer: NSObject, Player {
         }
         let currentPlayheadOffset = currentLocation.playheadOffset
         let chapterDuration = currentLocation.duration
-        let adjustedSkip = adjustedPlayheadOffset(currentPlayheadOffset: currentPlayheadOffset,
-                                                  currentChapterDuration: chapterDuration,
-                                                  requestedSkipDuration: timeInterval)
+        let adjustedOffset = adjustedPlayheadOffset(currentPlayheadOffset: currentPlayheadOffset,
+                                                    currentChapterDuration: chapterDuration,
+                                                    requestedSkipDuration: timeInterval)
 
-        if let destinationLocation = currentLocation.chapterWith(adjustedSkip) {
+        if let destinationLocation = currentLocation.update(playheadOffset: adjustedOffset) {
             self.playAtLocation(destinationLocation)
-            completion?(destinationLocation)
+            let newPlayhead = move(cursor: self.cursor, to: destinationLocation)
+            completion?(newPlayhead.location)
         } else {
             ATLog(.error, "New chapter location could not be created from skip.")
-            //todo godo I don't thnk there should be an error to the view controller here...
             return
         }
     }
-
 
     /// New Location's playhead offset could be oustide the bounds of audio, so
     /// move and get a reference to the actual new chapter location. Only update
@@ -216,7 +217,20 @@ final class OpenAccessPlayer: NSObject, Player {
             }
         }
 
+        if #available(iOS 10.0, *) {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [])
+        } else {
+            // https://forums.swift.org/t/using-methods-marked-unavailable-in-swift-4-2/14949
+            AVAudioSession.sharedInstance().perform(NSSelectorFromString("setCategory:error:"),
+                                                    with: AVAudioSession.Category.playback)
+        }
+        try? AVAudioSession.sharedInstance().setActive(true, options: [])
+
         self.addPlayerObservers()
+    }
+
+    deinit {
+        try? AVAudioSession.sharedInstance().setActive(false, options: [])
     }
 
     private func buildNewPlayerQueue(atCursor cursor: Cursor<SpineElement>, completion: (Bool)->()) {

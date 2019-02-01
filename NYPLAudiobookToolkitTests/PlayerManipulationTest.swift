@@ -28,7 +28,7 @@ class PlayerManipulationTest: XCTestCase {
         let chapter2 = spine[1].chapter
         
         // we seek 5 seconds into the second chapter from the first
-        let destination = chapter1.chapterWith(duration + 5)!
+        let destination = chapter1.update(playheadOffset: duration + 5)!
         let playhead = move(cursor: cursor, to: destination)
 
         let newDestinationIsInChapter2 = playhead.location.inSameChapter(other: chapter2)
@@ -46,7 +46,7 @@ class PlayerManipulationTest: XCTestCase {
         let chapter2 = spine[1].chapter
         
         // we seek 5 seconds into the first chapter from the second
-        let destination = chapter2.chapterWith(-5)!
+        let destination = chapter2.update(playheadOffset: -5)!
         let playhead = move(cursor: cursor, to: destination)
         
         let newDestinationIsInNewChapter = playhead.location.inSameChapter(other: chapter1)
@@ -63,7 +63,7 @@ class PlayerManipulationTest: XCTestCase {
         let chapter2 = spine[1].chapter
 
         // Seek to a point that does not exist in chapter 2
-        let destination = chapter2.chapterWith(100)!
+        let destination = chapter2.update(playheadOffset: 100)!
         let playhead = move(cursor: cursor, to: destination)
 
         let newDestinationIsInNextChapter = playhead.location.inSameChapter(other: chapter2)
@@ -84,7 +84,7 @@ class PlayerManipulationTest: XCTestCase {
         let chapter1 = spine[0].chapter
 
         // Seek to a point that does not exist in chapter 1
-        let destination = chapter1.chapterWith(-100)!
+        let destination = chapter1.update(playheadOffset: -100)!
         let playhead = move(cursor: cursor, to: destination)
 
         let newDestinationIsInPrevChapter = playhead.location.inSameChapter(other: chapter1)

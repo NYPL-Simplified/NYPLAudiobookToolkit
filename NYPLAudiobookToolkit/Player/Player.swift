@@ -133,7 +133,7 @@ import Foundation
         
     }
 
-    public func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
+    public func update(playheadOffset offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
             part: self.part,
@@ -269,8 +269,8 @@ private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: Cha
     if let nextCursor = cursor.next() {
         let newChapter = chapterAt(cursor: nextCursor)
         if newChapter.duration > timeIntoNextChapter {
-            possibleDestinationLocation = newChapter.chapterWith(
-                timeIntoNextChapter
+            possibleDestinationLocation = newChapter.update(
+                playheadOffset: timeIntoNextChapter
             )
         } else {
             possibleDestinationLocation = newChapter
@@ -278,8 +278,8 @@ private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: Cha
         newCursor = nextCursor
     } else {
         // No chapter exists after the current one
-        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(
-            chapterAt(cursor: cursor).duration
+        possibleDestinationLocation = chapterAt(cursor: cursor).update(
+            playheadOffset: chapterAt(cursor: cursor).duration
         )
         newCursor = cursor
     }
@@ -300,10 +300,10 @@ private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: Chapte
         newCursor = prevCursor
         let destinationChapter = chapterAt(cursor: newCursor)
         let playheadOffset = destinationChapter.duration - timeIntoPreviousChapter
-        possibleDestinationLocation = destinationChapter.chapterWith(max(0, playheadOffset))
+        possibleDestinationLocation = destinationChapter.update(playheadOffset: max(0, playheadOffset))
     } else {
         // No chapter exists before the current one
-        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(0)
+        possibleDestinationLocation = chapterAt(cursor: cursor).update(playheadOffset: 0)
         newCursor = cursor
     }
     return playhead(location: possibleDestinationLocation, cursor: newCursor)

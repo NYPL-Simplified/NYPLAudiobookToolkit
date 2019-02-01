@@ -1,11 +1,3 @@
-//
-//  AudiobookViewController.swift
-//  NYPLAudibookKit
-//
-//  Created by Dean Silfen on 1/11/18.
-//  Copyright © 2018 Dean Silfen. All rights reserved.
-//
-
 import UIKit
 import Foundation
 import PureLayout
@@ -671,7 +663,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
 extension AudiobookPlayerViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
 
-        guard let requestedOffset = self.currentChapterLocation?.chapterWith(offset),
+        guard let requestedOffset = self.currentChapterLocation?.update(playheadOffset: offset),
         let currentOffset = self.currentChapterLocation else {
             ATLog(.error, "Scrubber attempted to scrub without a current chapter.")
             return

@@ -65,12 +65,6 @@ public final class AudiobookTableOfContents: NSObject {
 extension AudiobookTableOfContents: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let spineElement = self.networkService.spine[indexPath.row]
-
-        // This assumes the player can handle this command before a
-        // chapter has been downloaded. AudioEngine can handle this
-        // use case, and AVPlayer should as well. However it is an
-        // implied requirement of the player that has not been
-        // explicitly stated elsewhere.
         self.player.playAtLocation(spineElement.chapter)
         self.delegate?.audiobookTableOfContentsUserSelected(spineItem: spineElement)
         self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: true)
