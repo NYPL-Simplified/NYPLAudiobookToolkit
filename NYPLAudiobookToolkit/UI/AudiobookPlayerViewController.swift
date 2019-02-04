@@ -70,9 +70,9 @@ let SkipTimeInterval: Double = 15
     override public func viewDidLoad() {
         super.viewDidLoad()
 
+        self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
-        self.audiobookManager.networkService.fetch()
-        
+        self.audiobookManager.networkService.fetch()     
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -180,8 +180,6 @@ let SkipTimeInterval: Double = 15
             self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding, relation: .greaterThanOrEqual)
         }
 
-//        guard let chapter = self.currentChapterLocation else { return }
-
         let chapter = ChapterLocation(
             number: 0,
             part: 0,
@@ -246,7 +244,6 @@ let SkipTimeInterval: Double = 15
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.audiobookManager.timerDelegate = self
-        self.audiobookManager.audiobook.player.registerDelegate(self)
 
         if self.audiobookManager.audiobook.player.isPlaying {
             self.playbackControlView.showPauseButtonIfNeeded()
@@ -263,8 +260,6 @@ let SkipTimeInterval: Double = 15
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.audiobookManager.timerDelegate = nil
-        // The player UI state between transitions relies on this staying:
-        self.audiobookManager.audiobook.player.removeDelegate(self)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -305,9 +300,10 @@ let SkipTimeInterval: Double = 15
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents,
-                                                               delegate: self)
-        self.navigationController?.pushViewController(tbvc, animated: true)
+        let tocVC = AudiobookTableOfContentsTableViewController(
+            tableOfContents: self.audiobookManager.tableOfContents,
+            delegate: self)
+        self.navigationController?.pushViewController(tocVC, animated: true)
     }
     
     @objc public func speedWasPressed(_ sender: Any) {

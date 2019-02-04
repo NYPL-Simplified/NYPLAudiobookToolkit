@@ -53,7 +53,7 @@ final class OpenAccessDownloadTask: DownloadTask {
     }
 
     func delete() {
-        switch assetFileStatus() {
+        switch self.assetFileStatus() {
         case .saved(let url):
             do {
                 try FileManager.default.removeItem(at: url)
@@ -61,8 +61,10 @@ final class OpenAccessDownloadTask: DownloadTask {
             } catch {
                 ATLog(.error, "FileManager removeItem error:\n\(error)")
             }
-        default:
-            ATLog(.error, "No file located at directory to delete.")
+        case .missing(_):
+            ATLog(.debug, "No file located at directory to delete.")
+        case .unknown:
+            ATLog(.error, "Invalid file directory from command")
         }
     }
 

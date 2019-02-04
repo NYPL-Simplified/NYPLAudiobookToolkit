@@ -3,9 +3,10 @@ final class OpenAccessAudiobook: Audiobook {
     var spine: [SpineElement]
     let uniqueIdentifier: String
     public func deleteLocalContent() {
-        // TODO
-        // GODO TODO what was Dean intending here? Is it implemented in FindawayAudiobook?
-        // I suppose I could delete the directory in /caches that the audio files are saved in
+        for element in self.spine {
+            let task = element.downloadTask
+            task.delete()
+        }
     }
     public required init?(JSON: Any?) {
         guard let payload = JSON as? [String: Any],

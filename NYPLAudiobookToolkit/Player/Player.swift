@@ -15,11 +15,10 @@ import Foundation
 /// Receive updates from player as events happen
 @objc public protocol PlayerDelegate: class {
 
-    //GODO TODO remember to implement this in the same way, by calling these delegates at the correct times
     /// Guaranteed to be called on the following scenarios:
     ///   * The playhead crossed to a new chapter
     ///   * The play() method was called
-    ///   * The playhead was modified, the result of  jumpToLocation(_), skipForward() or skipBack()
+    ///   * The playhead was modified, the result of jumpToLocation(_), skipForward() or skipBack()
     func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation)
 
     /// Called to notify that playback has stopped

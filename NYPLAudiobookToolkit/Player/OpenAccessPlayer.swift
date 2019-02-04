@@ -9,9 +9,9 @@ final class OpenAccessPlayer: NSObject, Player {
     private var avQueuePlayerIsPlaying: Bool = false {
         didSet {
             if let location = self.currentChapterLocation {
-                if self.avQueuePlayerIsPlaying {
+                if oldValue == false && avQueuePlayerIsPlaying == true {
                     self.notifyDelegatesOfPlaybackFor(chapter: location)
-                } else {
+                } else if oldValue == true && avQueuePlayerIsPlaying == false {
                     self.notifyDelegatesOfPauseFor(chapter: location)
                 }
             }
@@ -77,6 +77,7 @@ final class OpenAccessPlayer: NSObject, Player {
 
     func unload() {
         self.isLoaded = false
+        self.avQueuePlayer.removeAllItems()
         self.notifyDelegatesOfUnloadRequest()
     }
 
