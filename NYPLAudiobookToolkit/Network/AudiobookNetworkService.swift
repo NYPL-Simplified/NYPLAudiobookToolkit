@@ -59,7 +59,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         let taskCompletedPercentage = self.spine.reduce(0) { (memo: Float, element: SpineElement) -> Float in
             return memo + element.downloadTask.downloadProgress
         }
-        ATLog(.debug, "ANS: Overall Progress: \(taskCompletedPercentage / Float(self.spine.count))")
+        ATLog(.debug, "ANS: Overall Download Progress: \(taskCompletedPercentage / Float(self.spine.count))")
         return taskCompletedPercentage / Float(self.spine.count)
     }
     
@@ -93,13 +93,6 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public func fetch() {
-        // It is possible our cursor has become `nil` after
-        // all files were downloaded or if we hit an error
-        // while trying to execute a download task.
-        //
-        // If no cursor exists, then we should message
-        // every task to fetch and let them determine
-        // if a file exists or not.
         if self.cursor == nil {
             self.cursor = Cursor(data: self.spine)
         }

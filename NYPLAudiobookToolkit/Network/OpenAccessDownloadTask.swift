@@ -187,6 +187,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
             return
         }
 
+
         if (httpResponse.statusCode == 200) {
             let fileManager = FileManager.default
             do {
@@ -211,10 +212,27 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?)
     {
-        if let error = error {
-            ATLog(.error, "No file URL or response from download task: \(self.downloadTask.key).", error: error)
-            self.delegate?.downloadTaskFailed(self.downloadTask, withError: error as NSError?)
+        guard let error = error else {
+            ATLog(.debug, "urlSession:task:didCompleteWithError: no error.")
+            return
         }
+
+        ATLog(.error, "No file URL or response from download task: \(self.downloadTask.key).", error: error)
+
+        if let code = (error as NSError?)?.code {
+            switch code {
+            case NSURLErrorNotConnectedToInternet,
+                 NSURLErrorTimedOut,
+                 NSURLErrorNetworkConnectionLost:
+                let networkLossError = NSError(domain: OpenAccessPlayerDomain, code: 3, userInfo: nil)
+                self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
+                return
+            default:
+                break
+            }
+        }
+
+        self.delegate?.downloadTaskFailed(self.downloadTask, withError: error as NSError?)
     }
 
     func urlSession(_ session: URLSession,

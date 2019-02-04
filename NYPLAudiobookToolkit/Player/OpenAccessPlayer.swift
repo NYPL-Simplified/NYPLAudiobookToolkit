@@ -112,14 +112,8 @@ final class OpenAccessPlayer: NSObject, Player {
 
         let newPlayhead = move(cursor: self.cursor, to: newLocation)
 
-        // If we're in the same AVPlayerItem, apply seek directly to AVPlayer.
-        if newPlayhead.location.inSameChapter(other: self.cursor.currentElement.chapter) {
-            self.seekWithinCurrentItem(newOffset: newPlayhead.location.playheadOffset)
-            return
-        }
-        // Otherwise, check for an AVPlayerItem at the new chapter, rebuild the player
-        // queue starting from there, and then begin playing at that location.
-        guard let newItemDownloadStatus = (newPlayhead.cursor.currentElement.downloadTask as? OpenAccessDownloadTask)?.assetFileStatus() else {
+        let newItemDownloadTask = newPlayhead.cursor.currentElement.downloadTask as? OpenAccessDownloadTask
+        guard let newItemDownloadStatus = newItemDownloadTask?.assetFileStatus() else {
             let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
             notifyDelegatesOfPlaybackFailureFor(chapter: newPlayhead.location, error)
             return
@@ -127,6 +121,13 @@ final class OpenAccessPlayer: NSObject, Player {
 
         switch newItemDownloadStatus {
         case .saved(_):
+            // If we're in the same AVPlayerItem, apply seek directly with AVPlayer.
+            if newPlayhead.location.inSameChapter(other: self.cursor.currentElement.chapter) {
+                self.seekWithinCurrentItem(newOffset: newPlayhead.location.playheadOffset)
+                return
+            }
+            // Otherwise, check for an AVPlayerItem at the new cursor, rebuild the player
+            // queue starting from there, and then begin playing at that location.
             self.buildNewPlayerQueue(atCursor: newPlayhead.cursor) { (success) in
                 if success {
                     self.cursor = newPlayhead.cursor

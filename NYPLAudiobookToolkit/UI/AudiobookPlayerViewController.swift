@@ -521,16 +521,19 @@ let SkipTimeInterval: Double = 15
 
     fileprivate func presentAlertAndLog(error: NSError?) {
 
-        let errorTitle = NSLocalizedString("A Problem Has Occurred",
-                                           bundle: Bundle.audiobookToolkit()!,
-                                           value: "A Problem Has Occurred",
-                                           comment: "A Problem Has Occurred")
-
+        let genericTitle = NSLocalizedString("A Problem Has Occurred",
+                                             bundle: Bundle.audiobookToolkit()!,
+                                             value: "A Problem Has Occurred",
+                                             comment: "A Problem Has Occurred")
+        var errorTitle = genericTitle
         var errorDescription = "Please try again later."
         if let error = error {
             if error.domain == OpenAccessPlayerDomain {
                 if let descriptionString = OpenAccessPlayerErrorDescriptions[error.code] {
                     errorDescription = descriptionString
+                }
+                if let oaTitle = OpenAccessPlayerErrorTitle[error.code] {
+                    errorTitle = oaTitle
                 }
             } else {
                 errorDescription = error.localizedDescription
