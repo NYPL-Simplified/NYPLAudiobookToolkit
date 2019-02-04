@@ -53,7 +53,6 @@ final class OpenAccessPlayer: NSObject, Player {
         )
     }
 
-    //godo todo wip
     var isLoaded = true
 
     func play() {
@@ -65,8 +64,10 @@ final class OpenAccessPlayer: NSObject, Player {
                 self.queuedPlaybackRate = nil
             }
         } else {
+            // Should be unreachable...
             ATLog(.error, "User attempted to play when the player wasn't ready.")
-            //godo todo consider doing some kind of queueing here similar to how findawayplayer handles it
+            let error = NSError(domain: OpenAccessPlayerDomain, code: 2, userInfo: nil)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.currentChapterLocation!, error)
         }
     }
 
@@ -75,8 +76,8 @@ final class OpenAccessPlayer: NSObject, Player {
     }
 
     func unload() {
-        //godo todo see if there's any need for unload() on AVPlayer
         self.isLoaded = false
+        self.notifyDelegatesOfUnloadRequest()
     }
 
     func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())? = nil) -> () {
@@ -104,7 +105,8 @@ final class OpenAccessPlayer: NSObject, Player {
     /// move and get a reference to the actual new chapter location. Only update
     /// the cursor if a new queue can successfully be built for the player.
     ///
-    /// - Parameter newLocation: Chapter Location with possible playhead offset outside the bounds of audio for the current chapter
+    /// - Parameter newLocation: Chapter Location with possible playhead offset
+    ///   outside the bounds of audio for the current chapter
     func playAtLocation(_ newLocation: ChapterLocation) {
 
         let newPlayhead = move(cursor: self.cursor, to: newLocation)
@@ -117,7 +119,8 @@ final class OpenAccessPlayer: NSObject, Player {
         // Otherwise, check for an AVPlayerItem at the new chapter, rebuild the player
         // queue starting from there, and then begin playing at that location.
         guard let newItemDownloadStatus = (newPlayhead.cursor.currentElement.downloadTask as? OpenAccessDownloadTask)?.assetFileStatus() else {
-            notifyDelegatesOfPlaybackFailureFor(chapter: newPlayhead.location, nil)
+            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+            notifyDelegatesOfPlaybackFailureFor(chapter: newPlayhead.location, error)
             return
         }
 
@@ -130,15 +133,18 @@ final class OpenAccessPlayer: NSObject, Player {
                     self.play()
                 } else {
                     ATLog(.error, "Failed to create a new queue for the player. Keeping playback at the current player item.")
-                    self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
+                    let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+                    self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
                 }
             }
         case .missing(_):
             // TODO: Could eventually handle streaming from here.
-            self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
+            let error = NSError(domain: OpenAccessPlayerDomain, code: 1, userInfo: nil)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
             return
         case .unknown:
-            self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, nil)
+            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
             return
         }
     }
@@ -193,14 +199,13 @@ final class OpenAccessPlayer: NSObject, Player {
         }
     }
 
+    private let avQueuePlayer: AVQueuePlayer
     private let audiobookID: String
     private var cursor: Cursor<SpineElement>
-    private let avQueuePlayer: AVQueuePlayer
     private var queuedSeekOffset: TimeInterval?
     private var openAccessPlayerContext = 0
 
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
-    private let queue = DispatchQueue(label: "org.nypl.labs.NYPLAudiobookToolkit.OpenAccessPlayer")
 
     required init(cursor: Cursor<SpineElement>, audiobookID: String) {
 
@@ -213,7 +218,8 @@ final class OpenAccessPlayer: NSObject, Player {
         self.buildNewPlayerQueue(atCursor: self.cursor) { (success) in
             if !success {
                 ATLog(.error, "Could not create a queue for the AVPlayer on init.")
-                self.notifyDelegatesOfPlaybackFailureFor(chapter: self.cursor.currentElement.chapter, nil)
+                let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: self.cursor.currentElement.chapter, error)
             }
         }
 
@@ -250,7 +256,8 @@ final class OpenAccessPlayer: NSObject, Player {
                                                            object: item)
                     self.avQueuePlayer.insert(item, after: nil)
                 } else {
-                    completion(false)
+                    ATLog(.error, "Error building new queue. Discrepancy between AVPlayerItems and what could be inserted.")
+                    completion(true)
                     return
                 }
             }
@@ -274,10 +281,8 @@ final class OpenAccessPlayer: NSObject, Player {
                     playerItem.audioTimePitchAlgorithm = .timeDomain
                     items.append(playerItem)
                 case .missing(_):
-                    //godo todo download missing error
                     fallthrough
                 case .unknown:
-                    //godo todo send error
                     break
                 }
             }
@@ -428,5 +433,4 @@ extension OpenAccessPlayer {
             delegate.playerDidUnload(self)
         }
     }
-
 }

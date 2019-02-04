@@ -524,8 +524,24 @@ let SkipTimeInterval: Double = 15
     }
 
     fileprivate func presentAlertAndLog(error: NSError?) {
-        let errorLocalizedText = NSLocalizedString("A Problem Has Occurred", bundle: Bundle.audiobookToolkit()!, value: "A Problem Has Occurred", comment: "A Problem Has Occurred")
-        let alertController = UIAlertController(title: errorLocalizedText, message: error?.localizedDescription ?? "Please try again later.", preferredStyle: .alert)
+
+        let errorTitle = NSLocalizedString("A Problem Has Occurred",
+                                           bundle: Bundle.audiobookToolkit()!,
+                                           value: "A Problem Has Occurred",
+                                           comment: "A Problem Has Occurred")
+
+        var errorDescription = "Please try again later."
+        if let error = error {
+            if error.domain == OpenAccessPlayerDomain {
+                if let descriptionString = OpenAccessPlayerErrorDescriptions[error.code] {
+                    errorDescription = descriptionString
+                }
+            } else {
+                errorDescription = error.localizedDescription
+            }
+        }
+
+        let alertController = UIAlertController(title: errorTitle, message: errorDescription, preferredStyle: .alert)
         let okLocalizedText = NSLocalizedString("OK", bundle: Bundle.audiobookToolkit()!, value: "OK", comment: "Okay")
 
         let alertAction = UIAlertAction(title: okLocalizedText, style: .default) { _ in
@@ -535,7 +551,8 @@ let SkipTimeInterval: Double = 15
 
         self.present(alertController, animated: true)
 
-        let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
+        let bookID = self.audiobookManager.audiobook.uniqueIdentifier
+        let logString = "\(#file): Player reported an error. Audiobook: \(bookID)"
         ATLog(.error, logString, error: error)
     }
 }

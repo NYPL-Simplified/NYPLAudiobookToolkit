@@ -132,53 +132,17 @@ final class OpenAccessDownloadTask: DownloadTask {
         task.resume()
     }
 
-    private func downloadAsset(fromRemoteURL remoteURL: URL, toLocalDirectory: URL) {
-
+    private func downloadAsset(fromRemoteURL remoteURL: URL, toLocalDirectory finalURL: URL)
+    {
         let config = URLSessionConfiguration.ephemeral
-        let delegate = OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self, delegate: self.delegate)
+        let delegate = OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self,
+                                                                delegate: self.delegate,
+                                                                finalDirectory: finalURL)
         let session = URLSession(configuration: config,
                                  delegate: delegate,
                                  delegateQueue: OperationQueue.main)
-
         let request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
-
-        let task = session.downloadTask(with: request) { (fileURL, response, error) in
-
-            guard let fileURL = fileURL, let response = response else {
-                if let error = error {
-                    ATLog(.error, "No file URL or response from download task: \(self.key).", error: error)
-                } else {
-                    ATLog(.error, "No file URL or response from download task: \(self.key)")
-                }
-                self.delegate?.downloadTaskFailed(self, withError: error as NSError?)
-                return
-            }
-
-            let httpResponse = response as? HTTPURLResponse
-            if ((error == nil) && (httpResponse?.statusCode == 200)) {
-
-                let fileManager = FileManager.default
-                do {
-                    try fileManager.moveItem(at: fileURL, to: toLocalDirectory)
-                    ATLog(.debug, "File successfully downloaded and moved to: \(toLocalDirectory)")
-                    self.downloadProgress = 1.0
-                    self.delegate?.downloadTaskReadyForPlayback(self)
-                }
-                catch let error as NSError {
-                    ATLog(.error, "FileManager removeItem error:\n\(error)")
-                    self.downloadProgress = 0.0
-                    self.delegate?.downloadTaskFailed(self, withError: nil)
-                    return
-                }
-            }
-            else {
-                ATLog(.error, "Download Task failed with server response: \n\(httpResponse?.description ?? "nil")", error: error)
-                self.downloadProgress = 0.0
-                self.delegate?.downloadTaskFailed(self, withError: nil)
-                return
-            }
-
-        }
+        let task = session.downloadTask(with: request)
         task.resume()
     }
 
@@ -194,24 +158,61 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
 
     private let downloadTask: OpenAccessDownloadTask
     private let delegate: DownloadTaskDelegate?
+    private let finalURL: URL
 
-    required init(downloadTask: OpenAccessDownloadTask, delegate: DownloadTaskDelegate?) {
+    /// Each Spine Element's Download Task has a URLSession delegate.
+    /// If the player ever evolves to support concurrent requests, there
+    /// should just be one delegate objects that keeps track of them all.
+    /// This is only for the actual audio file download.
+    ///
+    /// - Parameters:
+    ///   - downloadTask: The corresponding download task for the URLSession.
+    ///   - delegate: The DownloadTaskDelegate, to forward download progress
+    ///   - finalDirectory: Final directory to move the asset to
+    required init(downloadTask: OpenAccessDownloadTask,
+                  delegate: DownloadTaskDelegate?,
+                  finalDirectory: URL) {
         self.downloadTask = downloadTask
         self.delegate = delegate
+        self.finalURL = finalDirectory
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        // Handled in completion block..
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL)
+    {
+        guard let httpResponse = downloadTask.response as? HTTPURLResponse else {
+            ATLog(.error, "Response could not be cast to HTTPURLResponse: \(self.downloadTask.key)")
+            self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+            return
+        }
+
+        if (httpResponse.statusCode == 200) {
+            let fileManager = FileManager.default
+            do {
+                try fileManager.moveItem(at: location, to: self.finalURL)
+                ATLog(.debug, "File successfully downloaded and moved to: \(self.finalURL)")
+                self.downloadTask.downloadProgress = 1.0
+                self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
+            }
+            catch let error as NSError {
+                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                self.downloadTask.downloadProgress = 0.0
+                self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+                return
+            }
+        } else {
+            ATLog(.error, "Download Task failed with server response: \n\(httpResponse.description)")
+            self.downloadTask.downloadProgress = 0.0
+            self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+            return
+        }
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?)
+    {
         if let error = error {
             ATLog(.error, "No file URL or response from download task: \(self.downloadTask.key).", error: error)
-        } else {
-            ATLog(.error, "No file URL or response from download task: \(self.downloadTask.key)")
+            self.delegate?.downloadTaskFailed(self.downloadTask, withError: error as NSError?)
         }
-        self.delegate?.downloadTaskFailed(self.downloadTask, withError: error as NSError?)
-        return
     }
 
     func urlSession(_ session: URLSession,
@@ -220,9 +221,6 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                     totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64)
     {
-
-        debugPrint("totalWritten: \(totalBytesWritten). expectedToWrite: \(totalBytesExpectedToWrite)")
-
         if (totalBytesExpectedToWrite == NSURLSessionTransferSizeUnknown) ||
             totalBytesExpectedToWrite == 0 {
             self.downloadTask.downloadProgress = 0.0
@@ -233,9 +231,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
         } else if totalBytesWritten <= 0 {
             self.downloadTask.downloadProgress = 0.0
         } else {
-            self.downloadTask.downloadProgress = Float(totalBytesWritten / totalBytesExpectedToWrite)
+            self.downloadTask.downloadProgress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
         }
-
-        self.delegate?.downloadTaskDidUpdateDownloadPercentage(self.downloadTask)
     }
 }
