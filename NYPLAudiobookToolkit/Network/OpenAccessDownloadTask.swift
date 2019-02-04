@@ -25,7 +25,6 @@ final class OpenAccessDownloadTask: DownloadTask {
     let urlMediaType: OpenAccessSpineElementMediaType
     let alternateLinks: [(OpenAccessSpineElementMediaType, URL)]?
 
-    //GODO TODO shouldn't delegate be in the init here, rather than added as a property later?
     public init(spineElement: OpenAccessSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
@@ -37,7 +36,6 @@ final class OpenAccessDownloadTask: DownloadTask {
     /// update state to the delegates. Otherwise, attempt to download the file
     /// referenced in the spine element.
     func fetch() {
-
         switch self.assetFileStatus() {
         case .saved(_):
             downloadProgress = 1.0
@@ -50,18 +48,22 @@ final class OpenAccessDownloadTask: DownloadTask {
                 self.downloadAsset(fromRemoteURL: self.url, toLocalDirectory: missingAssetURL)
             }
         case .unknown:
-            //GODO TODO consider adding progress = 0 even though it's technically covered elsewhere
-            //also consider creating a new nserror here
             self.delegate?.downloadTaskFailed(self, withError: nil)
         }
     }
 
-    //GODO TODO make sure to surface this somewhere in the UI so the user can at least
-    //delete something that try again without having to sign out/in
     func delete() {
-
-        //GODO TODO
-      
+        switch assetFileStatus() {
+        case .saved(let url):
+            do {
+                try FileManager.default.removeItem(at: url)
+                self.delegate?.downloadTaskDidDeleteAsset(self)
+            } catch {
+                ATLog(.error, "FileManager removeItem error:\n\(error)")
+            }
+        default:
+            ATLog(.error, "No file located at directory to delete.")
+        }
     }
 
     public func assetFileStatus() -> AssetResult {
@@ -75,6 +77,7 @@ final class OpenAccessDownloadTask: DownloadTask {
         }
     }
 
+    /// Directory of the downloaded file.
     private func localDirectory() -> URL? {
         let fileManager = FileManager.default
         let cacheDirectories = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
@@ -82,15 +85,12 @@ final class OpenAccessDownloadTask: DownloadTask {
             ATLog(.error, "Could not find caches directory.")
             return nil
         }
-        let hashedKey = hash(self.key)
-        guard let key = hashedKey else {
+        guard let filename = hash(self.key) else {
             ATLog(.error, "Could not create a valid hash from download task ID.")
             return nil
         }
-        return cacheDirectory.appendingPathComponent("\(key)", isDirectory: false).appendingPathExtension("mp3")
+        return cacheDirectory.appendingPathComponent(filename, isDirectory: false).appendingPathExtension("mp3")
     }
-
-    //GODO TODO remember to add a method to delete all cached content, which could be called by a host when a user is signing out
 
     /// RBDigital media types first download an intermediate document, which points
     /// to the url of the actual asset to download.
@@ -133,36 +133,29 @@ final class OpenAccessDownloadTask: DownloadTask {
     }
 
     private func downloadAsset(fromRemoteURL remoteURL: URL, toLocalDirectory: URL) {
-        //GODO TODO find a way to get a shared session out of each individual download task, perhaps in the manager or network service
-        //OR just use the default shared session instead of a custom one, but maybe I can't have a delegate if I do that.
+
         let config = URLSessionConfiguration.ephemeral
+        let delegate = OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self, delegate: self.delegate)
         let session = URLSession(configuration: config,
-                                 delegate: OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self, delegate: self.delegate),
+                                 delegate: delegate,
                                  delegateQueue: OperationQueue.main)
 
         let request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
 
         let task = session.downloadTask(with: request) { (fileURL, response, error) in
 
-            //GODO TODO Perhaps Make sure to check mimetype, or media type before confirming the download worked
-            //GODO TODO got to be something better than this
-
-            guard let fileURL = fileURL,
-                let response = response else {
+            guard let fileURL = fileURL, let response = response else {
+                if let error = error {
+                    ATLog(.error, "No file URL or response from download task: \(self.key).", error: error)
+                } else {
                     ATLog(.error, "No file URL or response from download task: \(self.key)")
-                    if let error = error {
-                        ATLog(.error, "Specific error reported from download task: \(error.localizedDescription)")
-                    }
-                    self.delegate?.downloadTaskFailed(self, withError: nil)
-                    return
+                }
+                self.delegate?.downloadTaskFailed(self, withError: error as NSError?)
+                return
             }
 
-            //GODO TODO audit this if-condition
             let httpResponse = response as? HTTPURLResponse
             if ((error == nil) && (httpResponse?.statusCode == 200)) {
-
-                // GODO TODO only apply mp3 if i know it's an mp3? look at android here
-                // GODO TODO especially with the alternates
 
                 let fileManager = FileManager.default
                 do {
@@ -172,16 +165,14 @@ final class OpenAccessDownloadTask: DownloadTask {
                     self.delegate?.downloadTaskReadyForPlayback(self)
                 }
                 catch let error as NSError {
-                    //GODO TODO flesh out error handling
-                    print("File copy to cache directory error: \(error)")
+                    ATLog(.error, "FileManager removeItem error:\n\(error)")
                     self.downloadProgress = 0.0
                     self.delegate?.downloadTaskFailed(self, withError: nil)
                     return
                 }
             }
             else {
-                //GODO TODO record a non-200 result from the server
-                ATLog(.error, "Download Task failed with response: \n\(httpResponse?.description ?? "nil")", error: error)
+                ATLog(.error, "Download Task failed with server response: \n\(httpResponse?.description ?? "nil")", error: error)
                 self.downloadProgress = 0.0
                 self.delegate?.downloadTaskFailed(self, withError: nil)
                 return
@@ -191,12 +182,11 @@ final class OpenAccessDownloadTask: DownloadTask {
         task.resume()
     }
 
-    //GODO FIXME TODO Make hash a sha256 hash like in the main app
     private func hash(_ key: String) -> String? {
-        guard let escapedKey = key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+        guard let hash = NYPLStringAdditions.sha256forString(key) else {
             return nil
         }
-        return escapedKey
+        return hash
     }
 }
 
@@ -211,9 +201,17 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        //GODO TODO
-        //Skipped if a completion block is used in download task
-        //Potentially not a needed method
+        // Handled in completion block..
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error {
+            ATLog(.error, "No file URL or response from download task: \(self.downloadTask.key).", error: error)
+        } else {
+            ATLog(.error, "No file URL or response from download task: \(self.downloadTask.key)")
+        }
+        self.delegate?.downloadTaskFailed(self.downloadTask, withError: error as NSError?)
+        return
     }
 
     func urlSession(_ session: URLSession,
@@ -222,6 +220,9 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                     totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64)
     {
+
+        debugPrint("totalWritten: \(totalBytesWritten). expectedToWrite: \(totalBytesExpectedToWrite)")
+
         if (totalBytesExpectedToWrite == NSURLSessionTransferSizeUnknown) ||
             totalBytesExpectedToWrite == 0 {
             self.downloadTask.downloadProgress = 0.0
@@ -238,4 +239,3 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
         self.delegate?.downloadTaskDidUpdateDownloadPercentage(self.downloadTask)
     }
 }
-
