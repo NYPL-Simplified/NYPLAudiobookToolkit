@@ -14,3 +14,4 @@ FOUNDATION_EXPORT double NYPLAudiobookToolkitVersionNumber;
 //! Project version string for NYPLAudiobookToolkit.
 FOUNDATION_EXPORT const unsigned char NYPLAudiobookToolkitVersionString[];
 
+#import "NYPLStringAdditions.h"

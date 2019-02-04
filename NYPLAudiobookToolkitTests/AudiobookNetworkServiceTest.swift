@@ -103,7 +103,7 @@ class AudiobookNetworkServiceTest: XCTestCase {
                 // no longer in the first attempt.
                 firstFetchAttempt = false
                 expectTask2ToFail.fulfill()
-                task.delegate?.downloadTask(task, didReceive: NSError())
+                task.delegate?.downloadTask(task, failedWithError: NSError())
             } else {
                 expectTask2ToFetch.fulfill()
                 task.delegate?.downloadTaskReadyForPlayback(task)
