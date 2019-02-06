@@ -1,3 +1,5 @@
+let TaskCompleteNotification = NSNotification.Name(rawValue: "OpenAccessDownloadTaskCompleteNotification")
+
 final class OpenAccessDownloadTask: DownloadTask {
 
     public enum AssetResult {
@@ -187,7 +189,6 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
             return
         }
 
-
         if (httpResponse.statusCode == 200) {
             let fileManager = FileManager.default
             do {
@@ -195,6 +196,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                 ATLog(.debug, "File successfully downloaded and moved to: \(self.finalURL)")
                 self.downloadTask.downloadProgress = 1.0
                 self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
+                NotificationCenter.default.post(name: TaskCompleteNotification, object: self.downloadTask)
             }
             catch let error as NSError {
                 ATLog(.error, "FileManager removeItem error:\n\(error)")

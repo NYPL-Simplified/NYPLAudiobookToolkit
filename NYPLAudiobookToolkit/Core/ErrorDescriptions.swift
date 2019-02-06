@@ -10,8 +10,7 @@ let OpenAccessPlayerErrorDescriptions = [
     This chapter has not finished downlading. Please wait and try again.
     """,
     2 : """
-    A problem has occurred with the Player. Please wait a moment and try again.
-    If the problem persists, please contact us.
+    A problem has occurred. Please leave the book and try again.
     """,
     3 : """
     The internet connection was lost during the download.

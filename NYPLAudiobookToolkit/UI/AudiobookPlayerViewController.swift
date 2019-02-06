@@ -624,12 +624,13 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.waitingForPlayer = true
         self.activityIndicator.startAnimating()
-        self.playbackControlView.togglePlayPauseButtonUIState()
-        if self.audiobookManager.audiobook.player.isPlaying {
-            self.audiobookManager.audiobook.player.pause()
-        } else {
-            self.audiobookManager.audiobook.player.play()
-        }
+        self.audiobookManager.audiobook.player.play()
+    }
+
+    func playbackControlViewPauseButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.waitingForPlayer = true
+        self.activityIndicator.startAnimating()
+        self.audiobookManager.audiobook.player.pause()
     }
 }
 

@@ -14,6 +14,7 @@ import MediaPlayer
 
 protocol PlaybackControlViewDelegate: class {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView)
+    func playbackControlViewPauseButtonWasTapped(_ playbackControlView: PlaybackControlView)
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView)
     func playbackControlViewSkipBackButtonWasTapped(_ playbackControlView: PlaybackControlView)
 }
@@ -154,7 +155,12 @@ final class PlaybackControlView: UIView {
     }
     
     @objc public func playButtonWasTapped(_ sender: Any) {
-        self.delegate?.playbackControlViewPlayButtonWasTapped(self)
+        self.togglePlayPauseButtonUIState()
+        if self.playButton.image == self.pauseImage {
+            self.delegate?.playbackControlViewPlayButtonWasTapped(self)
+        } else {
+            self.delegate?.playbackControlViewPauseButtonWasTapped(self)
+        }
     }
 
     @objc public func skipBackButtonWasTapped(_ sender: Any) {
