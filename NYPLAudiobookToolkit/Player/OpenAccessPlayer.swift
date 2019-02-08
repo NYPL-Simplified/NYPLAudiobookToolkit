@@ -55,7 +55,8 @@ final class OpenAccessPlayer: NSObject, Player {
 
     var isLoaded = true
 
-    func play() {
+    func play()
+    {
         switch self.playerIsReady {
         case .readyToPlay:
             self.avQueuePlayer.play()
@@ -78,38 +79,33 @@ final class OpenAccessPlayer: NSObject, Player {
                 }
             }
         case .failed:
-            //godo todo should i do anything here?
+            ATLog(.error, "Ready status is \"failed\".")
+            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             break
         }
     }
 
-    @objc func rebuildAndPlay() {
-        buildNewPlayerQueue(atCursor: self.cursor) { (success) in
-            if success {
-                self.play()
-            } else {
-            }
-        }
-        NotificationCenter.default.removeObserver(self, name: TaskCompleteNotification, object: nil)
-    }
-
-    func pause() {
+    func pause()
+    {
         if self.isPlaying {
             self.avQueuePlayer.pause()
         } else if self.cursorQueuedToPlay != nil {
             self.cursorQueuedToPlay = nil
             NotificationCenter.default.removeObserver(self, name: TaskCompleteNotification, object: nil)
-            notifyDelegatesOfPauseFor(chapter: self.cursor.currentElement.chapter)
+            notifyDelegatesOfPauseFor(chapter: self.chapterAtCurrentCursor)
         }
     }
 
-    func unload() {
+    func unload()
+    {
         self.isLoaded = false
         self.avQueuePlayer.removeAllItems()
         self.notifyDelegatesOfUnloadRequest()
     }
 
-    func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())? = nil) -> () {
+    func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())? = nil) -> ()
+    {
         guard let currentLocation = self.currentChapterLocation else {
             ATLog(.error, "Invalid chapter information required for skip.")
             return
@@ -136,8 +132,8 @@ final class OpenAccessPlayer: NSObject, Player {
     ///
     /// - Parameter newLocation: Chapter Location with possible playhead offset
     ///   outside the bounds of audio for the current chapter
-    func playAtLocation(_ newLocation: ChapterLocation) {
-
+    func playAtLocation(_ newLocation: ChapterLocation)
+    {
         let newPlayhead = move(cursor: self.cursor, to: newLocation)
 
         let newItemDownloadTask = newPlayhead.cursor.currentElement.downloadTask as? OpenAccessDownloadTask
@@ -150,7 +146,7 @@ final class OpenAccessPlayer: NSObject, Player {
         switch newItemDownloadStatus {
         case .saved(_):
             // If we're in the same AVPlayerItem, apply seek directly with AVPlayer.
-            if newPlayhead.location.inSameChapter(other: self.cursor.currentElement.chapter) {
+            if newPlayhead.location.inSameChapter(other: self.chapterAtCurrentCursor) {
                 self.seekWithinCurrentItem(newOffset: newPlayhead.location.playheadOffset)
                 return
             }
@@ -179,13 +175,15 @@ final class OpenAccessPlayer: NSObject, Player {
         }
     }
 
-    func movePlayheadToLocation(_ location: ChapterLocation) {
+    func movePlayheadToLocation(_ location: ChapterLocation)
+    {
         self.playAtLocation(location)
         self.pause()
     }
 
     /// Moving within the current AVPlayerItem.
-    private func seekWithinCurrentItem(newOffset: TimeInterval) {
+    private func seekWithinCurrentItem(newOffset: TimeInterval)
+    {
         guard let currentItem = self.avQueuePlayer.currentItem else {
             ATLog(.error, "No current AVPlayerItem in AVQueuePlayer")
 
@@ -199,28 +197,32 @@ final class OpenAccessPlayer: NSObject, Player {
         currentItem.seek(to: CMTimeMakeWithSeconds(Float64(newOffset), preferredTimescale: Int32(1))) { finished in
             if finished {
                 ATLog(.debug, "Seek operation finished.")
-                self.notifyDelegatesOfPlaybackFor(chapter: self.cursor.currentElement.chapter)
+                self.notifyDelegatesOfPlaybackFor(chapter: self.chapterAtCurrentCursor)
             } else {
                 ATLog(.error, "Seek operation failed on AVPlayerItem")
             }
         }
     }
 
-    func registerDelegate(_ delegate: PlayerDelegate) {
+    func registerDelegate(_ delegate: PlayerDelegate)
+    {
         self.delegates.add(delegate)
     }
 
-    func removeDelegate(_ delegate: PlayerDelegate) {
+    func removeDelegate(_ delegate: PlayerDelegate)
+    {
         self.delegates.remove(delegate)
     }
 
-    private var chapterAtCurrentCursor: ChapterLocation {
+    private var chapterAtCurrentCursor: ChapterLocation
+    {
         return self.cursor.currentElement.chapter
     }
 
     /// The overall readiness of an AVPlayer and the currently queued AVPlayerItem's readiness values.
     /// You cannot play audio without both being "ready."
-    fileprivate func overallPlayerReadiness(player: AVPlayer.Status, item: AVPlayerItem.Status?) -> AVPlayerItem.Status {
+    fileprivate func overallPlayerReadiness(player: AVPlayer.Status, item: AVPlayerItem.Status?) -> AVPlayerItem.Status
+    {
         let convertedPlayerStatus = AVPlayerItem.Status(rawValue: self.avQueuePlayer.status.rawValue) ?? .unknown
         let currentItemStatus = self.avQueuePlayer.currentItem?.status ?? .unknown
         if convertedPlayerStatus ==  currentItemStatus {
@@ -240,12 +242,12 @@ final class OpenAccessPlayer: NSObject, Player {
                     self.cursorQueuedToPlay = nil
                     self.buildNewPlayerQueue(atCursor: cursor) { success in
                         if success {
-                            self.seekWithinCurrentItem(newOffset: self.cursor.currentElement.chapter.playheadOffset)
+                            self.seekWithinCurrentItem(newOffset: self.chapterAtCurrentCursor.playheadOffset)
                             self.play()
                         } else {
                             ATLog(.error, "User attempted to play when the player wasn't ready.")
                             let error = NSError(domain: OpenAccessPlayerDomain, code: 2, userInfo: nil)
-                            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.currentChapterLocation!, error)
+                            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
                         }
                     }
                 } else if let seekOffset = self.queuedSeekOffset {
@@ -295,8 +297,9 @@ final class OpenAccessPlayer: NSObject, Player {
         try? AVAudioSession.sharedInstance().setActive(false, options: [])
     }
 
-    private func buildNewPlayerQueue(atCursor cursor: Cursor<SpineElement>, completion: (Bool)->()) {
-        let items = self.buildPlayerItems(cursor: cursor)
+    private func buildNewPlayerQueue(atCursor cursor: Cursor<SpineElement>, completion: (Bool)->())
+    {
+        let items = self.buildPlayerItems(fromCursor: cursor)
         if items.isEmpty {
             completion(false)
         } else {
@@ -330,102 +333,110 @@ final class OpenAccessPlayer: NSObject, Player {
         }
     }
 
-    private func buildPlayerItems(cursor: Cursor<SpineElement>?) -> [AVPlayerItem] {
-
+    /// Queue all valid AVPlayerItems from the cursor up to any spine element that's missing it.
+    private func buildPlayerItems(fromCursor cursor: Cursor<SpineElement>?) -> [AVPlayerItem]
+    {
         var items = [AVPlayerItem]()
         var cursor = cursor
 
-        // Queue items with saved download tasks.
         while (cursor != nil) {
-            if let downloadTask = cursor!.currentElement.downloadTask as? OpenAccessDownloadTask {
-                switch downloadTask.assetFileStatus() {
-                case .saved(let assetURL):
-                    let playerItem = AVPlayerItem(url: assetURL)
-                    playerItem.audioTimePitchAlgorithm = .timeDomain
-                    items.append(playerItem)
-                case .missing(_):
-                    fallthrough
-                case .unknown:
-                    break
-                }
+            guard let downloadTask = cursor!.currentElement.downloadTask as? OpenAccessDownloadTask else {
+                cursor = nil
+                continue
+            }
+            switch downloadTask.assetFileStatus() {
+            case .saved(let assetURL):
+                let playerItem = AVPlayerItem(url: assetURL)
+                playerItem.audioTimePitchAlgorithm = .timeDomain
+                items.append(playerItem)
+            case .missing(_):
+                fallthrough
+            case .unknown:
+                cursor = nil
+                continue
             }
             cursor = cursor?.next()
         }
         return items
     }
 
-    private func addPlayerObservers() {
-        self.avQueuePlayer.addObserver(self,
-                                       forKeyPath: #keyPath(AVQueuePlayer.status),
-                                       options: [.old, .new],
-                                       context: &openAccessPlayerContext)
-
-        self.avQueuePlayer.addObserver(self,
-                                       forKeyPath: #keyPath(AVQueuePlayer.rate),
-                                       options: [.old, .new],
-                                       context: &openAccessPlayerContext)
-
-        self.avQueuePlayer.addObserver(self,
-                                       forKeyPath: #keyPath(AVQueuePlayer.currentItem.status),
-                                       options: [.old, .new],
-                                       context: &openAccessPlayerContext)
-    }
-
-    fileprivate func rebuildOnFinishedDownload(task: OpenAccessDownloadTask) {
-        ATLog(.debug, "Added observer for missing download task.")
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(self.rebuildAndPlay),
-                                               name: TaskCompleteNotification,
-                                               object: task)
-    }
-
     /// Update the cursor if the next item in the queue is about to be put on.
     /// Not needed for explicit seek operations. Check the player for any more
     /// AVPlayerItems so that we can potentially rebuild the queue if more
     /// downloads have completed since the queue was last built.
-    @objc func currentPlayerItemEnded(item: AVPlayerItem) {
+    @objc func currentPlayerItemEnded(item: AVPlayerItem)
+    {
         DispatchQueue.main.async {
             if let nextCursor = self.cursor.next() {
                 ATLog(.debug, "Attempting to recover the missing AVPlayerItem.")
                 self.cursor = nextCursor
                 if self.avQueuePlayer.items().count <= 1 {
                     self.pause()
-                    self.attemptToRecover(cursor: self.cursor)
+                    self.attemptToRecoverMissingPlayerItem(cursor: self.cursor)
                 }
             } else {
                 self.pause()
                 ATLog(.debug, "End of book reached.")
             }
-            self.notifyDelegatesOfPlaybackEndFor(chapter: self.cursor.currentElement.chapter)
+            self.notifyDelegatesOfPlaybackEndFor(chapter: self.chapterAtCurrentCursor)
         }
     }
 
     /// Try and recover from a Cursor missing its player asset.
-    func attemptToRecover(cursor: Cursor<SpineElement>) {
+    func attemptToRecoverMissingPlayerItem(cursor: Cursor<SpineElement>)
+    {
         if let cursorItemDownloadTask = cursor.currentElement.downloadTask as? OpenAccessDownloadTask {
             switch cursorItemDownloadTask.assetFileStatus() {
             case .saved(_):
-                self.rebuildAndPlay()
+                self.rebuildQueueImmediatelyAndPlay(cursor: cursor)
             case .missing(_):
                 self.rebuildOnFinishedDownload(task: cursorItemDownloadTask)
             case .unknown:
                 let error = NSError(domain: OpenAccessPlayerDomain, code: 2, userInfo: nil)
-                self.notifyDelegatesOfPlaybackFailureFor(chapter: self.cursor.currentElement.chapter, error)
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             }
         } else {
             let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
-            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.cursor.currentElement.chapter, error)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
         }
+    }
+
+    func rebuildQueueImmediatelyAndPlay(cursor: Cursor<SpineElement>)
+    {
+        buildNewPlayerQueue(atCursor: self.cursor) { (success) in
+            if success {
+                self.play()
+            } else {
+                ATLog(.error, "Ready status is \"failed\".")
+                let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+                self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
+            }
+        }
+    }
+
+    fileprivate func rebuildOnFinishedDownload(task: OpenAccessDownloadTask)
+    {
+        ATLog(.debug, "Added observer for missing download task.")
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(self.downloadTaskFinished),
+                                               name: TaskCompleteNotification,
+                                               object: task)
+    }
+
+    @objc func downloadTaskFinished()
+    {
+        self.rebuildQueueImmediatelyAndPlay(cursor: self.cursor)
+        NotificationCenter.default.removeObserver(self, name: TaskCompleteNotification, object: nil)
     }
 }
 
 /// Key-Value Observing on AVPlayer properties and items
-extension OpenAccessPlayer {
+extension OpenAccessPlayer{
     override func observeValue(forKeyPath keyPath: String?,
                                of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?,
-                               context: UnsafeMutableRawPointer?) {
-
+                               context: UnsafeMutableRawPointer?)
+    {
         guard context == &openAccessPlayerContext else {
             super.observeValue(forKeyPath: keyPath,
                                of: object,
@@ -507,7 +518,6 @@ extension OpenAccessPlayer {
         }
     }
 
-
     fileprivate func notifyDelegatesOfPlaybackFor(chapter: ChapterLocation) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.player(self, didBeginPlaybackOf: chapter)
@@ -536,5 +546,22 @@ extension OpenAccessPlayer {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.playerDidUnload(self)
         }
+    }
+
+    fileprivate func addPlayerObservers() {
+        self.avQueuePlayer.addObserver(self,
+                                       forKeyPath: #keyPath(AVQueuePlayer.status),
+                                       options: [.old, .new],
+                                       context: &openAccessPlayerContext)
+
+        self.avQueuePlayer.addObserver(self,
+                                       forKeyPath: #keyPath(AVQueuePlayer.rate),
+                                       options: [.old, .new],
+                                       context: &openAccessPlayerContext)
+
+        self.avQueuePlayer.addObserver(self,
+                                       forKeyPath: #keyPath(AVQueuePlayer.currentItem.status),
+                                       options: [.old, .new],
+                                       context: &openAccessPlayerContext)
     }
 }
