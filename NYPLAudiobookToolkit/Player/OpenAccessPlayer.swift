@@ -71,6 +71,11 @@ final class OpenAccessPlayer: NSObject, Player {
             if self.avQueuePlayer.currentItem == nil {
                 if let cursorItemDownloadTask = self.cursor.currentElement.downloadTask as? OpenAccessDownloadTask {
                     switch cursorItemDownloadTask.assetFileStatus() {
+                    case .saved(let savedURL):
+                        let item = AVPlayerItem(url: savedURL)
+                        if self.avQueuePlayer.canInsert(item, after: nil) {
+                            self.avQueuePlayer.insert(item, after: nil)
+                        }
                     case .missing(_):
                         self.rebuildOnFinishedDownload(task: cursorItemDownloadTask)
                     default:
@@ -185,8 +190,7 @@ final class OpenAccessPlayer: NSObject, Player {
     private func seekWithinCurrentItem(newOffset: TimeInterval)
     {
         guard let currentItem = self.avQueuePlayer.currentItem else {
-            ATLog(.error, "No current AVPlayerItem in AVQueuePlayer")
-
+            ATLog(.error, "No current AVPlayerItem in AVQueuePlayer to seek with.")
             return
         }
         if self.avQueuePlayer.currentItem?.status != .readyToPlay {
@@ -223,12 +227,12 @@ final class OpenAccessPlayer: NSObject, Player {
     /// You cannot play audio without both being "ready."
     fileprivate func overallPlayerReadiness(player: AVPlayer.Status, item: AVPlayerItem.Status?) -> AVPlayerItem.Status
     {
-        let convertedPlayerStatus = AVPlayerItem.Status(rawValue: self.avQueuePlayer.status.rawValue) ?? .unknown
-        let currentItemStatus = self.avQueuePlayer.currentItem?.status ?? .unknown
-        if convertedPlayerStatus ==  currentItemStatus {
-            return convertedPlayerStatus
+        let avPlayerStatus = AVPlayerItem.Status(rawValue: self.avQueuePlayer.status.rawValue) ?? .unknown
+        let playerItemStatus = self.avQueuePlayer.currentItem?.status ?? .unknown
+        if avPlayerStatus == playerItemStatus {
+            return avPlayerStatus
         } else {
-            return currentItemStatus
+            return playerItemStatus
         }
     }
 
@@ -250,7 +254,8 @@ final class OpenAccessPlayer: NSObject, Player {
                             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
                         }
                     }
-                } else if let seekOffset = self.queuedSeekOffset {
+                }
+                if let seekOffset = self.queuedSeekOffset {
                     self.queuedSeekOffset = nil
                     self.seekWithinCurrentItem(newOffset: seekOffset)
                 }
