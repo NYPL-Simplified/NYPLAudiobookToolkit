@@ -3,7 +3,9 @@ final class OpenAccessAudiobook: Audiobook {
     var spine: [SpineElement]
     let uniqueIdentifier: String
     public func deleteLocalContent() {
+      ATLog(.debug, "Local content delete called.")
         for element in self.spine {
+          ATLog(.debug, "beginning loop with element: \(element)")
             let task = element.downloadTask
             task.delete()
         }

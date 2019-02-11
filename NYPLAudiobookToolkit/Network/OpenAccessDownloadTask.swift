@@ -60,6 +60,7 @@ final class OpenAccessDownloadTask: DownloadTask {
             do {
                 try FileManager.default.removeItem(at: url)
                 self.delegate?.downloadTaskDidDeleteAsset(self)
+              ATLog(.debug, "successfully deleted")
             } catch {
                 ATLog(.error, "FileManager removeItem error:\n\(error)")
             }
