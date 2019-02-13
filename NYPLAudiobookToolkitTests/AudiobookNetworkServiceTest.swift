@@ -10,11 +10,15 @@ import XCTest
 @testable import NYPLAudiobookToolkit
 
 class RetryAfterErrorAudiobookNetworkServiceDelegate: AudiobookNetworkServiceDelegate {
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) {
+        
+    }
+    
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) { }
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement) { }
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) { }
     
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement) {
         audiobookNetworkService.fetch()
     }
 }
@@ -103,7 +107,7 @@ class AudiobookNetworkServiceTest: XCTestCase {
                 // no longer in the first attempt.
                 firstFetchAttempt = false
                 expectTask2ToFail.fulfill()
-                task.delegate?.downloadTask(task, failedWithError: NSError())
+                task.delegate?.downloadTaskFailed(task, withError: NSError())
             } else {
                 expectTask2ToFetch.fulfill()
                 task.delegate?.downloadTaskReadyForPlayback(task)
