@@ -10,6 +10,9 @@ import UIKit
 import NYPLAudiobookToolkit
 
 class PlayerMock: Player {
+
+    var isLoaded: Bool
+
     func playAtLocation(_ location: ChapterLocation) { }
     
     func movePlayheadToLocation(_ location: ChapterLocation) { }
@@ -24,25 +27,20 @@ class PlayerMock: Player {
     
     private var currentChapter: ChapterLocation?
     
-    func chapterIsPlaying(_ location: ChapterLocation) -> Bool {
-        return currentChapter == location
-    }
-    
     func play() { }
     
     func pause() { }
-    
-    func skipForward() { }
-    
-    func skipBack() { }
+
+    func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation) -> ())?) { }
+
+    func unload() { }
     
     func registerDelegate(_ delegate: PlayerDelegate) { }
     
     func removeDelegate(_ delegate: PlayerDelegate) { }
 
     convenience init (currentChapter: ChapterLocation?) {
-        self.init()
         self.currentChapter = currentChapter
-
+        self.isLoaded = true
     }
 }

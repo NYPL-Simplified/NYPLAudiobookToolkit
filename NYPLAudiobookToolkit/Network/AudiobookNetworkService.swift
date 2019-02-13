@@ -13,7 +13,7 @@ import UIKit
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement)
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement)
 }
 
 
@@ -59,7 +59,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         let taskCompletedPercentage = self.spine.reduce(0) { (memo: Float, element: SpineElement) -> Float in
             return memo + element.downloadTask.downloadProgress
         }
-        ATLog(.debug, "ANS: Overall Progress: \(taskCompletedPercentage / Float(self.spine.count))")
+        ATLog(.debug, "ANS: Overall Download Progress: \(taskCompletedPercentage / Float(self.spine.count))")
         return taskCompletedPercentage / Float(self.spine.count)
     }
     
@@ -93,13 +93,6 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public func fetch() {
-        // It is possible our cursor has become `nil` after
-        // all files were downloaded or if we hit an error
-        // while trying to execute a download task.
-        //
-        // If no cursor exists, then we should message
-        // every task to fetch and let them determine
-        // if a file exists or not.
         if self.cursor == nil {
             self.cursor = Cursor(data: self.spine)
         }
@@ -134,7 +127,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
     }
 
-    public func downloadTask(_ downloadTask: DownloadTask, didReceive error: NSError) {
+    public func downloadTaskFailed(_ downloadTask: DownloadTask, withError error: NSError?) {
         self.cursor = nil
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
@@ -157,7 +150,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
     }
 
-    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError) {
+    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError?) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
         }

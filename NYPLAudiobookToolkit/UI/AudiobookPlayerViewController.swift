@@ -1,11 +1,3 @@
-//
-//  AudiobookViewController.swift
-//  NYPLAudibookKit
-//
-//  Created by Dean Silfen on 1/11/18.
-//  Copyright © 2018 Dean Silfen. All rights reserved.
-//
-
 import UIKit
 import Foundation
 import PureLayout
@@ -78,8 +70,9 @@ let SkipTimeInterval: Double = 15
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        self.audiobookManager.networkService.fetch()
+        self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
+        self.audiobookManager.networkService.fetch()     
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -187,7 +180,14 @@ let SkipTimeInterval: Double = 15
             self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding, relation: .greaterThanOrEqual)
         }
 
-        guard let chapter = self.currentChapterLocation else { return }
+        let chapter = ChapterLocation(
+            number: 0,
+            part: 0,
+            duration: 4000,
+            startOffset: 0,
+            playheadOffset: 0,
+            title: "test title",
+            audiobookID: "12345")!
 
         self.toolbar.autoPin(toBottomLayoutGuideOf: self, withInset: 0)
         self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
@@ -244,7 +244,6 @@ let SkipTimeInterval: Double = 15
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.audiobookManager.timerDelegate = self
-        self.audiobookManager.audiobook.player.registerDelegate(self)
 
         if self.audiobookManager.audiobook.player.isPlaying {
             self.playbackControlView.showPauseButtonIfNeeded()
@@ -261,8 +260,6 @@ let SkipTimeInterval: Double = 15
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.audiobookManager.timerDelegate = nil
-        // The player UI state between transitions relies on this staying:
-        self.audiobookManager.audiobook.player.removeDelegate(self)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -303,9 +300,10 @@ let SkipTimeInterval: Double = 15
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tbvc = AudiobookTableOfContentsTableViewController(tableOfContents: self.audiobookManager.tableOfContents,
-                                                               delegate: self)
-        self.navigationController?.pushViewController(tbvc, animated: true)
+        let tocVC = AudiobookTableOfContentsTableViewController(
+            tableOfContents: self.audiobookManager.tableOfContents,
+            delegate: self)
+        self.navigationController?.pushViewController(tocVC, animated: true)
     }
     
     @objc public func speedWasPressed(_ sender: Any) {
@@ -522,8 +520,27 @@ let SkipTimeInterval: Double = 15
     }
 
     fileprivate func presentAlertAndLog(error: NSError?) {
-        let errorLocalizedText = NSLocalizedString("A Problem Has Occurred", bundle: Bundle.audiobookToolkit()!, value: "A Problem Has Occurred", comment: "A Problem Has Occurred")
-        let alertController = UIAlertController(title: errorLocalizedText, message: error?.localizedDescription ?? "Please try again later.", preferredStyle: .alert)
+
+        let genericTitle = NSLocalizedString("A Problem Has Occurred",
+                                             bundle: Bundle.audiobookToolkit()!,
+                                             value: "A Problem Has Occurred",
+                                             comment: "A Problem Has Occurred")
+        var errorTitle = genericTitle
+        var errorDescription = "Please try again later."
+        if let error = error {
+            if error.domain == OpenAccessPlayerDomain {
+                if let descriptionString = OpenAccessPlayerErrorDescriptions[error.code] {
+                    errorDescription = descriptionString
+                }
+                if let oaTitle = OpenAccessPlayerErrorTitle[error.code] {
+                    errorTitle = oaTitle
+                }
+            } else {
+                errorDescription = error.localizedDescription
+            }
+        }
+
+        let alertController = UIAlertController(title: errorTitle, message: errorDescription, preferredStyle: .alert)
         let okLocalizedText = NSLocalizedString("OK", bundle: Bundle.audiobookToolkit()!, value: "OK", comment: "Okay")
 
         let alertAction = UIAlertAction(title: okLocalizedText, style: .default) { _ in
@@ -533,7 +550,8 @@ let SkipTimeInterval: Double = 15
 
         self.present(alertController, animated: true)
 
-        let logString = "\(#file): Network Service reported an error. Audiobook: \(self.audiobookManager.audiobook.uniqueIdentifier)"
+        let bookID = self.audiobookManager.audiobook.uniqueIdentifier
+        let logString = "\(#file): Player reported an error. Audiobook: \(bookID)"
         ATLog(.error, logString, error: error)
     }
 }
@@ -606,12 +624,13 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView) {
         self.waitingForPlayer = true
         self.activityIndicator.startAnimating()
-        self.playbackControlView.togglePlayPauseButtonUIState()
-        if self.audiobookManager.audiobook.player.isPlaying {
-            self.audiobookManager.audiobook.player.pause()
-        } else {
-            self.audiobookManager.audiobook.player.play()
-        }
+        self.audiobookManager.audiobook.player.play()
+    }
+
+    func playbackControlViewPauseButtonWasTapped(_ playbackControlView: PlaybackControlView) {
+        self.waitingForPlayer = true
+        self.activityIndicator.startAnimating()
+        self.audiobookManager.audiobook.player.pause()
     }
 }
 
@@ -644,7 +663,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
-    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError, for spineElement: SpineElement) {
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement) {
         presentAlertAndLog(error: error)
         self.audiobookProgressView.stopShowingProgress()
     }
@@ -661,7 +680,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
 extension AudiobookPlayerViewController: ScrubberViewDelegate {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval) {
 
-        guard let requestedOffset = self.currentChapterLocation?.chapterWith(offset),
+        guard let requestedOffset = self.currentChapterLocation?.update(playheadOffset: offset),
         let currentOffset = self.currentChapterLocation else {
             ATLog(.error, "Scrubber attempted to scrub without a current chapter.")
             return

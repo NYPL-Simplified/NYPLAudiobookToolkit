@@ -1,14 +1,3 @@
-# NYPLAudiobookToolkit
-
-## Building
-
-1) Install [Carthage](https://github.com/Carthage/Carthage)
-2) Run `carthage bootstrap` at the root
-3) Build the toolkit in Xcode
-
-## Integration
-
-1) Add repo to the app's Cartfile
-2) Add relevant Player toolkits to repo, currently NYPLAEToolkit is the only player
-3) Ensure host has Background Modes enabled
-3) Allow audio playback and airplay from the background
+1) Edit your Cartfile: `github "NYPL-Simplified/NYPLAudiobookToolkit"`
+2) Open Access Support is built-in. Other DRM providers will require licenses. Example: NYPL supports the Findaway Audioengine SDK with `NYPLAEToolkit`, which requires a license paid to Findaway.
+3) Ensure host has "Background Modes" enabled in Build Settings: Allow audio playback and airplay from the background

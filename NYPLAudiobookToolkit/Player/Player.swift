@@ -1,11 +1,3 @@
-//
-//  Player.swift
-//  NYPLAudiobookToolkit
-//
-//  Created by Dean Silfen on 1/31/18.
-//  Copyright © 2018 Dean Silfen. All rights reserved.
-//
-
 import Foundation
 
 @objc public enum PlaybackRate: Int, CaseIterable {
@@ -26,7 +18,7 @@ import Foundation
     /// Guaranteed to be called on the following scenarios:
     ///   * The playhead crossed to a new chapter
     ///   * The play() method was called
-    ///   * The playhead was modified, the result of  jumpToLocation(_), skipForward() or skipBack()
+    ///   * The playhead was modified, the result of jumpToLocation(_), skipForward() or skipBack()
     func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation)
 
     /// Called to notify that playback has stopped
@@ -52,6 +44,8 @@ import Foundation
 @objc public protocol Player {
     var isPlaying: Bool { get }
     var currentChapterLocation: ChapterLocation? { get }
+
+    /// The rate at which the audio will play, when playing.
     var playbackRate: PlaybackRate { get set }
     
     /// `false` after `unload` is called, else `true`.
@@ -138,7 +132,7 @@ import Foundation
         
     }
 
-    public func chapterWith(_ offset: TimeInterval) -> ChapterLocation? {
+    public func update(playheadOffset offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
             number: self.number,
             part: self.part,
@@ -179,38 +173,38 @@ public typealias Playhead = (location: ChapterLocation, cursor: Cursor<SpineElem
 /// We navigate around audiobooks using `ChapterLocation` objects that represent
 /// some section of audio that the player can navigate to.
 ///
-/// We seek through chapters by calling the `chapterWith(_ offset:)` method
-/// on the `currentChapterLocation` to create a new `ChapterLocation` with an offset pointing to the passed
-/// in `offset`.
+/// We seek through chapters by calling the `chapterWith(_ offset:)` method on
+/// the `currentChapterLocation` to create a new `ChapterLocation` with an
+/// offset pointing to the passed in `offset`.
 ///
-/// It is possible the new `offset` is not located in the `ChapterLocation` it represents.
-/// For example, if the new `offset` is longer than the duration of the chapter.
-/// The `moveTo(to:cursor:)` function resolves such conflicts and returns a `Playhead` containing
-/// the correct chapter location for a Player to use.
+/// It is possible the new `offset` is not located in the `ChapterLocation` it
+/// represents. For example, if the new `offset` is longer than the duration of
+/// the chapter. The `moveTo(to:cursor:)` function resolves such conflicts and
+/// returns a `Playhead` containing the correct chapter location for a Player to
+/// use.
 ///
 /// For example, if you have 5 seconds left in a chapter and you go to skip
 /// ahead 15 seconds. This chapter will return a `Playhead` where the `location`
-/// is 10 seconds into the next chapter and a `cursor` that points to the new playhead.
-///
-/// If the `destination` passed in is within the `cursor`’s current chapter, then the `Playhead`
-/// consists of the arguments passed in.
+/// is 10 seconds into the next chapter and a `cursor` that points to the new
+/// playhead.
 ///
 /// - Parameters:
-///   - destination: The `ChapterLocation` we are navigating to. This destination has a playhead that may or may not be inside the chapter it represents.
+///   - destination: The `ChapterLocation` we are navigating to. This
+///     destination has a playhead that may or may not be inside the chapter it
+///     represents.
 ///   - cursor: The `Cursor` representing the spine for that book.
-/// - Returns:
-///  The `Playhead` where the location represents the chapter the playhead is located in, and a cursor that points to that chapter.
+/// - Returns: The `Playhead` where the location represents the chapter the
+///   playhead is located in, and a cursor that points to that chapter.
 public func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) -> Playhead {
 
-    // Check to see if our playback location is in the next chapter
+    // Check if location is in immediately adjacent chapters
     if let nextPlayhead = attemptToMove(cursor: cursor, forwardTo: destination) {
         return nextPlayhead
-    // Check if playback location is in the previous chapter
     } else if let prevPlayhead = attemptToMove(cursor: cursor, backTo: destination) {
         return prevPlayhead
     }
 
-    // Find the desired spine index based on the destination chapter number
+    // If not, locate the spine index containing the location
     var foundIndex: Int? = nil
     for (i, element) in cursor.data.enumerated() {
         if element.chapter.number == destination.number {
@@ -222,8 +216,35 @@ public func move(cursor: Cursor<SpineElement>, to destination: ChapterLocation) 
         let cursor = Cursor(data: cursor.data, index: foundIndex)!
         return (destination, cursor)
     } else {
-        ATLog(.error, "Cursor move failure")
+        ATLog(.error, "Cursor move failure. Returning original cursor.")
         return (cursor.currentElement.chapter, cursor)
+    }
+}
+
+/// For special UX consideration, many types of skips may not actually be
+/// intended to move at the original requested duration.
+///
+/// - Parameters:
+///   - currentOffset: Current playhead offset of the current spine element / chapter
+///   - chapterDuration: Full duration of the spine element / chapter (end of scrubber)
+///   - skipTime: The requested skip time interval
+/// - Returns: The new Playhead Offset location that should be set
+public func adjustedPlayheadOffset(currentPlayheadOffset currentOffset: TimeInterval,
+                                   currentChapterDuration chapterDuration: TimeInterval,
+                                   requestedSkipDuration skipTime: TimeInterval) -> TimeInterval {
+    let requestedPlayheadOffset = currentOffset + skipTime
+    if (currentOffset == chapterDuration) {
+        return requestedPlayheadOffset
+    } else if (skipTime > 0) {
+        return min(requestedPlayheadOffset, chapterDuration)
+    } else {
+        if currentOffset > abs(skipTime) {
+            return requestedPlayheadOffset
+        } else if requestedPlayheadOffset > (skipTime + 4) {
+            return 0
+        } else {
+            return skipTime
+        }
     }
 }
 
@@ -238,30 +259,26 @@ private func playhead(location: ChapterLocation?, cursor: Cursor<SpineElement>?)
 }
 
 private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: ChapterLocation) -> Playhead? {
-    // Only if the time points into the next chapter should we try to move the cursor forward.
+
+    // Same chapter, but playhead offset is beyond upper bound
     guard let timeIntoNextChapter = location.timeIntoNextChapter else { return nil }
     var possibleDestinationLocation: ChapterLocation?
-    // Attempt to move the cursor forward indicating
-    // there is a next chapter for us to play.
+
     let newCursor: Cursor<SpineElement>
     if let nextCursor = cursor.next() {
         let newChapter = chapterAt(cursor: nextCursor)
-        // If the new chapter is too short to skip to the current point,
-        // we go to the start of that chapter.
         if newChapter.duration > timeIntoNextChapter {
-            possibleDestinationLocation = newChapter.chapterWith(
-                timeIntoNextChapter
+            possibleDestinationLocation = newChapter.update(
+                playheadOffset: timeIntoNextChapter
             )
         } else {
             possibleDestinationLocation = newChapter
         }
-
         newCursor = nextCursor
     } else {
-        // If there is no next chapter, then we are at the end of the book
-        // and we skip to the end.
-        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(
-            chapterAt(cursor: cursor).duration
+        // No chapter exists after the current one
+        possibleDestinationLocation = chapterAt(cursor: cursor).update(
+            playheadOffset: chapterAt(cursor: cursor).duration
         )
         newCursor = cursor
     }
@@ -269,22 +286,26 @@ private func attemptToMove(cursor: Cursor<SpineElement>, forwardTo location: Cha
 }
 
 private func attemptToMove(cursor: Cursor<SpineElement>, backTo location: ChapterLocation) -> Playhead?  {
-    // Only if the time points into the last chapter should we try to move the cursor back.
-    guard let timeIntoPreviousChapter = location.secondsBeforeStart else { return nil }
+
+    // Same chapter, but playhead offset is below lower bound
+    guard let timeIntoPreviousChapter = location.secondsBeforeStart else {
+        debugPrint("No negative time detected.")
+        return nil
+    }
     var possibleDestinationLocation: ChapterLocation?
-    // Attempt to move the cursor backwards indicating
-    // there is a previous chapter for us to play.
+
     let newCursor: Cursor<SpineElement>
     if let prevCursor = cursor.prev() {
         newCursor = prevCursor
         let destinationChapter = chapterAt(cursor: newCursor)
         let playheadOffset = destinationChapter.duration - timeIntoPreviousChapter
-        possibleDestinationLocation = destinationChapter.chapterWith(max(0, playheadOffset))
+        possibleDestinationLocation = destinationChapter.update(playheadOffset: max(0, playheadOffset))
     } else {
-        // If there is no previous chapter, we are at the start of the book
-        // and skip to the beginning.
-        possibleDestinationLocation = chapterAt(cursor: cursor).chapterWith(0)
+        // No chapter exists before the current one
+        possibleDestinationLocation = chapterAt(cursor: cursor).update(playheadOffset: 0)
         newCursor = cursor
     }
     return playhead(location: possibleDestinationLocation, cursor: newCursor)
 }
+
+
