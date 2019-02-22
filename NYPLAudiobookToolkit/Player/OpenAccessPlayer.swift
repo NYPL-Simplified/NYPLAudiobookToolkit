@@ -18,17 +18,13 @@ final class OpenAccessPlayer: NSObject, Player {
         }
     }
 
-    /// Note: Changing the rate of the AVPlayer to a nonzero value will
-    /// immediately play audio. Therefore, the player should queue the new rate
-    /// if the current rate is 0 (paused).
-    private var queuedPlaybackRate: PlaybackRate?
+    /// AVPlayer returns 0 for being "paused", but the protocol expects the
+    /// "user-chosen rate" upon playing.
     var playbackRate: PlaybackRate = .normalTime {
         didSet {
             if self.avQueuePlayer.rate != 0.0 {
                 let rate = PlaybackRate.convert(rate: self.playbackRate)
                 self.avQueuePlayer.rate = rate
-            } else {
-                self.queuedPlaybackRate = self.playbackRate
             }
         }
     }
@@ -60,10 +56,9 @@ final class OpenAccessPlayer: NSObject, Player {
         switch self.playerIsReady {
         case .readyToPlay:
             self.avQueuePlayer.play()
-            if let queuedRate = self.queuedPlaybackRate {
-                let rate = PlaybackRate.convert(rate: queuedRate)
+            let rate = PlaybackRate.convert(rate: self.playbackRate)
+            if rate != self.avQueuePlayer.rate {
                 self.avQueuePlayer.rate = rate
-                self.queuedPlaybackRate = nil
             }
         case .unknown:
             self.cursorQueuedToPlay = self.cursor
@@ -372,18 +367,19 @@ final class OpenAccessPlayer: NSObject, Player {
     @objc func currentPlayerItemEnded(item: AVPlayerItem)
     {
         DispatchQueue.main.async {
+            let currentCursor = self.cursor
             if let nextCursor = self.cursor.next() {
                 ATLog(.debug, "Attempting to recover the missing AVPlayerItem.")
                 self.cursor = nextCursor
                 if self.avQueuePlayer.items().count <= 1 {
                     self.pause()
-                    self.attemptToRecoverMissingPlayerItem(cursor: self.cursor)
+                    self.attemptToRecoverMissingPlayerItem(cursor: currentCursor)
                 }
             } else {
-                self.pause()
                 ATLog(.debug, "End of book reached.")
+                self.pause()
             }
-            self.notifyDelegatesOfPlaybackEndFor(chapter: self.chapterAtCurrentCursor)
+            self.notifyDelegatesOfPlaybackEndFor(chapter: currentCursor.currentElement.chapter)
         }
     }
 
