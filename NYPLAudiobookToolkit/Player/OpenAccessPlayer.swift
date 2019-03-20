@@ -294,6 +294,7 @@ final class OpenAccessPlayer: NSObject, Player {
     }
 
     deinit {
+        self.removePlayerObservers()
         try? AVAudioSession.sharedInstance().setActive(false, options: [])
     }
 
@@ -564,5 +565,11 @@ extension OpenAccessPlayer{
                                        forKeyPath: #keyPath(AVQueuePlayer.currentItem.status),
                                        options: [.old, .new],
                                        context: &openAccessPlayerContext)
+    }
+
+    fileprivate func removePlayerObservers() {
+        self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.status))
+        self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.rate))
+        self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.currentItem.status))
     }
 }
