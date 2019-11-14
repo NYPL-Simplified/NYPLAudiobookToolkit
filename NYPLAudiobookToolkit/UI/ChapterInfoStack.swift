@@ -62,9 +62,15 @@ class ChapterInfoStack: UIView {
         self.bottomLabel.textColor = UIColor.darkGray
         self.bottomLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
         self.bottomLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+      
+        enableConstraints() // iOS < 13 used to guarantee `traitCollectionDidChange` was called, but not anymore
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        enableConstraints()
+    }
+
+    func enableConstraints() {
         if traitCollection.verticalSizeClass == .regular && traitCollection.horizontalSizeClass == .regular {
             self.topLabel.font = UIFont.boldSystemFont(ofSize: 22)
             self.bottomLabel.font = UIFont.boldSystemFont(ofSize: 22)
