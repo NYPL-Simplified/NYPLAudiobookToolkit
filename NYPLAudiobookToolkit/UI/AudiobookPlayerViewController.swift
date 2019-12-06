@@ -234,6 +234,8 @@ let SkipTimeInterval: Double = 15
             timeLeftInBook: self.timeLeftAfter(chapter: chapter),
             middleText: self.middleTextFor(chapter: chapter)
         )
+
+        enableConstraints() // iOS < 13 used to guarantee `traitCollectionDidChange` was called, but not anymore
     }
   
     override public func viewDidLayoutSubviews() {
@@ -264,7 +266,12 @@ let SkipTimeInterval: Double = 15
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
+        enableConstraints()
+    }
 
+    //MARK:-
+
+    func enableConstraints() {
         if traitCollection.horizontalSizeClass == .regular {
             if compactWidthConstraints.count > 0 && compactWidthConstraints[0].isActive {
                 NSLayoutConstraint.deactivate(compactWidthConstraints)
@@ -277,8 +284,6 @@ let SkipTimeInterval: Double = 15
             NSLayoutConstraint.activate(compactWidthConstraints)
         }
     }
-
-    //MARK:-
     
     func timeLeftAfter(chapter: ChapterLocation) -> TimeInterval {
         let spine = self.audiobookManager.audiobook.spine

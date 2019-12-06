@@ -152,8 +152,10 @@ final class PlaybackControlView: UIView {
             self.skipBackView.autoPinEdge(.right, to: .left, of: self.playButton, withOffset: -self.horizontalPadding * 2)
             self.skipForwardView.autoPinEdge(.left, to: .right, of: self.playButton, withOffset: self.horizontalPadding * 2)
         }
+      
+        enableConstraints() // iOS < 13 used to guarantee `traitCollectionDidChange` was called, but not anymore
     }
-    
+
     @objc public func playButtonWasTapped(_ sender: Any) {
         self.togglePlayPauseButtonUIState()
         if self.playButton.image == self.pauseImage {
@@ -172,6 +174,10 @@ final class PlaybackControlView: UIView {
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        enableConstraints()
+    }
+
+    func enableConstraints() {
         if traitCollection.verticalSizeClass == .regular && traitCollection.horizontalSizeClass == .regular {
             if compactConstraints.count > 0 && compactConstraints[0].isActive {
                 NSLayoutConstraint.deactivate(compactConstraints)
