@@ -12,14 +12,14 @@ import XCTest
 class SleepTimerTests: XCTestCase {
     
     func testIsScheduled() {
-        let sleepTimer = SleepTimer(player: PlayerMock())
+        let sleepTimer = SleepTimer(player: PlayerMock(currentChapter: nil))
         XCTAssertFalse(sleepTimer.isActive)
         sleepTimer.setTimerTo(trigger: .fifteenMinutes)
         XCTAssertTrue(sleepTimer.isActive)
     }
     
     func testCancelSchedule() {
-        let sleepTimer = SleepTimer(player: PlayerMock())
+        let sleepTimer = SleepTimer(player: PlayerMock(currentChapter: nil))
         sleepTimer.setTimerTo(trigger: .thirtyMinutes)
         XCTAssertTrue(sleepTimer.isActive)
         XCTAssertNotEqual(sleepTimer.timeRemaining, 0)
@@ -50,7 +50,7 @@ class SleepTimerTests: XCTestCase {
 
     func testTimeDecreases() {
         let expectTimeToDecrease = expectation(description: "time to decrease")
-        let player = PlayerMock()
+        let player = PlayerMock(currentChapter: nil)
         player.isPlaying = true
         let sleepTimer = SleepTimer(player: player)
         sleepTimer.setTimerTo(trigger: .fifteenMinutes)
@@ -65,7 +65,7 @@ class SleepTimerTests: XCTestCase {
 
     func testIsAbleToSetDifferentTimes() {
         let expectTimeToDecreaseFrom15Minutes = expectation(description: "time to decrease from 15 minutes")
-        let player = PlayerMock()
+        let player = PlayerMock(currentChapter: nil)
         player.isPlaying = true
         let sleepTimer = SleepTimer(player: player)
         sleepTimer.setTimerTo(trigger: .fifteenMinutes)
@@ -94,7 +94,7 @@ class SleepTimerTests: XCTestCase {
     }
     
     func testOnlyCountsDownWhilePlaying() {
-        let player = PlayerMock()
+        let player = PlayerMock(currentChapter: nil)
         player.isPlaying = false
         let sleepTimer = SleepTimer(player: player)
         sleepTimer.setTimerTo(trigger: .fifteenMinutes)

@@ -10,8 +10,9 @@ import UIKit
 import NYPLAudiobookToolkit
 
 class PlayerMock: Player {
+    var isDrmOk: Bool = true
 
-    var isLoaded: Bool
+    var isLoaded: Bool = false
 
     func playAtLocation(_ location: ChapterLocation) { }
     
@@ -40,6 +41,7 @@ class PlayerMock: Player {
     func removeDelegate(_ delegate: PlayerDelegate) { }
 
     convenience init (currentChapter: ChapterLocation?) {
+        self.init()
         self.currentChapter = currentChapter
         self.isLoaded = true
     }

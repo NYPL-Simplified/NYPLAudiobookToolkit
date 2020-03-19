@@ -1,3 +1,5 @@
+import AVFoundation
+
 let TaskCompleteNotification = NSNotification.Name(rawValue: "OpenAccessDownloadTaskCompleteNotification")
 
 final class OpenAccessDownloadTask: DownloadTask {
@@ -24,14 +26,18 @@ final class OpenAccessDownloadTask: DownloadTask {
 
     let key: String
     let url: URL
+    let urlString: String // Retain original URI for DRM purposes
     let urlMediaType: OpenAccessSpineElementMediaType
     let alternateLinks: [(OpenAccessSpineElementMediaType, URL)]?
+    let feedbooksProfile: String?
 
     public init(spineElement: OpenAccessSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
+        self.urlString = spineElement.urlString
         self.urlMediaType = spineElement.mediaType
         self.alternateLinks = spineElement.alternateUrls
+        self.feedbooksProfile = spineElement.feedbooksProfile
     }
 
     /// If the asset is already downloaded and verified, return immediately and
@@ -47,6 +53,8 @@ final class OpenAccessDownloadTask: DownloadTask {
             case .rbDigital:
                 self.downloadAssetForRBDigital(toLocalDirectory: missingAssetURL)
             case .audioMPEG:
+                fallthrough
+            case .audioMP4:
                 self.downloadAsset(fromRemoteURL: self.url, toLocalDirectory: missingAssetURL)
             }
         case .unknown:
@@ -119,6 +127,8 @@ final class OpenAccessDownloadTask: DownloadTask {
 
                         switch mediaType {
                         case .audioMPEG:
+                            fallthrough
+                        case .audioMP4:
                             self.downloadAsset(fromRemoteURL: assetUrl, toLocalDirectory: localURL)
                         case .rbDigital:
                             ATLog(.error, "Wrong media type for download task.")
@@ -144,8 +154,14 @@ final class OpenAccessDownloadTask: DownloadTask {
                                                                 finalDirectory: finalURL)
         let session = URLSession(configuration: config,
                                  delegate: delegate,
-                                 delegateQueue: OperationQueue.main)
-        let request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
+                                 delegateQueue: nil)
+        var request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
+        
+        // Feedbooks DRM
+        if self.feedbooksProfile != nil {
+            request.setValue("Bearer \(FeedbookDRMProcessor.getJWTToken(profile: self.feedbooksProfile!, resourceUri: urlString))", forHTTPHeaderField: "Authorization")
+        }
+        
         let task = session.downloadTask(with: request)
         task.resume()
     }
@@ -190,30 +206,34 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
         }
 
         if (httpResponse.statusCode == 200) {
-            let fileManager = FileManager.default
-            do {
-                try fileManager.moveItem(at: location, to: self.finalURL)
-                ATLog(.debug, "File successfully downloaded and moved to: \(self.finalURL)")
-                self.downloadTask.downloadProgress = 1.0
-                self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
-                NotificationCenter.default.post(name: TaskCompleteNotification, object: self.downloadTask)
-            }
-            catch let error as NSError {
-                ATLog(.error, "FileManager removeItem error:\n\(error)")
-                self.downloadTask.downloadProgress = 0.0
-                self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
-                return
+            verifyDownloadAndMove(from: location, to: self.finalURL) { (success) in
+                if success {
+                    ATLog(.debug, "File successfully downloaded and moved to: \(self.finalURL)")
+                    if FileManager.default.fileExists(atPath: location.path) {
+                        do {
+                            try FileManager.default.removeItem(at: location)
+                        } catch {
+                            ATLog(.error, "Could not remove original downloaded file at \(location.absoluteString) Error: \(error)")
+                        }
+                    }
+                    self.downloadTask.downloadProgress = 1.0
+                    self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
+                    NotificationCenter.default.post(name: TaskCompleteNotification, object: self.downloadTask)
+                } else {
+                    self.downloadTask.downloadProgress = 0.0
+                    self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+                }
             }
         } else {
             ATLog(.error, "Download Task failed with server response: \n\(httpResponse.description)")
             self.downloadTask.downloadProgress = 0.0
             self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
-            return
         }
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?)
     {
+        ATLog(.debug, "urlSession:task:didCompleteWithError: curl representation \(task.originalRequest?.curlString ?? "")")
         guard let error = error else {
             ATLog(.debug, "urlSession:task:didCompleteWithError: no error.")
             return
@@ -254,6 +274,21 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
             self.downloadTask.downloadProgress = 0.0
         } else {
             self.downloadTask.downloadProgress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+        }
+    }
+    
+    func verifyDownloadAndMove(from: URL, to: URL, completionHandler: @escaping (Bool) -> Void) {
+        if MediaProcessor.fileNeedsOptimization(url: from) {
+            ATLog(.debug, "Media file needs optimization: \(from.absoluteString)")
+            MediaProcessor.optimizeQTFile(input: from, output: to, completionHandler: completionHandler)
+        } else {
+            do {
+                try FileManager.default.moveItem(at: from, to: to)
+                completionHandler(true)
+            } catch {
+                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                completionHandler(false)
+            }
         }
     }
 }

@@ -8,6 +8,13 @@
 
 import UIKit
 
+@objc public enum DrmStatus:Int {
+    public typealias RawValue = Int
+    case failed
+    case processing
+    case succeeded
+}
+
 @objc public protocol SpineElement: class {
     var key: String { get }
     var downloadTask: DownloadTask { get }
@@ -18,6 +25,8 @@ import UIKit
     var uniqueIdentifier: String { get }
     var spine: [SpineElement] { get }
     var player: Player { get }
+    var drmStatus: DrmStatus { get set }
+    func checkDrmAsync()
     func deleteLocalContent()
     init?(JSON: Any?)
 }
@@ -31,18 +40,20 @@ import UIKit
         let metadata = JSON["metadata"] as? [String: Any]
         let drm = metadata?["encrypted"] as? [String: Any]
         let possibleScheme = drm?["scheme"] as? String
-        guard let scheme = possibleScheme else {
-            return OpenAccessAudiobook(JSON: JSON)
-        }
-
         let audiobook: Audiobook?
-        switch scheme {
-        case "http://librarysimplified.org/terms/drm/scheme/FAE":
-            let FindawayAudiobookClass = NSClassFromString("NYPLAEToolkit.FindawayAudiobook") as? Audiobook.Type
-            audiobook = FindawayAudiobookClass?.init(JSON: JSON)
-        default:
+        if let scheme = possibleScheme {
+            switch scheme {
+            case "http://librarysimplified.org/terms/drm/scheme/FAE":
+                let FindawayAudiobookClass = NSClassFromString("NYPLAEToolkit.FindawayAudiobook") as? Audiobook.Type
+                audiobook = FindawayAudiobookClass?.init(JSON: JSON)
+            default:
+                audiobook = OpenAccessAudiobook(JSON: JSON)
+            }
+        } else {
             audiobook = OpenAccessAudiobook(JSON: JSON)
         }
+        ATLog(.debug, "checkDrmAsync")
+        audiobook?.checkDrmAsync()
         return audiobook
     }
 }

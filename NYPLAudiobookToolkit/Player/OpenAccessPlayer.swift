@@ -5,6 +5,16 @@ final class OpenAccessPlayer: NSObject, Player {
     var isPlaying: Bool {
         return self.avQueuePlayerIsPlaying
     }
+    
+    var isDrmOk: Bool {
+        didSet(oldValue) {
+            if !oldValue {
+                pause()
+                notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, NSError(domain: OpenAccessPlayerDomain, code: 4, userInfo: nil))
+                unload()
+            }
+        }
+    }
 
     private var avQueuePlayerIsPlaying: Bool = false {
         didSet {
@@ -53,6 +63,14 @@ final class OpenAccessPlayer: NSObject, Player {
 
     func play()
     {
+        // Check DRM
+        if !isDrmOk {
+            ATLog(.warn, "DRM is flagged as failed.")
+            let error = NSError(domain: OpenAccessPlayerDomain, code: 4, userInfo: nil)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
+            return
+        }
+
         switch self.playerIsReady {
         case .readyToPlay:
             self.avQueuePlayer.play()
@@ -225,8 +243,10 @@ final class OpenAccessPlayer: NSObject, Player {
         let avPlayerStatus = AVPlayerItem.Status(rawValue: self.avQueuePlayer.status.rawValue) ?? .unknown
         let playerItemStatus = self.avQueuePlayer.currentItem?.status ?? .unknown
         if avPlayerStatus == playerItemStatus {
+            ATLog(.debug, "overallPlayerReadiness::avPlayerStatus \(avPlayerStatus.description)")
             return avPlayerStatus
         } else {
+            ATLog(.debug, "overallPlayerReadiness::playerItemStatus \(playerItemStatus.description)")
             return playerItemStatus
         }
     }
@@ -271,10 +291,11 @@ final class OpenAccessPlayer: NSObject, Player {
 
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
 
-    required init(cursor: Cursor<SpineElement>, audiobookID: String) {
+    required init(cursor: Cursor<SpineElement>, audiobookID: String, drmOk: Bool) {
 
         self.cursor = cursor
         self.audiobookID = audiobookID
+        self.isDrmOk = drmOk // Skips didSet observer
         self.avQueuePlayer = AVQueuePlayer()
 
         super.init()
@@ -448,6 +469,7 @@ extension OpenAccessPlayer{
         }
 
         func updatePlayback(player: AVPlayer, item: AVPlayerItem?) {
+            ATLog(.debug, "updatePlayback, playerStatus: \(player.status.description) item: \(item?.status.description ?? "")")
             DispatchQueue.main.async {
                 self.playerIsReady = self.overallPlayerReadiness(player: player.status, item: item?.status)
             }
@@ -518,6 +540,11 @@ extension OpenAccessPlayer{
                 updatePlayback(player: player, item: player.currentItem)
             }
         }
+        else if keyPath == #keyPath(AVQueuePlayer.reasonForWaitingToPlay) {
+            if let reason = change?[.newKey] as? AVQueuePlayer.WaitingReason {
+                ATLog(.debug, "Reason for waiting to play: \(reason)")
+            }
+        }
     }
 
     fileprivate func notifyDelegatesOfPlaybackFor(chapter: ChapterLocation) {
@@ -565,11 +592,17 @@ extension OpenAccessPlayer{
                                        forKeyPath: #keyPath(AVQueuePlayer.currentItem.status),
                                        options: [.old, .new],
                                        context: &openAccessPlayerContext)
+        
+        self.avQueuePlayer.addObserver(self,
+                                       forKeyPath: #keyPath(AVQueuePlayer.reasonForWaitingToPlay),
+                                       options: [.old, .new],
+                                       context: &openAccessPlayerContext)
     }
 
     fileprivate func removePlayerObservers() {
         self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.status))
         self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.rate))
         self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.currentItem.status))
+        self.avQueuePlayer.removeObserver(self, forKeyPath: #keyPath(AVQueuePlayer.reasonForWaitingToPlay))
     }
 }
