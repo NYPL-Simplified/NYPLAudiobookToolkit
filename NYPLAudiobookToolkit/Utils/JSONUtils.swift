@@ -50,7 +50,7 @@ class JSONUtils {
                     outputStr.append(c)
                 }
             }
-            rVal = "\"\(s)\""
+            rVal = "\"\(outputStr)\""
         } else if let n = jsonObj as? Int {
             rVal = String(n)
         } else if let d = jsonObj as? NSNumber {
