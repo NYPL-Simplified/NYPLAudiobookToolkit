@@ -7,7 +7,10 @@ final class OpenAccessAudiobook: Audiobook {
     
     var drmStatus: DrmStatus {
         get {
-            return drmData["status"] as! DrmStatus
+            // Avoids force unwrapping
+            // Should be save since the initializer should always set this value
+            // Access to `drmData` is private and can only be modified by internal code
+            return (drmData["status"] as? DrmStatus) ?? DrmStatus.succeeded
         }
         set(newStatus) {
             drmData["status"] = newStatus

@@ -1,6 +1,16 @@
 import CommonCrypto
 
+fileprivate let jwtHeaderObj = [
+    "alg" : "HS256",
+    "typ" : "JWT"
+]
+
 class FeedbookDRMProcessor {
+    // Processes the Feedbook manifest and performs any immediate DRM operations we can now
+    // Also populates the drmData dictionary with necessary fields for delayed async processing
+    // @param manifest the audiobook manifest file
+    // @param drmData the audiobook's DRM information dictionary holding relevant information for processing
+    // @return true if the DRM processing was successful; false otherwise
     class func processManifest(_ manifest: [String: Any], drmData: inout [String: Any]) -> Bool {
         guard let metadata = manifest["metadata"] as? [String: Any] else {
             ATLog(.info, "[FeedbookDRMProcessor] no metadata in manifest")
@@ -24,7 +34,6 @@ class FeedbookDRMProcessor {
         }
         
         // Perform Feedbooks DRM license status check
-        let licenseCheckUrl: URL?
         if let links = manifest["links"] as? [[String: Any]] {
             var href = ""
             var found = false
@@ -38,26 +47,28 @@ class FeedbookDRMProcessor {
                     href = (link["href"] as? String) ?? ""
                 }
             }
-            licenseCheckUrl = URL(string: href)
+            if let licenseCheckUrl = URL(string: href) {
+                drmData["licenseCheckUrl"] = licenseCheckUrl
+            }
             drmData["status"] = DrmStatus.processing
-        } else {
-            licenseCheckUrl = nil
-        }
-        if licenseCheckUrl != nil {
-            drmData["licenseCheckUrl"] = licenseCheckUrl!
         }
         
         // Perform Feedbooks manifest validation
-        // TODO:
+        // TODO: SIMPLY-2502
         
         return true
     }
     
+    // Performs asynchronous DRM checks that couldn't be performed statically
+    // @param book the audiobook
+    // @param drmData the book's DRM data dictionary holding relevant info
     class func performAsyncDrm(book: OpenAccessAudiobook, drmData: [String: Any]) {
         if let licenseCheckUrl = drmData["licenseCheckUrl"] as? URL {
             weak var weakBook = book
             URLSession.shared.dataTask(with: licenseCheckUrl) { (data, response, error) in
                 // Errors automatically mean success
+                // In practice, network errors should not prevent us from playing a book,
+                // especially since the point is to be able to listen offline
                 if error != nil {
                     weakBook?.drmStatus = .succeeded
                     ATLog(.debug, "feedbooks::performAsyncDrm licenseCheck skip due to error: \(error!)")
@@ -65,14 +76,14 @@ class FeedbookDRMProcessor {
                 }
                 
                 // Explicitly check status value
-                if data != nil {
-                    if let jsonObj = try? JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions()) as? [String: Any],
-                        let statusString = jsonObj?["status"] as? String {
-                        if statusString != "ready" && statusString != "active" {
-                            ATLog(.debug, "feedbooks::performAsyncDrm licenseCheck failed: \((try? JSONUtils.canonicalize(jsonObj: jsonObj) as String) ?? "")")
-                            weakBook?.drmStatus = .failed
-                            return
-                        }
+                if let licenseData = data,
+                    let jsonObj = try? JSONSerialization.jsonObject(with: licenseData, options: JSONSerialization.ReadingOptions()) as? [String: Any],
+                    let statusString = jsonObj?["status"] as? String {
+                    
+                    if statusString != "ready" && statusString != "active" {
+                        ATLog(.debug, "feedbooks::performAsyncDrm licenseCheck failed: \((try? JSONUtils.canonicalize(jsonObj: jsonObj) as String) ?? "")")
+                        weakBook?.drmStatus = .failed
+                        return
                     }
                 }
 
@@ -113,24 +124,22 @@ class FeedbookDRMProcessor {
         return ""
     }
     
-    class func getJWTToken(profile: String, resourceUri: String) -> String {
-        let headerObj = [
-            "alg" : "HS256",
-            "typ" : "JWT"
-        ]
-        guard let headerJSON = try? JSONUtils.canonicalize(jsonObj: headerObj) else {
-            return ""
-        }
+    class func getJWTToken(profile: String, resourceUri: String) -> String? {
         let claimsObj = [
             "iss" : "https://librarysimplified.org/products/SimplyE",
             "sub" : resourceUri,
             "jti" : UUID.init().uuidString
         ]
-        guard let claimsJSON = try? JSONUtils.canonicalize(jsonObj: claimsObj) else {
-            return ""
+        
+        // JWT doesn't explicitly require canonicalization but it makes testing/confirmation easier
+        guard let headerJSON = try? JSONUtils.canonicalize(jsonObj: jwtHeaderObj),
+            let claimsJSON = try? JSONUtils.canonicalize(jsonObj: claimsObj),
+            let header = headerJSON.data(using: .utf8)?.urlSafeBase64(padding: false),
+            let claims = claimsJSON.data(using: .utf8)?.urlSafeBase64(padding: false) else {
+                
+            return nil
         }
-        let header = headerJSON.data(using: .utf8)!.urlSafeBase64(padding: false)
-        let claims = claimsJSON.data(using: .utf8)!.urlSafeBase64(padding: false)
+        
         let preSigned = "\(header).\(claims)"
         
         let signed = preSigned.hmac(algorithm: .sha256, key: Data.init(base64Encoded: getFeedbookSecret(profile: profile)) ?? Data()).urlSafeBase64(padding: false)

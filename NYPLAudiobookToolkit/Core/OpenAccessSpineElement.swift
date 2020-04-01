@@ -32,6 +32,8 @@ final class OpenAccessSpineElement: SpineElement {
     let duration: TimeInterval
     let audiobookID: String
     let feedbooksProfile: String?
+    // feedbooksProfile: The profile identifier that signifies
+    // which secret to use for the JWT for Feedbooks DRM
 
     public init?(JSON: Any?, index: UInt, audiobookID: String) {
         self.key = "\(audiobookID)-\(index)"

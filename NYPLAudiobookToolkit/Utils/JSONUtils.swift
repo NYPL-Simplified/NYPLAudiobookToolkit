@@ -2,10 +2,31 @@ class JSONUtils {
     enum JSONCanonicalizatoinError: Error {
         case canonicalizationError(String)
     }
+    
     static let hexArray = [
         "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
         "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "1A", "1B", "1C", "1D", "1E", "1F"
     ]
+    
+    /*
+     * JSON Canonicalization for LCP is as follows:
+     *
+     * 1) All JSON object properties (i.e. key/value pairs) in the License Document must be lexicographically
+     * sorted by Unicode Code Point. Note that this rule is recursive, so that members are sorted at all
+     * levels of object nesting.
+     *
+     * 2) Within arrays, the order of elements must not be altered.
+     *
+     * 3) Numbers must not include insignificant leading or trailing zeroes.
+     * Numbers that include a fraction part (non-integers) must be expressed as a number, fraction,
+     * and exponent (normalized scientific notation) using an upper-case “E”.
+     *
+     * 4) Strings must use escaping only for those characters for which it is required by [JSON]:
+     * backslash (\), double-quotation mark (“), and control characters (U+0000 through U+001F).
+     * When escaping control characters, the hexadecimal digits must be upper case.
+     *
+     * 5) Non-significant whitespace (as defined in [JSON]) must be removed. Whitespace found within strings must be kept.
+     */
     class func canonicalize(jsonObj: Any?) throws -> String {
         return try canonicalizeInternal(jsonObj: jsonObj)
     }

@@ -1,7 +1,7 @@
 import AVFoundation
 import Foundation
 
-let allowableRootAtomTypes: [String] = [
+fileprivate let allowableRootAtomTypes: [String] = [
     "ftyp",
     "moov",
     "mdat",
@@ -14,11 +14,15 @@ let allowableRootAtomTypes: [String] = [
     "wide",
 ]
 
-let skippableAtomTypes: [String] = [
+fileprivate let skippableAtomTypes: [String] = [
     "free",
     "skip",
     "wide",
 ]
+
+fileprivate let qtAtomSizeTypeSkipOffset = 8
+fileprivate let stcoEntryCountOffset = 12
+fileprivate let stcoTableOffset = 16
 
 struct QTAtomMetadata {
     var offset: UInt64
@@ -31,6 +35,11 @@ struct QTAtomMetadata {
 }
 
 class MediaProcessor {
+    
+    // Checks if an audio file requires optimization
+    // "Optimization" here means that for a given quicktime container,
+    // the "moov" atom is before the "mdat" atom
+    // AVPlayer refuses to play media files that are unoptimized
     static func fileNeedsOptimization(url: URL) -> Bool {
         let atoms = getAtomsFor(url: url)
         for atom in atoms {
@@ -167,7 +176,7 @@ class MediaProcessor {
     }
     
     private static func getAtoms(data: Data, offset: UInt64) -> [QTAtomMetadata] {
-        var localOffset: UInt64 = offset + 8
+        var localOffset: UInt64 = offset + UInt64(qtAtomSizeTypeSkipOffset)
         var atoms: [QTAtomMetadata] = []
         
         while localOffset < data.count {
@@ -180,9 +189,11 @@ class MediaProcessor {
                 break
             }
             
+            // Grab atom type string, which is offset from the atom start by 4 bytes and is 4 bytes in length
             let type = String(data: data.subdata(in: Range(Int(localOffset+4)...Int(localOffset+7))), encoding: .ascii) ?? ""
             if size == 1 {
                 do {
+                    // Extended size is 8 bytes after atom start
                     size = try data.bigEndianUInt64At(offset: Int(localOffset+8))
                 } catch {
                     print("Could not read atom ext size")
@@ -196,6 +207,10 @@ class MediaProcessor {
         return atoms
     }
     
+    // Processes the "moov" atom and drills down through the hierarchy to find any "stco" or "co64" atoms
+    // and patches the data for those leaf atoms
+    // @param data "moov" atom data
+    // @param moov "moov" atom metadata
     private static func patchMoovData(data: inout Data, moov: QTAtomMetadata) -> Bool {
         let moovChildren = getAtoms(data: data, offset: 0)
         guard let trakAtom = moovChildren.first(where: { $0.type == "trak" }) else {
@@ -235,11 +250,38 @@ class MediaProcessor {
         return true
     }
     
+    /*
+     * As per Quicktime Documentation:
+     *
+     * The chunk offset atom contains the following data elements.
+     *
+     * Size
+     * A 32-bit integer that specifies the number of bytes in this chunk offset atom.
+     *
+     * Type
+     * A 32-bit integer that identifies the atom type; this field must be set to 'stco'.
+     *
+     * Version
+     * A 1-byte specification of the version of this chunk offset atom.
+     *
+     * Flags
+     * A 3-byte space for chunk offset flags. Set this field to 0.
+     *
+     * Number of entries
+     * A 32-bit integer containing the count of entries in the chunk offset table.
+     *
+     * Chunk offset table
+     * A chunk offset table consisting of an array of offset values. There is one table entry
+     * for each chunk in the media. The offset contains the byte offset from the beginning of
+     * the data stream to the chunk. The table is indexed by chunk number—the first table entry
+     * corresponds to the first chunk, the second table entry is for the second chunk, and so on.
+     */
     private static func patchChunkOffsetAtom(data: inout Data, atom: QTAtomMetadata, moovSize: Int) throws {
-        let entryCount = try data.bigEndianUInt32At(offset: Int(atom.offset+12))
-        let tableOffset = Int(atom.offset + 16)
+        let entryCount = try data.bigEndianUInt32At(offset: Int(atom.offset) + stcoEntryCountOffset)
+        let tableOffset = Int(atom.offset) + stcoTableOffset
         let is64 = atom.type == "co64"
         if is64 {
+            // Every 8 bytes, read UInt64, add offset, write back big-endian bytes
             for i in 0...(Int(entryCount) - 1) {
                 let entryOffset = tableOffset + (i * 8)
                 var entryVal = try data.bigEndianUInt64At(offset: entryOffset)
@@ -248,6 +290,7 @@ class MediaProcessor {
                 data.replaceSubrange(Range(entryOffset...entryOffset+7), with: &entryVal, count: 8)
             }
         } else {
+            // Every 4 bytes, read UInt32, add offset, write back big-endian bytes
             for i in 0...(Int(entryCount) - 1) {
                 let entryOffset = tableOffset + (i * 4)
                 var entryVal = try data.bigEndianUInt32At(offset: entryOffset)

@@ -158,8 +158,8 @@ final class OpenAccessDownloadTask: DownloadTask {
         var request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
         
         // Feedbooks DRM
-        if self.feedbooksProfile != nil {
-            request.setValue("Bearer \(FeedbookDRMProcessor.getJWTToken(profile: self.feedbooksProfile!, resourceUri: urlString))", forHTTPHeaderField: "Authorization")
+        if let profile = self.feedbooksProfile {
+            request.setValue("Bearer \(FeedbookDRMProcessor.getJWTToken(profile: profile, resourceUri: urlString) ?? "")", forHTTPHeaderField: "Authorization")
         }
         
         let task = session.downloadTask(with: request)
