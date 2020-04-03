@@ -15,11 +15,16 @@ let OpenAccessPlayerErrorDescriptions = [
     3 : """
     The internet connection was lost during the download.
      Wait until you are back online, leave the book and try again.
+    """,
+    4 : """
+    DRM Permissions for this Audiobook have expired. Please leave the book, and try again.
+    If the problem persists, go to Settings and sign out.
     """
 ]
 
 /// Error Code : Alert Title
 let OpenAccessPlayerErrorTitle = [
     1 : "Please Wait",
-    3 : "Connection Lost"
+    3 : "Connection Lost",
+    4 : "DRM Protection"
 ]

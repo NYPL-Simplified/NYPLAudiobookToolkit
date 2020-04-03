@@ -1,5 +1,6 @@
 enum OpenAccessSpineElementMediaType: String {
     case audioMPEG = "audio/mpeg"
+    case audioMP4 = "audio/mp4"
     case rbDigital = "vnd.librarysimplified/rbdigital-access-document+json"
 }
 
@@ -25,10 +26,14 @@ final class OpenAccessSpineElement: SpineElement {
     let chapterNumber: UInt
     let title: String
     let url: URL
+    let urlString: String // Retain original URI for DRM purposes
     let alternateUrls: [(OpenAccessSpineElementMediaType, URL)]?
     let mediaType: OpenAccessSpineElementMediaType
     let duration: TimeInterval
     let audiobookID: String
+    let feedbooksProfile: String?
+    // feedbooksProfile: The profile identifier that signifies
+    // which secret to use for the JWT for Feedbooks DRM
 
     public init?(JSON: Any?, index: UInt, audiobookID: String) {
         self.key = "\(audiobookID)-\(index)"
@@ -45,6 +50,7 @@ final class OpenAccessSpineElement: SpineElement {
         }
         self.title = title
         self.url = url
+        self.urlString = urlString
         self.duration = duration
 
         guard let mediaTypeString = payload["type"] as? String,
@@ -56,6 +62,16 @@ final class OpenAccessSpineElement: SpineElement {
 
         let alternatesJson = payload["alternates"] as? [[String:String]]
         self.alternateUrls = OpenAccessSpineElement.parseAlternateUrls(alternatesJson)
+        
+        // Feedbooks DRM
+        var profileVal: String? = nil
+        if let props = payload["properties"] as? [String: Any],
+                let enc = props["encrypted"] as? [String: Any] {
+            if ((enc["scheme"] as? String) ?? "") == "http://www.feedbooks.com/audiobooks/access-restriction" {
+                profileVal = enc["profile"] as? String
+            }
+        }
+        self.feedbooksProfile = profileVal
     }
 
     private class func parseAlternateUrls(_ json: [[String:String]]?) -> [(OpenAccessSpineElementMediaType, URL)]? {

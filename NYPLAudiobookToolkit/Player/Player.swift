@@ -43,6 +43,10 @@ import Foundation
 /// FAEPlaybackEngine, or another engine that handles DRM content.
 @objc public protocol Player {
     var isPlaying: Bool { get }
+    
+    // When set, should lock down playback
+    var isDrmOk: Bool { get set }
+    
     var currentChapterLocation: ChapterLocation? { get }
 
     /// The rate at which the audio will play, when playing.
