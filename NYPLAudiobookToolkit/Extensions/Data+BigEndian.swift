@@ -11,7 +11,7 @@ extension Data {
     }
     
     func bigEndianUInt64() throws -> UInt64 {
-        if self.count != 4 {
+        if self.count != 8 {
             throw NSError(domain: "InvalidDataException", code: 0, userInfo: ["message": "[Data::bigEndianUInt64] Data length was \(self.count). Expected 8 bytes."])
         }
         return UInt64(bigEndian: self.withUnsafeBytes({ (ptr) -> UInt64 in
