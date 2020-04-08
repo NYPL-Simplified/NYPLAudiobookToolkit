@@ -55,6 +55,7 @@
 		8C6CD8AD240DB3C000E2DFB0 /* FeedbookDRMProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C6CD8AC240DB3C000E2DFB0 /* FeedbookDRMProcessor.swift */; };
 		8C882C952409B04F0000CA59 /* DateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C882C942409B04F0000CA59 /* DateUtils.swift */; };
 		8CB60C1524071CBF006EF568 /* FeedbookAudiobookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CB60C1424071CBF006EF568 /* FeedbookAudiobookTest.swift */; };
+		8CD8A20F243E7A0D009DA4CC /* Data+BigEndianTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CD8A20E243E7A0D009DA4CC /* Data+BigEndianTest.swift */; };
 		8CF57BDA243277180053C31E /* MediaProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF57BD9243277180053C31E /* MediaProcessor.swift */; };
 		8CF57BDC2432788C0053C31E /* Data+BigEndian.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF57BDB2432788C0053C31E /* Data+BigEndian.swift */; };
 		A92FB10421CDF94A004740F4 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92FB10321CDF94A004740F4 /* DownloadProgressView.swift */; };
@@ -148,6 +149,7 @@
 		8C7956AC241175A60063D84F /* jwt_shared_secret.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = jwt_shared_secret.txt; sourceTree = "<group>"; };
 		8C882C942409B04F0000CA59 /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; sourceTree = "<group>"; };
 		8CB60C1424071CBF006EF568 /* FeedbookAudiobookTest.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FeedbookAudiobookTest.swift; sourceTree = "<group>"; tabWidth = 2; };
+		8CD8A20E243E7A0D009DA4CC /* Data+BigEndianTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+BigEndianTest.swift"; sourceTree = "<group>"; };
 		8CF57BD9243277180053C31E /* MediaProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaProcessor.swift; sourceTree = "<group>"; };
 		8CF57BDB2432788C0053C31E /* Data+BigEndian.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+BigEndian.swift"; sourceTree = "<group>"; };
 		A92FB10321CDF94A004740F4 /* DownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressView.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				7B54419C200EA7C20047B6C6 /* Info.plist */,
 				7B78545A204DEE8500F6589B /* AudiobookNetworkServiceTest.swift */,
 				7B6C1BD320405C4D00EB791E /* CursorTests.swift */,
+				8CD8A20E243E7A0D009DA4CC /* Data+BigEndianTest.swift */,
 				7B78545C204DEE9900F6589B /* DownloadTaskMock.swift */,
 				8CB60C1424071CBF006EF568 /* FeedbookAudiobookTest.swift */,
 				8C3CDB032422AB060020FC0B /* JSONUtilsTest.swift */,
@@ -578,6 +581,7 @@
 				8CB60C1524071CBF006EF568 /* FeedbookAudiobookTest.swift in Sources */,
 				7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */,
 				8C3CDB042422AB060020FC0B /* JSONUtilsTest.swift in Sources */,
+				8CD8A20F243E7A0D009DA4CC /* Data+BigEndianTest.swift in Sources */,
 				7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */,
 				7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */,
 			);
