@@ -113,7 +113,6 @@ class FeedbookDRMProcessor {
             } else if let sItem = item as? String {
                 return sItem
             } else if let dItem = item as? Data {
-                ATLog(.warn, "Keychain item was data instead of string for profile: \(profile)")
                 return String.init(data: dItem, encoding: .utf8) ?? ""
             } else {
                 ATLog(.error, "Keychain item unknown error for profile: \(profile)")
