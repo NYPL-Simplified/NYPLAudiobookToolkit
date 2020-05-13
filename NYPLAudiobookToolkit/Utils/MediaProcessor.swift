@@ -66,11 +66,7 @@ class MediaProcessor {
         var finalSuccess = true
         do {
             let fh = try FileHandle(forReadingFrom: input)
-            if #available(iOS 13.0, *) {
-                try fh.seek(toOffset: moov.offset)
-            } else {
-                fh.seek(toFileOffset: moov.offset)
-            }
+            try seek(filehandle: fh, offset: moov.offset)
             
             var moovData = fh.readData(ofLength: Int(moov.size))
             let success = patchMoovData(data: &moovData, moov: moov)
@@ -84,11 +80,7 @@ class MediaProcessor {
                         if atom.type == "moov" {
                             outFh.write(moovData)
                         } else {
-                            if #available(iOS 13.0, *) {
-                                try fh.seek(toOffset: atom.offset)
-                            } else {
-                                fh.seek(toFileOffset: atom.offset)
-                            }
+                            try seek(filehandle: fh, offset: atom.offset)
                             outFh.write(fh.readData(ofLength: Int(atom.size)))
                         }
                     }
@@ -118,15 +110,12 @@ class MediaProcessor {
         
         while true {
             let offset: UInt64
-            if #available(iOS 13.0, *) {
-                guard let guardedOffset = try? fh.offset() else {
-                    ATLog(.error, "Could not get file offset for \(url.absoluteString)")
-                    atoms = []
-                    break
-                }
-                offset = guardedOffset
-            } else {
-                offset = fh.offsetInFile
+            do {
+                offset = try MediaProcessor.offset(filehandle: fh)
+            } catch {
+                ATLog(.error, "Could not get file offset for \(url.absoluteString): \(error.localizedDescription)")
+                atoms = []
+                break
             }
             let sizeData = fh.readData(ofLength: 4)
             
@@ -159,16 +148,12 @@ class MediaProcessor {
                 }
             }
             atoms.append(QTAtomMetadata(offset: offset, size: size, type: type))
-            if #available(iOS 13.0, *) {
-                do {
-                    try fh.seek(toOffset: offset + size)
-                } catch {
-                    ATLog(.error, "Could not seek for \(url.absoluteString)")
-                    atoms = []
-                    break
-                }
-            } else {
-                fh.seek(toFileOffset: offset + size)
+            do {
+                try seek(filehandle: fh, offset: offset + size)
+            } catch {
+                ATLog(.error, "Could not seek for \(url.absoluteString): \(error.localizedDescription)")
+                atoms = []
+                break
             }
         }
         fh.closeFile()
@@ -299,5 +284,25 @@ class MediaProcessor {
                 data.replaceSubrange(Range(entryOffset...entryOffset+3), with: &entryVal, count: 4)
             }
         }
+    }
+    
+    private static func seek(filehandle: FileHandle, offset: UInt64) throws {
+        filehandle.seek(toFileOffset: offset)
+        // This is for when seek becomes stable. Currently these file operations seem to be unstable even though iOS13 deprecated them
+        // if #available(iOS 13.0, *) {
+        //     try fh.seek(toOffset: moov.offset)
+        // } else {
+        //     fh.seek(toFileOffset: moov.offset)
+        // }
+    }
+    
+    private static func offset(filehandle: FileHandle) throws -> UInt64 {
+        return filehandle.offsetInFile
+        // This is for when offset becomes stable. Currently these file operations seem to be unstable even though iOS13 deprecated them
+        // if #available(iOS 13.0, *) {
+        //    return try fh.offset()
+        // } else {
+        //    return fh.offsetInFile
+        // }
     }
 }
