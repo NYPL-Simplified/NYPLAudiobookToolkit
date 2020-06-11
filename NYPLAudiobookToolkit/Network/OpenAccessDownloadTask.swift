@@ -1,17 +1,17 @@
 import AVFoundation
 
-let TaskCompleteNotification = NSNotification.Name(rawValue: "OpenAccessDownloadTaskCompleteNotification")
+let OpenAccessTaskCompleteNotification = NSNotification.Name(rawValue: "OpenAccessDownloadTaskCompleteNotification")
+
+enum AssetResult {
+    /// The file exists at the given URL.
+    case saved(URL)
+    /// The file is missing at the given URL.
+    case missing(URL)
+    /// Could not create a valid URL to check.
+    case unknown
+}
 
 final class OpenAccessDownloadTask: DownloadTask {
-
-    public enum AssetResult {
-        /// The file exists at the given URL.
-        case saved(URL)
-        /// The file is missing at the given URL.
-        case missing(URL)
-        /// Could not create a valid URL to check.
-        case unknown
-    }
 
     private let DownloadTaskTimeoutValue = 60.0
 
@@ -218,7 +218,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                     }
                     self.downloadTask.downloadProgress = 1.0
                     self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
-                    NotificationCenter.default.post(name: TaskCompleteNotification, object: self.downloadTask)
+                    NotificationCenter.default.post(name: OpenAccessTaskCompleteNotification, object: self.downloadTask)
                 } else {
                     self.downloadTask.downloadProgress = 0.0
                     self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)

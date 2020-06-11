@@ -1,16 +1,8 @@
 import AVFoundation
 
-let ODTaskCompleteNotification = NSNotification.Name(rawValue: "OverdriveDownloadTaskCompleteNotification")
+let OverdriveTaskCompleteNotification = NSNotification.Name(rawValue: "OverdriveDownloadTaskCompleteNotification")
 
 final class OverdriveDownloadTask: DownloadTask {
-    public enum AssetResult {
-        /// The file exists at the given URL.
-        case saved(URL)
-        /// The file is missing at the given URL.
-        case missing(URL)
-        /// Could not create a valid URL to check.
-        case unknown
-    }
 
     private let DownloadTaskTimeoutValue = 60.0
 
@@ -160,7 +152,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
                     }
                     self.downloadTask.downloadProgress = 1.0
                     self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
-                    NotificationCenter.default.post(name: ODTaskCompleteNotification, object: self.downloadTask)
+                    NotificationCenter.default.post(name: OverdriveTaskCompleteNotification, object: self.downloadTask)
                 } else {
                     self.downloadTask.downloadProgress = 0.0
                     self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
