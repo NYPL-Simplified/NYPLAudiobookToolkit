@@ -128,6 +128,9 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
 
     public func downloadTaskFailed(_ downloadTask: DownloadTask, withError error: NSError?) {
+        if let _ = downloadTask as? OverdriveDownloadTask {
+            NotificationCenter.default.post(name: OverdriveTaskFailedNotification, object: nil)
+        }
         self.cursor = nil
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in

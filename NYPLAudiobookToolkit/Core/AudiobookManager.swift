@@ -65,7 +65,7 @@ public var sharedLogHandler: LogHandler?
     }
     public var playbackCompletionHandler: (() -> ())?
 
-    public let networkService: AudiobookNetworkService
+    public var networkService: AudiobookNetworkService
     public let metadata: AudiobookMetadata
     public let audiobook: Audiobook
 
@@ -172,6 +172,10 @@ public var sharedLogHandler: LogHandler?
 
             MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         }
+    }
+    
+    public func updateAudiobook(with spine: [SpineElement]) {
+        self.networkService = DefaultAudiobookNetworkService(spine: spine)
     }
 }
 

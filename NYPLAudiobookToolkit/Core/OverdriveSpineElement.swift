@@ -3,6 +3,7 @@ enum OverdriveSpineElementMediaType: String {
 }
 
 final class OverdriveSpineElement: SpineElement {
+    
     lazy var downloadTask: DownloadTask = {
         return OverdriveDownloadTask(spineElement: self)
     }()
