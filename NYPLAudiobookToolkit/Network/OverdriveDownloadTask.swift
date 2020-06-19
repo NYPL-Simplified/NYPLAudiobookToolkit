@@ -163,7 +163,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
             self.downloadTask.downloadProgress = 0.0
             var error:NSError? = nil
             if (httpResponse.statusCode == 410) {
-                error = NSError(domain: OverdrivePlayerDomain, code: 4, userInfo: nil)
+                error = NSError(domain: OverdrivePlayerErrorDomain, code: 4, userInfo: nil)
             }
             self.delegate?.downloadTaskFailed(self.downloadTask, withError: error)
         }
@@ -184,7 +184,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
             case NSURLErrorNotConnectedToInternet,
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
-                let networkLossError = NSError(domain: OverdrivePlayerDomain, code: 3, userInfo: nil)
+                let networkLossError = NSError(domain: OverdrivePlayerErrorDomain, code: 3, userInfo: nil)
                 self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
                 return
             default:

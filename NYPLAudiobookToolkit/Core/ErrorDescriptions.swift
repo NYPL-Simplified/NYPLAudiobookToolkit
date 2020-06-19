@@ -1,5 +1,5 @@
-let OpenAccessPlayerDomain = "org.nypl.labs.NYPLAudiobookToolkit.OpenAccessPlayer"
-let OverdrivePlayerDomain = "org.nypl.labs.NYPLAudiobookToolkit.OverdrivePlayer"
+let OpenAccessPlayerErrorDomain = "org.nypl.labs.NYPLAudiobookToolkit.OpenAccessPlayer"
+let OverdrivePlayerErrorDomain = "org.nypl.labs.NYPLAudiobookToolkit.OverdrivePlayer"
 
 /// Error Code : Description
 let OpenAccessPlayerErrorDescriptions = [

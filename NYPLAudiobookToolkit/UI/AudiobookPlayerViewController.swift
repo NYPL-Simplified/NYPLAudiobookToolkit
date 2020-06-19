@@ -533,14 +533,14 @@ let SkipTimeInterval: Double = 15
         var errorTitle = genericTitle
         var errorDescription = "Please try again later."
         if let error = error {
-            if error.domain == OpenAccessPlayerDomain {
+            if error.domain == OpenAccessPlayerErrorDomain {
                 if let descriptionString = OpenAccessPlayerErrorDescriptions[error.code] {
                     errorDescription = descriptionString
                 }
                 if let oaTitle = OpenAccessPlayerErrorTitle[error.code] {
                     errorTitle = oaTitle
                 }
-            } else if error.domain == OverdrivePlayerDomain {
+            } else if error.domain == OverdrivePlayerErrorDomain {
                 if let descriptionString = OverdrivePlayerErrorDescriptions[error.code] {
                     errorDescription = descriptionString
                 }
@@ -679,7 +679,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
         presentAlertAndLog(error: error)
         self.audiobookProgressView.stopShowingProgress()
         if let error = error,
-          error.domain == OverdrivePlayerDomain && error.code == 4 {
+          error.domain == OverdrivePlayerErrorDomain && error.code == 4 {
             self.audiobookManager.refreshDelegate?.audiobookManagerDidRequestRefresh()
         }
     }

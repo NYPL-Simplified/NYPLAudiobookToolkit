@@ -2,7 +2,7 @@ import AVFoundation
 
 class OverdrivePlayer: OpenAccessPlayer {
     override var errorDomain: String {
-        return OverdrivePlayerDomain
+        return OverdrivePlayerErrorDomain
     }
     
     override var taskCompleteNotification: Notification.Name {

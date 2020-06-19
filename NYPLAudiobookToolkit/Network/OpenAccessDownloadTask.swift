@@ -246,7 +246,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
             case NSURLErrorNotConnectedToInternet,
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
-                let networkLossError = NSError(domain: OpenAccessPlayerDomain, code: 3, userInfo: nil)
+                let networkLossError = NSError(domain: OpenAccessPlayerErrorDomain, code: 3, userInfo: nil)
                 self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
                 return
             default:

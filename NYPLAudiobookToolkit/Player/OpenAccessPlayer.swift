@@ -3,7 +3,7 @@ import AVFoundation
 class OpenAccessPlayer: NSObject, Player {
 
     var errorDomain: String {
-        return OpenAccessPlayerDomain
+        return OpenAccessPlayerErrorDomain
     }
     
     var taskCompleteNotification: Notification.Name {
