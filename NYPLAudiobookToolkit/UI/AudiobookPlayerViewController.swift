@@ -72,7 +72,7 @@ let SkipTimeInterval: Double = 15
 
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
-        self.audiobookManager.networkService.fetch()     
+        self.audiobookManager.networkService.fetch()
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -540,6 +540,13 @@ let SkipTimeInterval: Double = 15
                 if let oaTitle = OpenAccessPlayerErrorTitle[error.code] {
                     errorTitle = oaTitle
                 }
+            } else if error.domain == OverdrivePlayerDomain {
+                if let descriptionString = OverdrivePlayerErrorDescriptions[error.code] {
+                    errorDescription = descriptionString
+                }
+                if let oaTitle = OverdrivePlayerErrorTitle[error.code] {
+                    errorTitle = oaTitle
+                }
             } else {
                 errorDescription = error.localizedDescription
             }
@@ -671,6 +678,10 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement) {
         presentAlertAndLog(error: error)
         self.audiobookProgressView.stopShowingProgress()
+        if let error = error,
+          error.domain == OverdrivePlayerDomain && error.code == 4 {
+            self.audiobookManager.refreshDelegate?.audiobookManagerDidRequestRefresh()
+        }
     }
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) {
         if (progress < 1.0) && (self.audiobookProgressView.isHidden) {

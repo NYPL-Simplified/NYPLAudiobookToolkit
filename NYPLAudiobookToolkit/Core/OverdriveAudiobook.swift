@@ -1,9 +1,3 @@
-public let OverdriveTaskFailedNotification = NSNotification.Name(rawValue: "OverdriveDownloadTaskFailedNotification")
-
-@objc public protocol OverdriveAudiobookDelegate {
-    @objc func audiobookDownloadFailed()
-}
-
 @objcMembers public final class OverdriveAudiobook: NSObject, Audiobook {
     
     public let uniqueIdentifier: String
@@ -11,8 +5,6 @@ public let OverdriveTaskFailedNotification = NSNotification.Name(rawValue: "Over
     public var spine: [SpineElement]
     
     public let player: Player
-    
-    public var delegate: OverdriveAudiobookDelegate?
     
     public var drmStatus: DrmStatus {
         get {
@@ -58,14 +50,6 @@ public let OverdriveTaskFailedNotification = NSNotification.Name(rawValue: "Over
         }
         
         self.player = OverdrivePlayer(cursor: cursor, audiobookID: uniqueIdentifier, drmOk: true)
-        
-        super.init()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleDownloadTaskFailed), name: OverdriveTaskFailedNotification, object: nil)
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
     }
     
     public func checkDrmAsync() {
@@ -97,9 +81,5 @@ public let OverdriveTaskFailedNotification = NSNotification.Name(rawValue: "Over
         }
         
         self.spine = mappedSpine
-    }
-    
-    @objc public func handleDownloadTaskFailed() {
-        self.delegate?.audiobookDownloadFailed()
     }
 }

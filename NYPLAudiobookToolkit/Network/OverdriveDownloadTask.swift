@@ -159,8 +159,13 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
                 }
             }
         } else {
+            ATLog(.error, "Download Task failed with server response: \n\(httpResponse.description)")
             self.downloadTask.downloadProgress = 0.0
-            self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+            var error:NSError? = nil
+            if (httpResponse.statusCode == 410) {
+                error = NSError(domain: OverdrivePlayerDomain, code: 4, userInfo: nil)
+            }
+            self.delegate?.downloadTaskFailed(self.downloadTask, withError: error)
         }
     }
 
