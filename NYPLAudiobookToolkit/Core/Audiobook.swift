@@ -51,7 +51,6 @@ import UIKit
             }
         } else if let type = JSON["formatType"] as? String,
             type == "audiobook-overdrive" {
-                print("Initializing Overdrive Audiobook")
                 audiobook = OverdriveAudiobook(JSON: JSON)
         }  else {
             audiobook = OpenAccessAudiobook(JSON: JSON)
