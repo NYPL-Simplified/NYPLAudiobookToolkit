@@ -216,18 +216,17 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
     }
     
     func verifyDownloadAndMove(from: URL, to: URL, completionHandler: @escaping (Bool) -> Void) {
-//        if MediaProcessor.fileNeedsOptimization(url: from) {
-//            ATLog(.debug, "Media file needs optimization: \(from.absoluteString)")
-//            MediaProcessor.optimizeQTFile(input: from, output: to, completionHandler: completionHandler)
-//        } else {
-//
-//        }
-        do {
-            try FileManager.default.moveItem(at: from, to: to)
-            completionHandler(true)
-        } catch {
-            ATLog(.error, "FileManager removeItem error:\n\(error)")
-            completionHandler(false)
+        if MediaProcessor.fileNeedsOptimization(url: from) {
+            ATLog(.debug, "Media file needs optimization: \(from.absoluteString)")
+            MediaProcessor.optimizeQTFile(input: from, output: to, completionHandler: completionHandler)
+        } else {
+            do {
+                try FileManager.default.moveItem(at: from, to: to)
+                completionHandler(true)
+            } catch {
+                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                completionHandler(false)
+            }
         }
     }
 }
