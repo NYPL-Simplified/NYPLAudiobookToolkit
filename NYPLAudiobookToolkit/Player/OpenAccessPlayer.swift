@@ -18,7 +18,7 @@ class OpenAccessPlayer: NSObject, Player {
         didSet(oldValue) {
             if !oldValue {
                 pause()
-                notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, NSError(domain: errorDomain, code: 4, userInfo: nil))
+                notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, NSError(domain: errorDomain, code: OpenAccessPlayerError.drmExpired.rawValue, userInfo: nil))
                 unload()
             }
         }
@@ -74,7 +74,7 @@ class OpenAccessPlayer: NSObject, Player {
         // Check DRM
         if !isDrmOk {
             ATLog(.warn, "DRM is flagged as failed.")
-            let error = NSError(domain: errorDomain, code: 4, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.drmExpired.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             return
         }
@@ -106,7 +106,7 @@ class OpenAccessPlayer: NSObject, Player {
             }
         case .failed:
             ATLog(.error, "Ready status is \"failed\".")
-            let error = NSError(domain: errorDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             break
         }
@@ -163,7 +163,7 @@ class OpenAccessPlayer: NSObject, Player {
         let newPlayhead = move(cursor: self.cursor, to: newLocation)
 
         guard let newItemDownloadStatus = assetFileStatus(newPlayhead.cursor.currentElement.downloadTask) else {
-            let error = NSError(domain: errorDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             notifyDelegatesOfPlaybackFailureFor(chapter: newPlayhead.location, error)
             return
         }
@@ -184,17 +184,17 @@ class OpenAccessPlayer: NSObject, Player {
                     self.play()
                 } else {
                     ATLog(.error, "Failed to create a new queue for the player. Keeping playback at the current player item.")
-                    let error = NSError(domain: errorDomain, code: 0, userInfo: nil)
+                    let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
                     self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
                 }
             }
         case .missing(_):
             // TODO: Could eventually handle streaming from here.
-            let error = NSError(domain: errorDomain, code: 1, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.downloadNotFinished.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
             return
         case .unknown:
-            let error = NSError(domain: errorDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
             return
         }
@@ -272,7 +272,7 @@ class OpenAccessPlayer: NSObject, Player {
                             self.play()
                         } else {
                             ATLog(.error, "User attempted to play when the player wasn't ready.")
-                            let error = NSError(domain: errorDomain, code: 2, userInfo: nil)
+                            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.playerNotReady.rawValue, userInfo: nil)
                             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
                         }
                     }
@@ -422,11 +422,11 @@ class OpenAccessPlayer: NSObject, Player {
             case .missing(_):
                 self.rebuildOnFinishedDownload(task: self.cursor.currentElement.downloadTask)
             case .unknown:
-                let error = NSError(domain: errorDomain, code: 2, userInfo: nil)
+                let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.playerNotReady.rawValue, userInfo: nil)
                 self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             }
         } else {
-            let error = NSError(domain: errorDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
         }
     }
@@ -438,7 +438,7 @@ class OpenAccessPlayer: NSObject, Player {
                 self.play()
             } else {
                 ATLog(.error, "Ready status is \"failed\".")
-                let error = NSError(domain: errorDomain, code: 0, userInfo: nil)
+                let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
                 self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             }
         }

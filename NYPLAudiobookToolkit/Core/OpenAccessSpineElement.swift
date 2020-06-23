@@ -35,7 +35,7 @@ final class OpenAccessSpineElement: SpineElement {
     // feedbooksProfile: The profile identifier that signifies
     // which secret to use for the JWT for Feedbooks DRM
 
-    public init?(JSON: Any?, index: UInt, audiobookID: String) {
+    init?(JSON: Any?, index: UInt, audiobookID: String) {
         self.key = "\(audiobookID)-\(index)"
         self.chapterNumber = index
         self.audiobookID = audiobookID

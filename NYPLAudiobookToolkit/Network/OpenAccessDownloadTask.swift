@@ -13,7 +13,9 @@ enum AssetResult {
 
 final class OpenAccessDownloadTask: DownloadTask {
 
-    private let DownloadTaskTimeoutValue = 60.0
+    private static let DownloadTaskTimeoutValue = 60.0
+    
+    private var urlSession: URLSession?
 
     weak var delegate: DownloadTaskDelegate?
 
@@ -31,7 +33,7 @@ final class OpenAccessDownloadTask: DownloadTask {
     let alternateLinks: [(OpenAccessSpineElementMediaType, URL)]?
     let feedbooksProfile: String?
 
-    public init(spineElement: OpenAccessSpineElement) {
+    init(spineElement: OpenAccessSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
         self.urlString = spineElement.urlString
@@ -78,7 +80,7 @@ final class OpenAccessDownloadTask: DownloadTask {
         }
     }
 
-    public func assetFileStatus() -> AssetResult {
+    func assetFileStatus() -> AssetResult {
         guard let localAssetURL = localDirectory() else {
             return AssetResult.unknown
         }
@@ -152,17 +154,21 @@ final class OpenAccessDownloadTask: DownloadTask {
         let delegate = OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self,
                                                                 delegate: self.delegate,
                                                                 finalDirectory: finalURL)
-        let session = URLSession(configuration: config,
-                                 delegate: delegate,
-                                 delegateQueue: nil)
-        var request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: DownloadTaskTimeoutValue)
+        urlSession = URLSession(configuration: config,
+                                delegate: delegate,
+                                delegateQueue: nil)
+        var request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: OpenAccessDownloadTask.DownloadTaskTimeoutValue)
         
         // Feedbooks DRM
         if let profile = self.feedbooksProfile {
             request.setValue("Bearer \(FeedbookDRMProcessor.getJWTToken(profile: profile, resourceUri: urlString) ?? "")", forHTTPHeaderField: "Authorization")
         }
         
-        let task = session.downloadTask(with: request)
+        guard let urlSession = urlSession else {
+            return
+        }
+        
+        let task = urlSession.downloadTask(with: request)
         task.resume()
     }
 
@@ -246,7 +252,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
             case NSURLErrorNotConnectedToInternet,
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
-                let networkLossError = NSError(domain: OpenAccessPlayerErrorDomain, code: 3, userInfo: nil)
+                let networkLossError = NSError(domain: OpenAccessPlayerErrorDomain, code: OpenAccessPlayerError.connectionLost.rawValue, userInfo: nil)
                 self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
                 return
             default:

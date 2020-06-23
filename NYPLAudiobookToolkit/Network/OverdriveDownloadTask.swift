@@ -4,8 +4,10 @@ let OverdriveTaskCompleteNotification = NSNotification.Name(rawValue: "Overdrive
 
 final class OverdriveDownloadTask: DownloadTask {
 
-    private let DownloadTaskTimeoutValue = 60.0
+    private static let DownloadTaskTimeoutValue = 60.0
 
+    private var urlSession: URLSession?
+    
     weak var delegate: DownloadTaskDelegate?
 
     /// Progress should be set to 1 if the file already exists.
@@ -19,7 +21,7 @@ final class OverdriveDownloadTask: DownloadTask {
     let url: URL
     let urlMediaType: OverdriveSpineElementMediaType
 
-    public init(spineElement: OverdriveSpineElement) {
+    init(spineElement: OverdriveSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
         self.urlMediaType = spineElement.mediaType
@@ -56,7 +58,7 @@ final class OverdriveDownloadTask: DownloadTask {
         }
     }
 
-    public func assetFileStatus() -> AssetResult {
+    func assetFileStatus() -> AssetResult {
         guard let localAssetURL = localDirectory() else {
             return AssetResult.unknown
         }
@@ -88,15 +90,19 @@ final class OverdriveDownloadTask: DownloadTask {
         let delegate = OverdriveDownloadTaskURLSessionDelegate(downloadTask: self,
                                                                delegate: self.delegate,
                                                                finalDirectory: finalURL)
-        let session = URLSession(configuration: config,
-                                 delegate: delegate,
-                                 delegateQueue: nil)
+        urlSession = URLSession(configuration: config,
+                                delegate: delegate,
+                                delegateQueue: nil)
         
         let request = URLRequest(url: remoteURL,
                                  cachePolicy: .useProtocolCachePolicy,
-                                 timeoutInterval: DownloadTaskTimeoutValue)
+                                 timeoutInterval: OverdriveDownloadTask.DownloadTaskTimeoutValue)
         
-        let task = session.downloadTask(with: request)
+        guard let urlSession = urlSession else {
+            return
+        }
+        
+        let task = urlSession.downloadTask(with: request)
         task.resume()
     }
 
@@ -163,7 +169,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
             self.downloadTask.downloadProgress = 0.0
             var error:NSError? = nil
             if (httpResponse.statusCode == 410) {
-                error = NSError(domain: OverdrivePlayerErrorDomain, code: 4, userInfo: nil)
+                error = NSError(domain: OverdrivePlayerErrorDomain, code: OverdrivePlayerError.downloadExpired.rawValue, userInfo: nil)
             }
             self.delegate?.downloadTaskFailed(self.downloadTask, withError: error)
         }
@@ -184,7 +190,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
             case NSURLErrorNotConnectedToInternet,
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
-                let networkLossError = NSError(domain: OverdrivePlayerErrorDomain, code: 3, userInfo: nil)
+                let networkLossError = NSError(domain: OverdrivePlayerErrorDomain, code: OverdrivePlayerError.connectionLost.rawValue, userInfo: nil)
                 self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
                 return
             default:

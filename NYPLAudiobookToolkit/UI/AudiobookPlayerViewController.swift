@@ -534,18 +534,14 @@ let SkipTimeInterval: Double = 15
         var errorDescription = "Please try again later."
         if let error = error {
             if error.domain == OpenAccessPlayerErrorDomain {
-                if let descriptionString = OpenAccessPlayerErrorDescriptions[error.code] {
-                    errorDescription = descriptionString
-                }
-                if let oaTitle = OpenAccessPlayerErrorTitle[error.code] {
-                    errorTitle = oaTitle
+                if let openAccessPlayerError = OpenAccessPlayerError.init(rawValue: error.code) {
+                    errorTitle = openAccessPlayerError.errorTitle()
+                    errorDescription = openAccessPlayerError.errorDescription()
                 }
             } else if error.domain == OverdrivePlayerErrorDomain {
-                if let descriptionString = OverdrivePlayerErrorDescriptions[error.code] {
-                    errorDescription = descriptionString
-                }
-                if let oaTitle = OverdrivePlayerErrorTitle[error.code] {
-                    errorTitle = oaTitle
+                if let overdrivePlayerError = OverdrivePlayerError.init(rawValue: error.code) {
+                    errorTitle = overdrivePlayerError.errorTitle()
+                    errorDescription = overdrivePlayerError.errorDescription()
                 }
             } else {
                 errorDescription = error.localizedDescription
@@ -679,7 +675,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
         presentAlertAndLog(error: error)
         self.audiobookProgressView.stopShowingProgress()
         if let error = error,
-          error.domain == OverdrivePlayerErrorDomain && error.code == 4 {
+          error.domain == OverdrivePlayerErrorDomain && error.code == OverdrivePlayerError.downloadExpired.rawValue {
             self.audiobookManager.refreshDelegate?.audiobookManagerDidRequestRefresh()
         }
     }

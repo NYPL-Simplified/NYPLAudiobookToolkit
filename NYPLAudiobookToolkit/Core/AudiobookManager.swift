@@ -65,7 +65,7 @@ public var sharedLogHandler: LogHandler?
     }
     public var playbackCompletionHandler: (() -> ())?
 
-    public var networkService: AudiobookNetworkService
+    public private(set) var networkService: AudiobookNetworkService
     public let metadata: AudiobookMetadata
     public let audiobook: Audiobook
 

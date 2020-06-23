@@ -26,7 +26,7 @@ final class OverdriveSpineElement: SpineElement {
     let duration: TimeInterval
     let audiobookID: String
     
-    public init?(JSON: Any?, index: UInt, audiobookID: String) {
+    init?(JSON: Any?, index: UInt, audiobookID: String) {
         self.key = "\(audiobookID)-\(index)"
         self.chapterNumber = index
         self.title = "Part \(index + 1)"
