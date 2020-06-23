@@ -1,22 +1,13 @@
 import AVFoundation
 
-let OpenAccessTaskCompleteNotification = NSNotification.Name(rawValue: "OpenAccessDownloadTaskCompleteNotification")
+let OverdriveTaskCompleteNotification = NSNotification.Name(rawValue: "OverdriveDownloadTaskCompleteNotification")
 
-enum AssetResult {
-    /// The file exists at the given URL.
-    case saved(URL)
-    /// The file is missing at the given URL.
-    case missing(URL)
-    /// Could not create a valid URL to check.
-    case unknown
-}
-
-final class OpenAccessDownloadTask: DownloadTask {
+final class OverdriveDownloadTask: DownloadTask {
 
     private static let DownloadTaskTimeoutValue = 60.0
-    
-    private var urlSession: URLSession?
 
+    private var urlSession: URLSession?
+    
     weak var delegate: DownloadTaskDelegate?
 
     /// Progress should be set to 1 if the file already exists.
@@ -28,23 +19,14 @@ final class OpenAccessDownloadTask: DownloadTask {
 
     let key: String
     let url: URL
-    let urlString: String // Retain original URI for DRM purposes
-    let urlMediaType: OpenAccessSpineElementMediaType
-    let alternateLinks: [(OpenAccessSpineElementMediaType, URL)]?
-    let feedbooksProfile: String?
+    let urlMediaType: OverdriveSpineElementMediaType
 
-    init(spineElement: OpenAccessSpineElement) {
+    init(spineElement: OverdriveSpineElement) {
         self.key = spineElement.key
         self.url = spineElement.url
-        self.urlString = spineElement.urlString
         self.urlMediaType = spineElement.mediaType
-        self.alternateLinks = spineElement.alternateUrls
-        self.feedbooksProfile = spineElement.feedbooksProfile
     }
-
-    /// If the asset is already downloaded and verified, return immediately and
-    /// update state to the delegates. Otherwise, attempt to download the file
-    /// referenced in the spine element.
+    
     func fetch() {
         switch self.assetFileStatus() {
         case .saved(_):
@@ -52,11 +34,7 @@ final class OpenAccessDownloadTask: DownloadTask {
             self.delegate?.downloadTaskReadyForPlayback(self)
         case .missing(let missingAssetURL):
             switch urlMediaType {
-            case .rbDigital:
-                self.downloadAssetForRBDigital(toLocalDirectory: missingAssetURL)
-            case .audioMPEG:
-                fallthrough
-            case .audioMP4:
+            case .audioMP3:
                 self.downloadAsset(fromRemoteURL: self.url, toLocalDirectory: missingAssetURL)
             }
         case .unknown:
@@ -105,64 +83,20 @@ final class OpenAccessDownloadTask: DownloadTask {
         }
         return cacheDirectory.appendingPathComponent(filename, isDirectory: false).appendingPathExtension("mp3")
     }
-
-    /// RBDigital media types first download an intermediate document, which points
-    /// to the url of the actual asset to download.
-    private func downloadAssetForRBDigital(toLocalDirectory localURL: URL) {
-
-        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-
-            guard let data = data,
-                let response = response,
-                (error == nil) else {
-                ATLog(.error, "Network request failed for RBDigital partial file. Error: \(error!.localizedDescription)")
-                return
-            }
-
-            if (response as? HTTPURLResponse)?.statusCode == 200 {
-                do {
-                    if let responseBody = try JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
-                        let typeString = responseBody["type"] as? String,
-                        let mediaType = OpenAccessSpineElementMediaType(rawValue: typeString),
-                        let urlString = responseBody["url"] as? String,
-                        let assetUrl = URL(string: urlString) {
-
-                        switch mediaType {
-                        case .audioMPEG:
-                            fallthrough
-                        case .audioMP4:
-                            self.downloadAsset(fromRemoteURL: assetUrl, toLocalDirectory: localURL)
-                        case .rbDigital:
-                            ATLog(.error, "Wrong media type for download task.")
-                        }
-                    } else {
-                        ATLog(.error, "Invalid or missing property in JSON response to download task.")
-                    }
-                } catch {
-                    ATLog(.error, "Error deserializing JSON in download task.")
-                }
-            } else {
-                ATLog(.error, "Failed with server response: \n\(response.description)")
-            }
-        }
-        task.resume()
-    }
-
+    
     private func downloadAsset(fromRemoteURL remoteURL: URL, toLocalDirectory finalURL: URL)
     {
         let config = URLSessionConfiguration.ephemeral
-        let delegate = OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self,
-                                                                delegate: self.delegate,
-                                                                finalDirectory: finalURL)
+        let delegate = OverdriveDownloadTaskURLSessionDelegate(downloadTask: self,
+                                                               delegate: self.delegate,
+                                                               finalDirectory: finalURL)
         urlSession = URLSession(configuration: config,
                                 delegate: delegate,
                                 delegateQueue: nil)
-        var request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: OpenAccessDownloadTask.DownloadTaskTimeoutValue)
         
-        // Feedbooks DRM
-        if let profile = self.feedbooksProfile {
-            request.setValue("Bearer \(FeedbookDRMProcessor.getJWTToken(profile: profile, resourceUri: urlString) ?? "")", forHTTPHeaderField: "Authorization")
-        }
+        let request = URLRequest(url: remoteURL,
+                                 cachePolicy: .useProtocolCachePolicy,
+                                 timeoutInterval: OverdriveDownloadTask.DownloadTaskTimeoutValue)
         
         guard let urlSession = urlSession else {
             return
@@ -180,9 +114,9 @@ final class OpenAccessDownloadTask: DownloadTask {
     }
 }
 
-final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
+final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
 
-    private let downloadTask: OpenAccessDownloadTask
+    private let downloadTask: OverdriveDownloadTask
     private let delegate: DownloadTaskDelegate?
     private let finalURL: URL
 
@@ -195,7 +129,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
     ///   - downloadTask: The corresponding download task for the URLSession.
     ///   - delegate: The DownloadTaskDelegate, to forward download progress
     ///   - finalDirectory: Final directory to move the asset to
-    required init(downloadTask: OpenAccessDownloadTask,
+    required init(downloadTask: OverdriveDownloadTask,
                   delegate: DownloadTaskDelegate?,
                   finalDirectory: URL) {
         self.downloadTask = downloadTask
@@ -224,7 +158,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                     }
                     self.downloadTask.downloadProgress = 1.0
                     self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
-                    NotificationCenter.default.post(name: OpenAccessTaskCompleteNotification, object: self.downloadTask)
+                    NotificationCenter.default.post(name: OverdriveTaskCompleteNotification, object: self.downloadTask)
                 } else {
                     self.downloadTask.downloadProgress = 0.0
                     self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
@@ -233,7 +167,11 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
         } else {
             ATLog(.error, "Download Task failed with server response: \n\(httpResponse.description)")
             self.downloadTask.downloadProgress = 0.0
-            self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+            var error:NSError? = nil
+            if (httpResponse.statusCode == 410) {
+                error = NSError(domain: OverdrivePlayerErrorDomain, code: OverdrivePlayerError.downloadExpired.rawValue, userInfo: nil)
+            }
+            self.delegate?.downloadTaskFailed(self.downloadTask, withError: error)
         }
     }
 
@@ -252,7 +190,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
             case NSURLErrorNotConnectedToInternet,
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
-                let networkLossError = NSError(domain: OpenAccessPlayerErrorDomain, code: OpenAccessPlayerError.connectionLost.rawValue, userInfo: nil)
+                let networkLossError = NSError(domain: OverdrivePlayerErrorDomain, code: OverdrivePlayerError.connectionLost.rawValue, userInfo: nil)
                 self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
                 return
             default:

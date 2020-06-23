@@ -72,7 +72,7 @@ let SkipTimeInterval: Double = 15
 
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
-        self.audiobookManager.networkService.fetch()     
+        self.audiobookManager.networkService.fetch()
 
         self.gradient.frame = self.view.bounds
         let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
@@ -533,12 +533,15 @@ let SkipTimeInterval: Double = 15
         var errorTitle = genericTitle
         var errorDescription = "Please try again later."
         if let error = error {
-            if error.domain == OpenAccessPlayerDomain {
-                if let descriptionString = OpenAccessPlayerErrorDescriptions[error.code] {
-                    errorDescription = descriptionString
+            if error.domain == OpenAccessPlayerErrorDomain {
+                if let openAccessPlayerError = OpenAccessPlayerError.init(rawValue: error.code) {
+                    errorTitle = openAccessPlayerError.errorTitle()
+                    errorDescription = openAccessPlayerError.errorDescription()
                 }
-                if let oaTitle = OpenAccessPlayerErrorTitle[error.code] {
-                    errorTitle = oaTitle
+            } else if error.domain == OverdrivePlayerErrorDomain {
+                if let overdrivePlayerError = OverdrivePlayerError.init(rawValue: error.code) {
+                    errorTitle = overdrivePlayerError.errorTitle()
+                    errorDescription = overdrivePlayerError.errorDescription()
                 }
             } else {
                 errorDescription = error.localizedDescription
@@ -671,6 +674,10 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement) {
         presentAlertAndLog(error: error)
         self.audiobookProgressView.stopShowingProgress()
+        if let error = error,
+          error.domain == OverdrivePlayerErrorDomain && error.code == OverdrivePlayerError.downloadExpired.rawValue {
+            self.audiobookManager.refreshDelegate?.audiobookManagerDidRequestRefresh()
+        }
     }
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float) {
         if (progress < 1.0) && (self.audiobookProgressView.isHidden) {
