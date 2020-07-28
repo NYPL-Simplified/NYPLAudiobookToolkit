@@ -1,7 +1,15 @@
 import AVFoundation
 
-final class OpenAccessPlayer: NSObject, Player {
+class OpenAccessPlayer: NSObject, Player {
 
+    var errorDomain: String {
+        return OpenAccessPlayerErrorDomain
+    }
+    
+    var taskCompleteNotification: Notification.Name {
+        return OpenAccessTaskCompleteNotification
+    }
+    
     var isPlaying: Bool {
         return self.avQueuePlayerIsPlaying
     }
@@ -10,7 +18,7 @@ final class OpenAccessPlayer: NSObject, Player {
         didSet(oldValue) {
             if !oldValue {
                 pause()
-                notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, NSError(domain: OpenAccessPlayerDomain, code: 4, userInfo: nil))
+                notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, NSError(domain: errorDomain, code: OpenAccessPlayerError.drmExpired.rawValue, userInfo: nil))
                 unload()
             }
         }
@@ -66,7 +74,7 @@ final class OpenAccessPlayer: NSObject, Player {
         // Check DRM
         if !isDrmOk {
             ATLog(.warn, "DRM is flagged as failed.")
-            let error = NSError(domain: OpenAccessPlayerDomain, code: 4, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.drmExpired.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             return
         }
@@ -82,15 +90,15 @@ final class OpenAccessPlayer: NSObject, Player {
             self.cursorQueuedToPlay = self.cursor
             ATLog(.error, "Player not yet ready. QueuedToPlay = true.")
             if self.avQueuePlayer.currentItem == nil {
-                if let cursorItemDownloadTask = self.cursor.currentElement.downloadTask as? OpenAccessDownloadTask {
-                    switch cursorItemDownloadTask.assetFileStatus() {
+                if let fileStatus = assetFileStatus(self.cursor.currentElement.downloadTask) {
+                    switch fileStatus {
                     case .saved(let savedURL):
                         let item = AVPlayerItem(url: savedURL)
                         if self.avQueuePlayer.canInsert(item, after: nil) {
                             self.avQueuePlayer.insert(item, after: nil)
                         }
                     case .missing(_):
-                        self.rebuildOnFinishedDownload(task: cursorItemDownloadTask)
+                        self.rebuildOnFinishedDownload(task: self.cursor.currentElement.downloadTask)
                     default:
                         break
                     }
@@ -98,7 +106,7 @@ final class OpenAccessPlayer: NSObject, Player {
             }
         case .failed:
             ATLog(.error, "Ready status is \"failed\".")
-            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             break
         }
@@ -110,7 +118,7 @@ final class OpenAccessPlayer: NSObject, Player {
             self.avQueuePlayer.pause()
         } else if self.cursorQueuedToPlay != nil {
             self.cursorQueuedToPlay = nil
-            NotificationCenter.default.removeObserver(self, name: TaskCompleteNotification, object: nil)
+            NotificationCenter.default.removeObserver(self, name: taskCompleteNotification, object: nil)
             notifyDelegatesOfPauseFor(chapter: self.chapterAtCurrentCursor)
         }
     }
@@ -154,9 +162,8 @@ final class OpenAccessPlayer: NSObject, Player {
     {
         let newPlayhead = move(cursor: self.cursor, to: newLocation)
 
-        let newItemDownloadTask = newPlayhead.cursor.currentElement.downloadTask as? OpenAccessDownloadTask
-        guard let newItemDownloadStatus = newItemDownloadTask?.assetFileStatus() else {
-            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+        guard let newItemDownloadStatus = assetFileStatus(newPlayhead.cursor.currentElement.downloadTask) else {
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             notifyDelegatesOfPlaybackFailureFor(chapter: newPlayhead.location, error)
             return
         }
@@ -177,17 +184,17 @@ final class OpenAccessPlayer: NSObject, Player {
                     self.play()
                 } else {
                     ATLog(.error, "Failed to create a new queue for the player. Keeping playback at the current player item.")
-                    let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+                    let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
                     self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
                 }
             }
         case .missing(_):
             // TODO: Could eventually handle streaming from here.
-            let error = NSError(domain: OpenAccessPlayerDomain, code: 1, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.downloadNotFinished.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
             return
         case .unknown:
-            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
             return
         }
@@ -265,7 +272,7 @@ final class OpenAccessPlayer: NSObject, Player {
                             self.play()
                         } else {
                             ATLog(.error, "User attempted to play when the player wasn't ready.")
-                            let error = NSError(domain: OpenAccessPlayerDomain, code: 2, userInfo: nil)
+                            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.playerNotReady.rawValue, userInfo: nil)
                             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
                         }
                     }
@@ -287,7 +294,7 @@ final class OpenAccessPlayer: NSObject, Player {
     private var cursor: Cursor<SpineElement>
     private var queuedSeekOffset: TimeInterval?
     private var cursorQueuedToPlay: Cursor<SpineElement>?
-    private var openAccessPlayerContext = 0
+    private var playerContext = 0
 
     var delegates: NSHashTable<PlayerDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
 
@@ -362,11 +369,11 @@ final class OpenAccessPlayer: NSObject, Player {
         var cursor = cursor
 
         while (cursor != nil) {
-            guard let downloadTask = cursor!.currentElement.downloadTask as? OpenAccessDownloadTask else {
+            guard let fileStatus = assetFileStatus(cursor!.currentElement.downloadTask) else {
                 cursor = nil
                 continue
             }
-            switch downloadTask.assetFileStatus() {
+            switch fileStatus {
             case .saved(let assetURL):
                 let playerItem = AVPlayerItem(url: assetURL)
                 playerItem.audioTimePitchAlgorithm = .timeDomain
@@ -408,18 +415,18 @@ final class OpenAccessPlayer: NSObject, Player {
     /// Try and recover from a Cursor missing its player asset.
     func attemptToRecoverMissingPlayerItem(cursor: Cursor<SpineElement>)
     {
-        if let cursorItemDownloadTask = cursor.currentElement.downloadTask as? OpenAccessDownloadTask {
-            switch cursorItemDownloadTask.assetFileStatus() {
+        if let fileStatus = assetFileStatus(self.cursor.currentElement.downloadTask) {
+            switch fileStatus {
             case .saved(_):
                 self.rebuildQueueImmediatelyAndPlay(cursor: cursor)
             case .missing(_):
-                self.rebuildOnFinishedDownload(task: cursorItemDownloadTask)
+                self.rebuildOnFinishedDownload(task: self.cursor.currentElement.downloadTask)
             case .unknown:
-                let error = NSError(domain: OpenAccessPlayerDomain, code: 2, userInfo: nil)
+                let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.playerNotReady.rawValue, userInfo: nil)
                 self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             }
         } else {
-            let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
             self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
         }
     }
@@ -431,25 +438,32 @@ final class OpenAccessPlayer: NSObject, Player {
                 self.play()
             } else {
                 ATLog(.error, "Ready status is \"failed\".")
-                let error = NSError(domain: OpenAccessPlayerDomain, code: 0, userInfo: nil)
+                let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
                 self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
             }
         }
     }
 
-    fileprivate func rebuildOnFinishedDownload(task: OpenAccessDownloadTask)
+    fileprivate func rebuildOnFinishedDownload(task: DownloadTask)
     {
         ATLog(.debug, "Added observer for missing download task.")
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(self.downloadTaskFinished),
-                                               name: TaskCompleteNotification,
+                                               name: taskCompleteNotification,
                                                object: task)
     }
 
     @objc func downloadTaskFinished()
     {
         self.rebuildQueueImmediatelyAndPlay(cursor: self.cursor)
-        NotificationCenter.default.removeObserver(self, name: TaskCompleteNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: taskCompleteNotification, object: nil)
+    }
+    
+    func assetFileStatus(_ task: DownloadTask) -> AssetResult? {
+        guard let task = task as? OpenAccessDownloadTask else {
+            return nil
+        }
+        return task.assetFileStatus()
     }
 }
 
@@ -460,7 +474,7 @@ extension OpenAccessPlayer{
                                change: [NSKeyValueChangeKey : Any]?,
                                context: UnsafeMutableRawPointer?)
     {
-        guard context == &openAccessPlayerContext else {
+        guard context == &playerContext else {
             super.observeValue(forKeyPath: keyPath,
                                of: object,
                                change: change,
@@ -581,22 +595,22 @@ extension OpenAccessPlayer{
         self.avQueuePlayer.addObserver(self,
                                        forKeyPath: #keyPath(AVQueuePlayer.status),
                                        options: [.old, .new],
-                                       context: &openAccessPlayerContext)
+                                       context: &playerContext)
 
         self.avQueuePlayer.addObserver(self,
                                        forKeyPath: #keyPath(AVQueuePlayer.rate),
                                        options: [.old, .new],
-                                       context: &openAccessPlayerContext)
+                                       context: &playerContext)
 
         self.avQueuePlayer.addObserver(self,
                                        forKeyPath: #keyPath(AVQueuePlayer.currentItem.status),
                                        options: [.old, .new],
-                                       context: &openAccessPlayerContext)
+                                       context: &playerContext)
         
         self.avQueuePlayer.addObserver(self,
                                        forKeyPath: #keyPath(AVQueuePlayer.reasonForWaitingToPlay),
                                        options: [.old, .new],
-                                       context: &openAccessPlayerContext)
+                                       context: &playerContext)
     }
 
     fileprivate func removePlayerObservers() {

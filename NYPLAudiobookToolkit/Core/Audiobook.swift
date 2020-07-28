@@ -49,7 +49,10 @@ import UIKit
             default:
                 audiobook = OpenAccessAudiobook(JSON: JSON)
             }
-        } else {
+        } else if let type = JSON["formatType"] as? String,
+            type == "audiobook-overdrive" {
+                audiobook = OverdriveAudiobook(JSON: JSON)
+        }  else {
             audiobook = OpenAccessAudiobook(JSON: JSON)
         }
         ATLog(.debug, "checkDrmAsync")
