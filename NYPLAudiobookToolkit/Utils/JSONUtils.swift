@@ -35,6 +35,8 @@ class JSONUtils {
         var rVal = ""
         if jsonObj == nil {
             rVal = "null"
+        } else if case Optional<Any>.none = jsonObj! { // Catches Any objects that contain nil
+            rVal = "null"
         } else if let b = jsonObj as? Bool {
             rVal = b ? "true" : "false"
         } else if let s = jsonObj as? String {
@@ -60,7 +62,7 @@ class JSONUtils {
                 throw JSONCanonicalizatoinError.canonicalizationError("Could not format decimal value")
             }
             rVal = formattedDecimal
-        } else if let arr = jsonObj as? [Any?] {
+        } else if let arr = jsonObj as? [Any] {
             var arrStr = "["
             var arrFirst = true
             for x in arr {
@@ -81,7 +83,7 @@ class JSONUtils {
                     objStr += ","
                 }
                 objStr += "\"\(k)\":"
-                objStr += try canonicalizeInternal(jsonObj: obj[k] as Any?)
+                objStr += try canonicalizeInternal(jsonObj: obj[k])
                 objFirst = false
             }
             objStr += "}"
