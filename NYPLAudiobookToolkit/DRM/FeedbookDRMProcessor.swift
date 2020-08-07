@@ -63,13 +63,17 @@ class FeedbookDRMProcessor {
         var licenseDocument = manifest
         licenseDocument["metadata"] = metadata
 
-        return verifySignature(forLicenseDoc: licenseDocument, signatureValue: signatureValue)
+        return verifySignature(signatureValue, forLicenseDoc: licenseDocument)
     }
     
-    // Verify the signature within the manifest using the private key from Keychain
-    // @param the manifest(license document) without the signature
-    // @param signature value extracted from the manifest
-    class private func verifySignature(forLicenseDoc: [String: Any], signatureValue: String) -> Bool {
+    /**
+     Verify the signature within the manifest using the private key from Keychain
+     
+     - Parameter signatureValue: signature value extracted from the manifest
+     - Parameter forLicenseDoc: the manifest(license document) without the signature
+     - Returns: Bool representing if the signature is valid
+     */
+    class private func verifySignature(_ signatureValue: String, forLicenseDoc: [String: Any]) -> Bool {
         guard let privateKeyData = getFeedbookPrivateKeyFromKeychain(forVendor: "cantook") else {
             ATLog(.error, "Private key for Feedbook is not found")
             return false
@@ -94,7 +98,7 @@ class FeedbookDRMProcessor {
                                                            privateSecKeyProperties as NSDictionary,
                                                            &error) else {
                 ATLog(.error, "Failed to create SecKey from private key - \(error)")
-                return true
+                return false
             }
 
             guard SecKeyIsAlgorithmSupported(privateSecKey, .sign, SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA256) else {
@@ -125,7 +129,7 @@ class FeedbookDRMProcessor {
             
             guard status == noErr else {
                 ATLog(.error, "Failed to sign data - \(status.description)")
-                return true
+                return false
             }
             
             let signatureData = Data(bytes: signatureBytes, count: signatureBytes.count)
