@@ -30,7 +30,7 @@ import AVFoundation
 
 /// Optionally pass in a function that forwards errors or other notable events
 /// above a certain log level in a release build.
-public var sharedLogHandler: LogHandler?
+var sharedLogHandler: LogHandler?
 
 /// AudiobookManager is the main class for bringing Audiobook Playback to clients.
 /// It is intended to be used by the host app to initiate downloads,

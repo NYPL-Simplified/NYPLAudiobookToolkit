@@ -14,4 +14,7 @@ FOUNDATION_EXPORT double NYPLAudiobookToolkitVersionNumber;
 //! Project version string for NYPLAudiobookToolkit.
 FOUNDATION_EXPORT const unsigned char NYPLAudiobookToolkitVersionString[];
 
+//! For storing and accessing certificate from Keychain
+FOUNDATION_EXPORT NSString *const FeedbookDRMPrivateKeyTag;
+
 #import "NYPLStringAdditions.h"

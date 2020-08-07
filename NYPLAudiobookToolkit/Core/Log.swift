@@ -35,7 +35,7 @@ public func ATLog(
 
     //FIXME: Until someone can get the #if DEBUG macro working, just log it all..
     NSLog(logOutput)
-    if ((level != .debug) && (level != .info)) {
+    if level != .debug {
         sharedLogHandler?(level, logOutput, error as NSError?)
     }
 }
