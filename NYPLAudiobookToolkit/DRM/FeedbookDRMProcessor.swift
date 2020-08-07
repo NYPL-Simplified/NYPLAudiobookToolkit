@@ -53,32 +53,34 @@ class FeedbookDRMProcessor {
             drmData["status"] = DrmStatus.processing
         }
         
-        // Perform Feedbooks manifest validation
+        // Perform Feedbooks signature verification
         guard let signature = metadata.removeValue(forKey: "http://www.feedbooks.com/audiobooks/signature") as? [String:Any],
             let signatureValue = signature["value"] as? String else {
             ATLog(.error, "Feedbook manifest does not contain signature")
             return true
         }
         
-        guard let pem = getFeedbookCertificate(vendor: "cantook") else {
-            ATLog(.error, "Certificate for Feedbook is not found")
-            return true
-        }
-        
-        guard let certificateData = Data(base64Encoded: RSAUtils.stripPEMKeyHeader(pem)) else {
-            ATLog(.error, "Failed to create certificate data")
-            return true
-        }
-        
         var licenseDocument = manifest
         licenseDocument["metadata"] = metadata
 
+        return verifySignature(forLicenseDoc: licenseDocument, signatureValue: signatureValue)
+    }
+    
+    // Verify the signature within the manifest using the private key from Keychain
+    // @param the manifest(license document) without the signature
+    // @param signature value extracted from the manifest
+    class private func verifySignature(forLicenseDoc: [String: Any], signatureValue: String) -> Bool {
+        guard let privateKeyData = getFeedbookPrivateKeyFromKeychain(forVendor: "cantook") else {
+            ATLog(.error, "Private key for Feedbook is not found")
+            return false
+        }
+        
         do {
-            let canonicalizedLicense = try JSONUtils.canonicalize(jsonObj: licenseDocument)
+            let canonicalizedLicense = try JSONUtils.canonicalize(jsonObj: forLicenseDoc)
            
             guard let licenseData = canonicalizedLicense.data(using: .utf8) else {
                 ATLog(.error, "Failed to create data from canonicalized license document")
-                return true
+                return false
             }
             
             var error: Unmanaged<CFError>?
@@ -88,16 +90,16 @@ class FeedbookDRMProcessor {
                 kSecAttrKeyClass: kSecAttrKeyClassPrivate
             ]
 
-            guard let privateSecKey = SecKeyCreateWithData(certificateData as NSData,
+            guard let privateSecKey = SecKeyCreateWithData(privateKeyData as NSData,
                                                            privateSecKeyProperties as NSDictionary,
                                                            &error) else {
-                ATLog(.error, "Failed to create SecKey from certificate - \(error)")
+                ATLog(.error, "Failed to create SecKey from private key - \(error)")
                 return true
             }
 
             guard SecKeyIsAlgorithmSupported(privateSecKey, .sign, SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA256) else {
-                ATLog(.error, "Certificate does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
-                return true
+                ATLog(.error, "Private key does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
+                return false
             }
             
             let blockSize = SecKeyGetBlockSize(privateSecKey)
@@ -105,7 +107,7 @@ class FeedbookDRMProcessor {
             guard Int(CC_SHA256_DIGEST_LENGTH) <= blockSize - 11 else {
                 ATLog(.error, "Invalid data size, data size cannot be larger or equal to key size - 11 bytes")
                 // ref: https://developer.apple.com/documentation/security/1618025-seckeyrawsign
-                return true
+                return false
             }
             
             var digestBytes = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
@@ -135,7 +137,7 @@ class FeedbookDRMProcessor {
             
         } catch {
             ATLog(.error, "Failed to canonicalize license document, \(error)")
-            return true
+            return false
         }
         
         return true
@@ -180,7 +182,7 @@ class FeedbookDRMProcessor {
     }
     
     class func getFeedbookSecret(profile: String) -> String {
-        let tag = FeedbookDRMCertificateTag + profile
+        let tag = "feedbook_drm_profile_\(profile)"
         let tagData = tag.data(using: .utf8)!
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
@@ -205,14 +207,15 @@ class FeedbookDRMProcessor {
         return ""
     }
     
-    class func getFeedbookCertificate(vendor: String) -> String? {
-        let tag = FeedbookDRMCertificateTag + vendor
+    class private func getFeedbookPrivateKeyFromKeychain(forVendor: String) -> Data? {
+        let tag = FeedbookDRMPrivateKeyTag + forVendor
         guard let tagData = tag.data(using: .utf8) else {
-            ATLog(.error, "Failed to get Feedbook DRM certificate tag data for Keychain access")
+            ATLog(.error, "Failed to get Feedbook DRM private key tag data for Keychain access")
             return nil
         }
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
             kSecAttrApplicationTag as String: tagData,
             kSecReturnData as String: true
         ]
@@ -220,16 +223,16 @@ class FeedbookDRMProcessor {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if status == errSecSuccess {
             if item == nil {
-                ATLog(.error, "Keychain item is nil for vendor: \(vendor)")
+                ATLog(.error, "Keychain item is nil for vendor: \(forVendor)")
             } else if let sItem = item as? String {
-                return sItem
+                return Data(base64Encoded:sItem)
             } else if let dItem = item as? Data {
-                return String.init(data: dItem, encoding: .utf8) ?? nil
+                return dItem
             } else {
-                ATLog(.error, "Keychain item unknown error for vendor: \(vendor)")
+                ATLog(.error, "Keychain item unknown error for vendor: \(forVendor)")
             }
         } else {
-            ATLog(.error, "Could not fetch keychain item for vendor: \(vendor)")
+            ATLog(.error, "Could not fetch keychain item for vendor: \(forVendor)")
         }
         return nil
     }
