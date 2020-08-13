@@ -1,6 +1,6 @@
 import CommonCrypto
 
-class RSAUtils {
+public class RSAUtils {
     class func SHA256HashedData(from data: NSData) -> NSData {
         let outputLength = CC_SHA256_DIGEST_LENGTH
         var output = [UInt8](repeating: 0, count: Int(outputLength))
@@ -8,7 +8,7 @@ class RSAUtils {
         return NSData(bytes: output, length: Int(outputLength))
     }
     
-    class func stripPEMKeyHeader(_ key: String) -> String {
+    public class func stripPEMKeyHeader(_ key: String) -> String {
         let fullRange = NSRange(location: 0, length: key.lengthOfBytes(using: .utf8))
         let regExp = try! NSRegularExpression(pattern: "(-----BEGIN.*?-----)|(-----END.*?-----)|\\s+", options: [])
         return regExp.stringByReplacingMatches(in: key, options: [], range: fullRange, withTemplate: "")
