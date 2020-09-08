@@ -67,15 +67,15 @@ class FeedbookDRMProcessor {
     }
     
     /**
-     Verify the signature within the manifest using the private key from Keychain
+     Verify the signature within the manifest using the public key from Keychain
      
      - Parameter signatureValue: signature value extracted from the manifest
      - Parameter forLicenseDoc: the manifest(license document) without the signature
      - Returns: Bool representing if the signature is valid
      */
     class private func verifySignature(_ signatureValue: String, forLicenseDoc: [String: Any]) -> Bool {
-        guard let privateKeyData = getFeedbookPrivateKeyFromKeychain(forVendor: "cantook") else {
-            ATLog(.error, "Private key for Feedbook is not found")
+        guard let publicKeyData = getFeedbookPublicKeyFromKeychain(forVendor: "cantook") else {
+            ATLog(.error, "Public key for Feedbook is not found")
             return false
         }
         
@@ -89,24 +89,24 @@ class FeedbookDRMProcessor {
             
             var error: Unmanaged<CFError>?
             
-            let privateSecKeyProperties = [
+            let publicSecKeyProperties = [
                 kSecAttrKeyType: kSecAttrKeyTypeRSA,
-                kSecAttrKeyClass: kSecAttrKeyClassPrivate
+                kSecAttrKeyClass: kSecAttrKeyClassPublic
             ]
 
-            guard let privateSecKey = SecKeyCreateWithData(privateKeyData as NSData,
-                                                           privateSecKeyProperties as NSDictionary,
+            guard let publicSecKey = SecKeyCreateWithData(publicKeyData as NSData,
+                                                           publicSecKeyProperties as NSDictionary,
                                                            &error) else {
-                ATLog(.error, "Failed to create SecKey from private key - \(error)")
+                ATLog(.error, "Failed to create SecKey from public key - \(error)")
                 return false
             }
 
-            guard SecKeyIsAlgorithmSupported(privateSecKey, .sign, SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA256) else {
-                ATLog(.error, "Private key does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
+            guard SecKeyIsAlgorithmSupported(publicSecKey, .verify, SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA256) else {
+                ATLog(.error, "Public key does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
                 return false
             }
             
-            let blockSize = SecKeyGetBlockSize(privateSecKey)
+            let blockSize = SecKeyGetBlockSize(publicSecKey)
             
             guard Int(CC_SHA256_DIGEST_LENGTH) <= blockSize - 11 else {
                 ATLog(.error, "Invalid data size, data size cannot be larger or equal to key size - 11 bytes")
@@ -117,28 +117,25 @@ class FeedbookDRMProcessor {
             var digestBytes = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
             RSAUtils.SHA256HashedData(from: (licenseData as NSData)).getBytes(&digestBytes, length: Int(CC_SHA256_DIGEST_LENGTH))
             
-            var signatureBytes = [UInt8](repeating: 0, count: blockSize)
-            var signatureDataLength = blockSize
+            guard let signatureData = Data(base64Encoded: signatureValue) else {
+                ATLog(.error, "Error decoding signature value")
+                return false
+            }
+            var signatureBytes = Array(signatureData)
+            let signatureDataLength = signatureBytes.count
             
-            let status = SecKeyRawSign(privateSecKey,
-                                       .PKCS1SHA256,
-                                       digestBytes,
-                                       digestBytes.count,
-                                       &signatureBytes,
-                                       &signatureDataLength)
+            let status = SecKeyRawVerify(publicSecKey, .PKCS1SHA256, digestBytes, digestBytes.count, &signatureBytes, signatureDataLength)
             
             guard status == noErr else {
-                ATLog(.error, "Failed to sign data - \(status.description)")
+                if #available(iOS 11.3, *) {
+                    var errorMessage = ""
+                    SecCopyErrorMessageString(status, &errorMessage)
+                    ATLog(.error, "Failed to verify data - \(errorMessage)")
+                } else {
+                    ATLog(.error, "Failed to verify data - \(status.description)")
+                }
                 return false
             }
-            
-            let signatureData = Data(bytes: signatureBytes, count: signatureBytes.count)
-            
-            guard signatureData.base64EncodedString() == signatureValue else {
-                ATLog(.error, "Signature does not match, DRM check failed")
-                return false
-            }
-            
         } catch {
             ATLog(.error, "Failed to canonicalize license document, \(error)")
             return false
@@ -211,10 +208,10 @@ class FeedbookDRMProcessor {
         return ""
     }
     
-    class private func getFeedbookPrivateKeyFromKeychain(forVendor: String) -> Data? {
-        let tag = FeedbookDRMPrivateKeyTag + forVendor
+    class private func getFeedbookPublicKeyFromKeychain(forVendor: String) -> Data? {
+        let tag = FeedbookDRMPublicKeyTag + forVendor
         guard let tagData = tag.data(using: .utf8) else {
-            ATLog(.error, "Failed to get Feedbook DRM private key tag data for Keychain access")
+            ATLog(.error, "Failed to get Feedbook DRM public key tag data for Keychain access")
             return nil
         }
         let query: [String: Any] = [
