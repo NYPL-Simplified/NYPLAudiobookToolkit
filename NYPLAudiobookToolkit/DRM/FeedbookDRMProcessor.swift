@@ -67,14 +67,14 @@ class FeedbookDRMProcessor {
     }
     
     /**
-     Verify the signature within the manifest using the private key from Keychain
+     Verify the signature within the manifest using the public key from Keychain
      
      - Parameter signatureValue: signature value extracted from the manifest
      - Parameter forLicenseDoc: the manifest(license document) without the signature
      - Returns: Bool representing if the signature is valid
      */
     class private func verifySignature(_ signatureValue: String, forLicenseDoc: [String: Any]) -> Bool {
-        guard let publicKeyData = getFeedbookPrivateKeyFromKeychain(forVendor: "cantook") else {
+        guard let publicKeyData = getFeedbookPublicKeyFromKeychain(forVendor: "cantook") else {
             ATLog(.error, "Public key for Feedbook is not found")
             return false
         }
@@ -208,10 +208,10 @@ class FeedbookDRMProcessor {
         return ""
     }
     
-    class private func getFeedbookPrivateKeyFromKeychain(forVendor: String) -> Data? {
-        let tag = FeedbookDRMPrivateKeyTag + forVendor
+    class private func getFeedbookPublicKeyFromKeychain(forVendor: String) -> Data? {
+        let tag = FeedbookDRMPublicKeyTag + forVendor
         guard let tagData = tag.data(using: .utf8) else {
-            ATLog(.error, "Failed to get Feedbook DRM private key tag data for Keychain access")
+            ATLog(.error, "Failed to get Feedbook DRM public key tag data for Keychain access")
             return nil
         }
         let query: [String: Any] = [
