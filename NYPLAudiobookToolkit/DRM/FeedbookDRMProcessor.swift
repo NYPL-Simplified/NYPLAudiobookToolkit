@@ -75,7 +75,7 @@ class FeedbookDRMProcessor {
      */
     class private func verifySignature(_ signatureValue: String, forLicenseDoc: [String: Any]) -> Bool {
         guard let publicKeyData = getFeedbookPrivateKeyFromKeychain(forVendor: "cantook") else {
-            ATLog(.error, "Private key for Feedbook is not found")
+            ATLog(.error, "Public key for Feedbook is not found")
             return false
         }
         
@@ -97,12 +97,12 @@ class FeedbookDRMProcessor {
             guard let publicSecKey = SecKeyCreateWithData(publicKeyData as NSData,
                                                            publicSecKeyProperties as NSDictionary,
                                                            &error) else {
-                ATLog(.error, "Failed to create SecKey from private key - \(error)")
+                ATLog(.error, "Failed to create SecKey from public key - \(error)")
                 return false
             }
 
             guard SecKeyIsAlgorithmSupported(publicSecKey, .verify, SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA256) else {
-                ATLog(.error, "Private key does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
+                ATLog(.error, "Public key does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
                 return false
             }
             
@@ -130,9 +130,9 @@ class FeedbookDRMProcessor {
                 if #available(iOS 11.3, *) {
                     var errorMessage = ""
                     SecCopyErrorMessageString(status, &errorMessage)
-                    ATLog(.error, "Failed to sign data - \(errorMessage)")
+                    ATLog(.error, "Failed to verify data - \(errorMessage)")
                 } else {
-                    ATLog(.error, "Failed to sign data - \(status.description)")
+                    ATLog(.error, "Failed to verify data - \(status.description)")
                 }
                 return false
             }
