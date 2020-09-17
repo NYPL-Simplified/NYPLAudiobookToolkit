@@ -12,7 +12,7 @@ class FeedbookDRMProcessor {
     // @param drmData the audiobook's DRM information dictionary holding relevant information for processing
     // @return true if the DRM processing was successful; false otherwise
     class func processManifest(_ manifest: [String: Any], drmData: inout [String: Any]) -> Bool {
-        guard let metadata = manifest["metadata"] as? [String: Any] else {
+        guard var metadata = manifest["metadata"] as? [String: Any] else {
             ATLog(.info, "[FeedbookDRMProcessor] no metadata in manifest")
             return true
         }
@@ -53,8 +53,93 @@ class FeedbookDRMProcessor {
             drmData["status"] = DrmStatus.processing
         }
         
-        // Perform Feedbooks manifest validation
-        // TODO: SIMPLY-2502
+        // Perform Feedbooks signature verification
+        guard let signature = metadata.removeValue(forKey: "http://www.feedbooks.com/audiobooks/signature") as? [String:Any],
+            let signatureValue = signature["value"] as? String else {
+            ATLog(.error, "Feedbook manifest does not contain signature")
+            return true
+        }
+        
+        var licenseDocument = manifest
+        licenseDocument["metadata"] = metadata
+
+        return verifySignature(signatureValue, forLicenseDoc: licenseDocument)
+    }
+    
+    /**
+     Verify the signature within the manifest using the public key from Keychain
+     
+     - Parameter signatureValue: signature value extracted from the manifest
+     - Parameter forLicenseDoc: the manifest(license document) without the signature
+     - Returns: Bool representing if the signature is valid
+     */
+    class private func verifySignature(_ signatureValue: String, forLicenseDoc: [String: Any]) -> Bool {
+        guard let publicKeyData = getFeedbookPublicKeyFromKeychain(forVendor: "cantook") else {
+            ATLog(.error, "Public key for Feedbook is not found")
+            return false
+        }
+        
+        do {
+            let canonicalizedLicense = try JSONUtils.canonicalize(jsonObj: forLicenseDoc)
+           
+            guard let licenseData = canonicalizedLicense.data(using: .utf8) else {
+                ATLog(.error, "Failed to create data from canonicalized license document")
+                return false
+            }
+            
+            var error: Unmanaged<CFError>?
+            
+            let publicSecKeyProperties = [
+                kSecAttrKeyType: kSecAttrKeyTypeRSA,
+                kSecAttrKeyClass: kSecAttrKeyClassPublic
+            ]
+
+            guard let publicSecKey = SecKeyCreateWithData(publicKeyData as NSData,
+                                                           publicSecKeyProperties as NSDictionary,
+                                                           &error) else {
+                ATLog(.error, "Failed to create SecKey from public key - \(error)")
+                return false
+            }
+
+            guard SecKeyIsAlgorithmSupported(publicSecKey, .verify, SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA256) else {
+                ATLog(.error, "Public key does not support algorithm(rsaSignatureDigestPKCS1v15SHA256)")
+                return false
+            }
+            
+            let blockSize = SecKeyGetBlockSize(publicSecKey)
+            
+            guard Int(CC_SHA256_DIGEST_LENGTH) <= blockSize - 11 else {
+                ATLog(.error, "Invalid data size, data size cannot be larger or equal to key size - 11 bytes")
+                // ref: https://developer.apple.com/documentation/security/1618025-seckeyrawsign
+                return false
+            }
+            
+            var digestBytes = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+            RSAUtils.SHA256HashedData(from: (licenseData as NSData)).getBytes(&digestBytes, length: Int(CC_SHA256_DIGEST_LENGTH))
+            
+            guard let signatureData = Data(base64Encoded: signatureValue) else {
+                ATLog(.error, "Error decoding signature value")
+                return false
+            }
+            var signatureBytes = Array(signatureData)
+            let signatureDataLength = signatureBytes.count
+            
+            let status = SecKeyRawVerify(publicSecKey, .PKCS1SHA256, digestBytes, digestBytes.count, &signatureBytes, signatureDataLength)
+            
+            guard status == noErr else {
+                if #available(iOS 11.3, *) {
+                    var errorMessage = ""
+                    SecCopyErrorMessageString(status, &errorMessage)
+                    ATLog(.error, "Failed to verify data - \(errorMessage)")
+                } else {
+                    ATLog(.error, "Failed to verify data - \(status.description)")
+                }
+                return false
+            }
+        } catch {
+            ATLog(.error, "Failed to canonicalize license document, \(error)")
+            return false
+        }
         
         return true
     }
@@ -121,6 +206,36 @@ class FeedbookDRMProcessor {
             ATLog(.error, "Could not fetch keychain item for profile: \(profile)")
         }
         return ""
+    }
+    
+    class private func getFeedbookPublicKeyFromKeychain(forVendor: String) -> Data? {
+        let tag = FeedbookDRMPublicKeyTag + forVendor
+        guard let tagData = tag.data(using: .utf8) else {
+            ATLog(.error, "Failed to get Feedbook DRM public key tag data for Keychain access")
+            return nil
+        }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
+            kSecAttrApplicationTag as String: tagData,
+            kSecReturnData as String: true
+        ]
+        var item: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecSuccess {
+            if item == nil {
+                ATLog(.error, "Keychain item is nil for vendor: \(forVendor)")
+            } else if let sItem = item as? String {
+                return Data(base64Encoded:sItem)
+            } else if let dItem = item as? Data {
+                return dItem
+            } else {
+                ATLog(.error, "Keychain item unknown error for vendor: \(forVendor)")
+            }
+        } else {
+            ATLog(.error, "Could not fetch keychain item for vendor: \(forVendor)")
+        }
+        return nil
     }
     
     class func getJWTToken(profile: String, resourceUri: String) -> String? {
