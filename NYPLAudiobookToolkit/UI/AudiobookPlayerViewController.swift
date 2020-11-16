@@ -502,9 +502,11 @@ let SkipTimeInterval: Double = 15
     }
 
     func middleTextFor(chapter: ChapterLocation) -> String {
-        let middleTextFormat = NSLocalizedString("Part %@ of %d", bundle: Bundle.audiobookToolkit()!, value: "Part %@ of %d", comment: "Current chapter and the amount of chapters left in the book")
+        let defaultTitleFormat = NSLocalizedString("Chapter %@", bundle: Bundle.audiobookToolkit()!, value: "Chapter %@", comment: "Default chapter title")
+        let middleTextFormat = NSLocalizedString("%@ (file %@ of %d)", bundle: Bundle.audiobookToolkit()!, value: "%@ (file %@ of %d)", comment: "Current chapter and the amount of chapters left in the book")
         let indexString = oneBasedSpineIndex() ?? "--"
-        return String(format: middleTextFormat, indexString, self.audiobookManager.audiobook.spine.count)
+        let title = chapter.title ?? String(format: defaultTitleFormat, indexString)
+        return String(format: middleTextFormat, title, indexString, self.audiobookManager.audiobook.spine.count)
     }
 
     func playbackSpeedTextFor(speedText: String) -> String {
