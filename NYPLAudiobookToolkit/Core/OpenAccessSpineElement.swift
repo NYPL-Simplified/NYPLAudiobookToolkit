@@ -41,14 +41,14 @@ final class OpenAccessSpineElement: SpineElement {
         self.audiobookID = audiobookID
 
         guard let payload = JSON as? [String: Any],
-            let title = payload["title"] as? String,
             let urlString = payload["href"] as? String,
             let url = URL(string: urlString),
             let duration = payload["duration"] as? TimeInterval else {
                 ATLog(.error, "OpenAccessSpineElement failed to init from JSON: \n\(JSON ?? "nil")")
                 return nil
         }
-        self.title = title
+        let defaultTitleFormat = NSLocalizedString("Chapter %@", bundle: Bundle.audiobookToolkit()!, value: "Chapter %@", comment: "Default chapter title")
+        self.title = payload["title"] as? String ?? String(format: defaultTitleFormat, "\(index + 1)")
         self.url = url
         self.urlString = urlString
         self.duration = duration
