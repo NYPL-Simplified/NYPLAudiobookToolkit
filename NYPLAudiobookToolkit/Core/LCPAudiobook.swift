@@ -9,7 +9,8 @@
 import Foundation
 
 @objc public class LCPAudiobook: NSObject, Audiobook {
-
+    
+    /// Readium @context parameter value for LCP audiobooks
     static let manifestContext = "http://readium.org/webpub-manifest/context.jsonld"
     
     public var uniqueIdentifier: String
