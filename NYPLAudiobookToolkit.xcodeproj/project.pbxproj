@@ -16,8 +16,6 @@
 		21B26CCE257FB95300A60238 /* LCPPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCD257FB95300A60238 /* LCPPlayer.swift */; };
 		21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */; };
 		21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0F15925768E9A001E51EF /* LCPSpineElement.swift */; };
-		21B26CD8257FE38800A60238 /* TimeInterval+duration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CD7257FE38800A60238 /* TimeInterval+duration.swift */; };
-		21B26CDA257FE4BF00A60238 /* ISO8601DurationFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CD9257FE4BF00A60238 /* ISO8601DurationFormatter.swift */; };
 		21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */; };
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
@@ -115,8 +113,6 @@
 		178707CD24DA5E1300649567 /* Constants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
 		21B26CCD257FB95300A60238 /* LCPPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPPlayer.swift; sourceTree = "<group>"; };
 		21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPDownloadTask.swift; sourceTree = "<group>"; };
-		21B26CD7257FE38800A60238 /* TimeInterval+duration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+duration.swift"; sourceTree = "<group>"; };
-		21B26CD9257FE4BF00A60238 /* ISO8601DurationFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DurationFormatter.swift; sourceTree = "<group>"; };
 		21C0F15925768E9A001E51EF /* LCPSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPSpineElement.swift; sourceTree = "<group>"; };
 		21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPAudiobook.swift; sourceTree = "<group>"; };
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
@@ -387,8 +383,6 @@
 				8C6CD8A9240D9F8A00E2DFB0 /* JSONUtils.swift */,
 				8CF57BD9243277180053C31E /* MediaProcessor.swift */,
 				178707C724DA505700649567 /* RSAUtils.swift */,
-				21B26CD7257FE38800A60238 /* TimeInterval+duration.swift */,
-				21B26CD9257FE4BF00A60238 /* ISO8601DurationFormatter.swift */,
 				178707CD24DA5E1300649567 /* Constants.m */,
 			);
 			path = Utils;
@@ -591,10 +585,8 @@
 				17576CAC248E89DE00E18B4C /* OverdriveDownloadTask.swift in Sources */,
 				7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */,
 				8C3F7112242BDDAF00E5C810 /* URLRequest+Curl.swift in Sources */,
-				21B26CD8257FE38800A60238 /* TimeInterval+duration.swift in Sources */,
 				7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */,
 				A97CE13121ED388D00B64305 /* OpenAccessAudiobook.swift in Sources */,
-				21B26CDA257FE4BF00A60238 /* ISO8601DurationFormatter.swift in Sources */,
 				21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */,
 				8CF57BDA243277180053C31E /* MediaProcessor.swift in Sources */,
 				E6160DFF2188EBFE0048755C /* BufferActivityIndicator.swift in Sources */,
