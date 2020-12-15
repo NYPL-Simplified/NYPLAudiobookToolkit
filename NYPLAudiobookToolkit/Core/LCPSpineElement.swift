@@ -11,7 +11,7 @@ import Foundation
 enum LCPSpineElementMediaType: String {
     case audioMP3 = "audio/mp3"
     case audioAAC = "audio/aac"
-    case audioMpeg = "audio/mpeg"
+    case audioMPEG = "audio/mpeg"
 }
 
 final class LCPSpineElement: SpineElement {
