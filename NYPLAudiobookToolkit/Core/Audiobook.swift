@@ -15,6 +15,17 @@ import UIKit
     case succeeded
 }
 
+/// DRM Decryptor protocol - decrypts protected files
+@objc public protocol DRMDecryptor {
+
+    /// Decrypt protected file
+    /// - Parameters:
+    ///   - url: encrypted file URL.
+    ///   - resultUrl: URL to save decrypted file at.
+    ///   - completion: decryptor callback with optional `Error`.
+    func decrypt(url: URL, to resultUrl: URL, completion: @escaping (_ error: Error?) -> Void)
+}
+
 @objc public protocol SpineElement: class {
     var key: String { get }
     var downloadTask: DownloadTask { get }
@@ -35,7 +46,12 @@ import UIKit
 /// This audiobook should then be able to construct utility classes
 /// using data in the spine of that JSON.
 @objcMembers public final class AudiobookFactory: NSObject {
-    public static func audiobook(_ JSON: Any?) -> Audiobook? {
+    /// Instatiate an audiobook object with JSON data containing spine elements of the book
+    /// - Parameters:
+    ///   - JSON: Audiobook and spine elements data
+    ///   - decryptor: Optional DRM decryptor for encrypted audio files
+    /// - Returns: Audiobook object
+    public static func audiobook(_ JSON: Any?, decryptor: DRMDecryptor?) -> Audiobook? {
         guard let JSON = JSON as? [String: Any] else { return nil }
         let metadata = JSON["metadata"] as? [String: Any]
         let drm = metadata?["encrypted"] as? [String: Any]
@@ -52,11 +68,21 @@ import UIKit
         } else if let type = JSON["formatType"] as? String,
             type == "audiobook-overdrive" {
                 audiobook = OverdriveAudiobook(JSON: JSON)
+        } else if let conformsTo = JSON["conformsTo"] as? String, conformsTo == "https://www.w3.org/TR/audiobooks/" {
+            audiobook = LCPAudiobook(JSON: JSON, decryptor: decryptor)
         }  else {
             audiobook = OpenAccessAudiobook(JSON: JSON)
         }
         ATLog(.debug, "checkDrmAsync")
         audiobook?.checkDrmAsync()
         return audiobook
+    }
+    
+    /// Instatiate an audiobook object with JSON data containing spine elements of the book
+    /// - Parameters:
+    ///   - JSON: Audiobook and spine elements data
+    /// - Returns: Audiobook object
+    public static func audiobook(_ JSON: Any?) -> Audiobook? {
+        return self.audiobook(JSON, decryptor: nil)
     }
 }

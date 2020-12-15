@@ -13,6 +13,12 @@
 		177E52FC24908FD80031CCCD /* OverdrivePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */; };
 		178707C824DA505700649567 /* RSAUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178707C724DA505700649567 /* RSAUtils.swift */; };
 		178707CE24DA5E1300649567 /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 178707CD24DA5E1300649567 /* Constants.m */; };
+		21B26CCE257FB95300A60238 /* LCPPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCD257FB95300A60238 /* LCPPlayer.swift */; };
+		21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */; };
+		21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0F15925768E9A001E51EF /* LCPSpineElement.swift */; };
+		21B26CD8257FE38800A60238 /* TimeInterval+duration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CD7257FE38800A60238 /* TimeInterval+duration.swift */; };
+		21B26CDA257FE4BF00A60238 /* ISO8601DurationFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CD9257FE4BF00A60238 /* ISO8601DurationFormatter.swift */; };
+		21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */; };
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
 		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
@@ -107,6 +113,12 @@
 		177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverdrivePlayer.swift; sourceTree = "<group>"; };
 		178707C724DA505700649567 /* RSAUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSAUtils.swift; sourceTree = "<group>"; };
 		178707CD24DA5E1300649567 /* Constants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
+		21B26CCD257FB95300A60238 /* LCPPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPPlayer.swift; sourceTree = "<group>"; };
+		21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPDownloadTask.swift; sourceTree = "<group>"; };
+		21B26CD7257FE38800A60238 /* TimeInterval+duration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+duration.swift"; sourceTree = "<group>"; };
+		21B26CD9257FE4BF00A60238 /* ISO8601DurationFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DurationFormatter.swift; sourceTree = "<group>"; };
+		21C0F15925768E9A001E51EF /* LCPSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPSpineElement.swift; sourceTree = "<group>"; };
+		21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPAudiobook.swift; sourceTree = "<group>"; };
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
 		7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberProgressTests.swift; sourceTree = "<group>"; };
 		7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberUIStateTests.swift; sourceTree = "<group>"; };
@@ -295,6 +307,7 @@
 				7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */,
 				7BBF4DFB20506FF600700731 /* SleepTimer.swift */,
 				177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */,
+				21B26CCD257FB95300A60238 /* LCPPlayer.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -320,6 +333,8 @@
 				7BD8E4F9206EB49D008ED3F1 /* VoiceOverTimestamp.swift */,
 				17576CA9248E898600E18B4C /* OverdriveAudiobook.swift */,
 				17576CAD248E8A0100E18B4C /* OverdriveSpineElement.swift */,
+				21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */,
+				21C0F15925768E9A001E51EF /* LCPSpineElement.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -330,6 +345,7 @@
 				7BD759C92017CEA3004CE65F /* DownloadTask.swift */,
 				7B7B370720211CE100030A1E /* OpenAccessDownloadTask.swift */,
 				17576CAB248E89DE00E18B4C /* OverdriveDownloadTask.swift */,
+				21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */,
 				7B6C1BCF203F1CDA00EB791E /* AudiobookNetworkService.swift */,
 			);
 			path = Network;
@@ -371,6 +387,8 @@
 				8C6CD8A9240D9F8A00E2DFB0 /* JSONUtils.swift */,
 				8CF57BD9243277180053C31E /* MediaProcessor.swift */,
 				178707C724DA505700649567 /* RSAUtils.swift */,
+				21B26CD7257FE38800A60238 /* TimeInterval+duration.swift */,
+				21B26CD9257FE4BF00A60238 /* ISO8601DurationFormatter.swift */,
 				178707CD24DA5E1300649567 /* Constants.m */,
 			);
 			path = Utils;
@@ -544,6 +562,7 @@
 				8C6CD8AD240DB3C000E2DFB0 /* FeedbookDRMProcessor.swift in Sources */,
 				177E52FC24908FD80031CCCD /* OverdrivePlayer.swift in Sources */,
 				17576CAA248E898600E18B4C /* OverdriveAudiobook.swift in Sources */,
+				21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */,
 				178707CE24DA5E1300649567 /* Constants.m in Sources */,
 				7B5441E4200EA82C0047B6C6 /* AudiobookPlayerViewController.swift in Sources */,
 				E67CA9A5215C0D320081A10B /* Log.swift in Sources */,
@@ -557,6 +576,7 @@
 				7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */,
 				7BD7E03D207BC66400C122F2 /* ImageControlView.swift in Sources */,
 				7B4F1B2020361547003F047B /* Cursor.swift in Sources */,
+				21B26CCE257FB95300A60238 /* LCPPlayer.swift in Sources */,
 				A9DC9CFD220547F800D122F2 /* ErrorDescriptions.swift in Sources */,
 				8C882C952409B04F0000CA59 /* DateUtils.swift in Sources */,
 				7B5441E3200EA82C0047B6C6 /* Audiobook.swift in Sources */,
@@ -567,11 +587,15 @@
 				17576CAE248E8A0100E18B4C /* OverdriveSpineElement.swift in Sources */,
 				7BD759B5201279BB004CE65F /* TextWithImageView.swift in Sources */,
 				7B7B370B202274DA00030A1E /* Player.swift in Sources */,
+				21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */,
 				17576CAC248E89DE00E18B4C /* OverdriveDownloadTask.swift in Sources */,
 				7BBF4DFC20506FF600700731 /* SleepTimer.swift in Sources */,
 				8C3F7112242BDDAF00E5C810 /* URLRequest+Curl.swift in Sources */,
+				21B26CD8257FE38800A60238 /* TimeInterval+duration.swift in Sources */,
 				7B7B370820211CE100030A1E /* OpenAccessDownloadTask.swift in Sources */,
 				A97CE13121ED388D00B64305 /* OpenAccessAudiobook.swift in Sources */,
+				21B26CDA257FE4BF00A60238 /* ISO8601DurationFormatter.swift in Sources */,
+				21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */,
 				8CF57BDA243277180053C31E /* MediaProcessor.swift in Sources */,
 				E6160DFF2188EBFE0048755C /* BufferActivityIndicator.swift in Sources */,
 				A94E769C219F7B4200E943A2 /* AudiobookCoverImageView.swift in Sources */,
