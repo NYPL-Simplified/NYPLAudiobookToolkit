@@ -9,6 +9,8 @@
 import Foundation
 
 @objc public class LCPAudiobook: NSObject, Audiobook {
+
+    static let manifestContext = "http://readium.org/webpub-manifest/context.jsonld"
     
     public var uniqueIdentifier: String
     
@@ -43,11 +45,12 @@ import Foundation
     
     /// LCP DRM protected audiobook
     /// - Parameters:
-    ///   - JSON: Dictionary with audiobook and spine elements data from `publication.json`.
+    ///   - JSON: Dictionary with audiobook and spine elements data from `manifest.json`.
     ///   - decryptor: LCP DRM decryptor.
     init?(JSON: Any?, decryptor: DRMDecryptor?) {
         guard let publication = JSON as? [String: Any],
-            let id = publication["id"] as? String,
+            let metadata = publication["metadata"] as? [String: Any],
+            let id = metadata["identifier"] as? String,
             let resources = publication["readingOrder"] as? [[String: Any]]
             else {
                 ATLog(.error, "LCPAudiobook failed to init from JSON: \n\(JSON ?? "nil")")

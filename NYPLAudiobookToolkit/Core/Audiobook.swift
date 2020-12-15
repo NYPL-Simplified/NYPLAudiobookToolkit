@@ -68,7 +68,7 @@ import UIKit
         } else if let type = JSON["formatType"] as? String,
             type == "audiobook-overdrive" {
                 audiobook = OverdriveAudiobook(JSON: JSON)
-        } else if let conformsTo = JSON["conformsTo"] as? String, conformsTo == "https://www.w3.org/TR/audiobooks/" {
+        } else if let manifestContext = JSON["@context"] as? String, manifestContext == LCPAudiobook.manifestContext {
             audiobook = LCPAudiobook(JSON: JSON, decryptor: decryptor)
         }  else {
             audiobook = OpenAccessAudiobook(JSON: JSON)

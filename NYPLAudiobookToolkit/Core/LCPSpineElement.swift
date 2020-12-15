@@ -11,11 +11,12 @@ import Foundation
 enum LCPSpineElementMediaType: String {
     case audioMP3 = "audio/mp3"
     case audioAAC = "audio/aac"
+    case audioMpeg = "audio/mpeg"
 }
 
 final class LCPSpineElement: SpineElement {
     
-    /// Dictionary keys for localized `name` properties from publication.json.
+    /// Dictionary keys for localized `name` properties from `manifest.json`.
     ///
     /// `name` can be either a `String` or a dictionary with keys:
     /// - `value` for localized name
@@ -52,7 +53,7 @@ final class LCPSpineElement: SpineElement {
     
     /// Spine element for LCP audiobooks
     /// - Parameters:
-    ///   - JSON: JSON data for `readingOrder` element in audiobook `publication.json` file.
+    ///   - JSON: JSON data for `readingOrder` element in audiobook `manifest.json` file.
     ///   - index: Element index in `readingOrder`.
     ///   - audiobookID: Audiobook identifier.
     init?(JSON: Any?, index: UInt, audiobookID: String) {
@@ -61,7 +62,7 @@ final class LCPSpineElement: SpineElement {
         self.audiobookID = audiobookID
         
         guard let payload = JSON as? [String: Any],
-            let urlString = payload["url"] as? String,
+            let urlString = payload["href"] as? String,
             let url = URL(string: urlString)
             else {
                 ATLog(.error, "LCPSpineElement failed to init from JSON: \n\(JSON ?? "nil")")
@@ -70,10 +71,15 @@ final class LCPSpineElement: SpineElement {
         
         self.url = url
         let defaultTitleFormat = NSLocalizedString("Chapter %@", bundle: Bundle.audiobookToolkit()!, value: "Chapter %@", comment: "Default chapter title")
-        let name = LCPSpineElement.elementName(JSON: payload["name"])
+        let name = LCPSpineElement.elementName(JSON: payload["title"])
         self.title = name ?? String(format: defaultTitleFormat, "\(index + 1)")
-        if let durationString = payload["duration"] as? String, let duration = TimeInterval.from(ISO8601Duration: durationString) {
-            self.duration = duration
+//        if let durationString = payload["duration"] as? String, let duration = TimeInterval.from(ISO8601Duration: durationString) {
+//            self.duration = duration
+//        } else {
+//            self.duration = 0
+//        }
+        if let duration = payload["duration"] as? Double {
+            self.duration = TimeInterval(duration)
         } else {
             self.duration = 0
         }
