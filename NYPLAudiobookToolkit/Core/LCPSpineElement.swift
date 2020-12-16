@@ -97,7 +97,7 @@ final class LCPSpineElement: SpineElement {
         return nil
     }
     
-    /// Localized name from the array of localizede names based on current application language code.
+    /// Localized name from the array of localized names based on current application language code.
     /// - Parameter localizedNames: An array of localized name dictionaries,
     /// with `value` parameter containing the name and `language` parameter containing language code, for example:
     /// `[{"value":"Track 1", "language":"en"},{"value":"Piste 1", "language":"fr"}]`.
