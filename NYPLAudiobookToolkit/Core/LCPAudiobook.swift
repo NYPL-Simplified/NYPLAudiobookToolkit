@@ -69,7 +69,8 @@ import Foundation
         }
         self.spine = spineElements
         guard let cursor = Cursor(data: spine) else {
-            ATLog(.error, "Cursor could not be cast to Cursor<LCPSpineElement>")
+            let title = metadata["title"] as? String ?? ""
+            ATLog(.error, "Cursor could not be cast to Cursor<LCPSpineElement> in \(id) \(title)")
             return nil
         }
         player = LCPPlayer(cursor: cursor, audiobookID: uniqueIdentifier, decryptor: decryptor)
