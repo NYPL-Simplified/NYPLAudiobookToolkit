@@ -97,7 +97,7 @@ class FeedbookDRMProcessor {
             guard let publicSecKey = SecKeyCreateWithData(publicKeyData as NSData,
                                                            publicSecKeyProperties as NSDictionary,
                                                            &error) else {
-                ATLog(.error, "Failed to create SecKey from public key - \(error)")
+                ATLog(.error, "Failed to create SecKey from public key - \(String(describing: error))")
                 return false
             }
 
