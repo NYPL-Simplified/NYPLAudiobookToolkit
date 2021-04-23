@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,7 @@
 		21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */; };
 		21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0F15925768E9A001E51EF /* LCPSpineElement.swift */; };
 		21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */; };
+		732FD86C26333E6A0018A82E /* PureLayout.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 732FD86B26333E6A0018A82E /* PureLayout.xcframework */; };
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
 		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
@@ -78,7 +79,6 @@
 		E6160DFF2188EBFE0048755C /* BufferActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6160DFE2188EBFE0048755C /* BufferActivityIndicator.swift */; };
 		E67888EA214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */; };
 		E67CA9A5215C0D320081A10B /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67CA9A4215C0D320081A10B /* Log.swift */; };
-		E6EF9A1B218CE5BF000CE559 /* PureLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6EF9A1A218CE5BF000CE559 /* PureLayout.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,6 +115,10 @@
 		21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPDownloadTask.swift; sourceTree = "<group>"; };
 		21C0F15925768E9A001E51EF /* LCPSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPSpineElement.swift; sourceTree = "<group>"; };
 		21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPAudiobook.swift; sourceTree = "<group>"; };
+		732FD86B26333E6A0018A82E /* PureLayout.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = PureLayout.xcframework; path = Carthage/Build/PureLayout.xcframework; sourceTree = "<group>"; };
+		732FD874263342BE0018A82E /* Cartfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
+		732FD875263342BE0018A82E /* Cartfile.resolved */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
+		732FD876263342BF0018A82E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
 		7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberProgressTests.swift; sourceTree = "<group>"; };
 		7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberUIStateTests.swift; sourceTree = "<group>"; };
@@ -141,7 +145,6 @@
 		7B7B370E20227A8200030A1E /* OpenAccessPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAccessPlayer.swift; sourceTree = "<group>"; };
 		7B8026A2206AB0AF00012808 /* HumanReadablePlaybackRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumanReadablePlaybackRate.swift; sourceTree = "<group>"; };
 		7B87DCC42087AE5D00256331 /* PlayerManipulationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManipulationTest.swift; sourceTree = "<group>"; };
-		7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = NYPLAEToolkit.framework; sourceTree = "<group>"; };
 		7BBF4DFB20506FF600700731 /* SleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimer.swift; sourceTree = "<group>"; };
 		7BBF4DFD2050850A00700731 /* SleepTimerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerTests.swift; sourceTree = "<group>"; };
 		7BBF4DFF2050856400700731 /* PlayerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerMock.swift; sourceTree = "<group>"; };
@@ -166,7 +169,6 @@
 		8C3F7111242BDDAF00E5C810 /* URLRequest+Curl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Curl.swift"; sourceTree = "<group>"; };
 		8C6CD8A9240D9F8A00E2DFB0 /* JSONUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONUtils.swift; sourceTree = "<group>"; };
 		8C6CD8AC240DB3C000E2DFB0 /* FeedbookDRMProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbookDRMProcessor.swift; sourceTree = "<group>"; };
-		8C7956AC241175A60063D84F /* jwt_shared_secret.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = jwt_shared_secret.txt; sourceTree = "<group>"; };
 		8C882C942409B04F0000CA59 /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; sourceTree = "<group>"; };
 		8CB60C1424071CBF006EF568 /* FeedbookAudiobookTest.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FeedbookAudiobookTest.swift; sourceTree = "<group>"; tabWidth = 2; };
 		8CD8A20E243E7A0D009DA4CC /* Data+BigEndianTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+BigEndianTest.swift"; sourceTree = "<group>"; };
@@ -182,7 +184,6 @@
 		E6160DFE2188EBFE0048755C /* BufferActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferActivityIndicator.swift; sourceTree = "<group>"; };
 		E67888E9214AF9C700C48D82 /* AudiobookTrackTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookTrackTableViewCell.swift; sourceTree = "<group>"; };
 		E67CA9A4215C0D320081A10B /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
-		E6EF9A1A218CE5BF000CE559 /* PureLayout.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PureLayout.framework; path = Carthage/Build/iOS/PureLayout.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -190,8 +191,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E6EF9A1B218CE5BF000CE559 /* PureLayout.framework in Frameworks */,
 				7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */,
+				732FD86C26333E6A0018A82E /* PureLayout.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,6 +207,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		732FD873263342A50018A82E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				732FD874263342BE0018A82E /* Cartfile */,
+				732FD875263342BE0018A82E /* Cartfile.resolved */,
+				732FD876263342BF0018A82E /* README.md */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		7B3BD9C62011737B002C5416 /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -229,6 +240,7 @@
 			children = (
 				7B54418E200EA7C20047B6C6 /* NYPLAudiobookToolkit */,
 				7B544199200EA7C20047B6C6 /* NYPLAudiobookToolkitTests */,
+				732FD873263342A50018A82E /* Supporting Files */,
 				7B54418D200EA7C20047B6C6 /* Products */,
 				7B5441E8200EA8740047B6C6 /* Frameworks */,
 			);
@@ -253,7 +265,6 @@
 				8C3CDB052422D8460020FC0B /* Extensions */,
 				7BD759C120168FF5004CE65F /* Network */,
 				7B7B3709202274C400030A1E /* Player */,
-				8C7956AB2411757F0063D84F /* Resources */,
 				7B3BD9C62011737B002C5416 /* UI */,
 				8C882C932409B0320000CA59 /* Utils */,
 				7B544190200EA7C20047B6C6 /* Info.plist */,
@@ -288,8 +299,7 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E6EF9A1A218CE5BF000CE559 /* PureLayout.framework */,
-				7BA55A3220A3487700712CAC /* NYPLAEToolkit.framework */,
+				732FD86B26333E6A0018A82E /* PureLayout.xcframework */,
 				7BD759CB20191980004CE65F /* CoreData.framework */,
 				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
 			);
@@ -366,14 +376,6 @@
 				8C3CDB0F2422E82C0020FC0B /* HmacAlgorithm.swift */,
 			);
 			path = DRM;
-			sourceTree = "<group>";
-		};
-		8C7956AB2411757F0063D84F /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				8C7956AC241175A60063D84F /* jwt_shared_secret.txt */,
-			);
-			path = Resources;
 			sourceTree = "<group>";
 		};
 		8C882C932409B0320000CA59 /* Utils */ = {
@@ -748,7 +750,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -768,14 +771,14 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = NYPLAudiobookToolkit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MARKETING_VERSION = 2.2;
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-D DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkit;
@@ -800,14 +803,14 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
 				INFOPLIST_FILE = NYPLAudiobookToolkit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -828,7 +831,11 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS/**",
 				);
 				INFOPLIST_FILE = NYPLAudiobookToolkitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
@@ -847,7 +854,11 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS/**",
 				);
 				INFOPLIST_FILE = NYPLAudiobookToolkitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = NYPLAudiobooksToolkit.NYPLAudiobookToolkitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
