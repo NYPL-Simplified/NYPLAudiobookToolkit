@@ -83,7 +83,7 @@ class JSONUtils {
                     objStr += ","
                 }
                 objStr += "\"\(k)\":"
-                objStr += try canonicalizeInternal(jsonObj: obj[k])
+                objStr += try canonicalizeInternal(jsonObj: obj[k] as Any?)
                 objFirst = false
             }
             objStr += "}"
