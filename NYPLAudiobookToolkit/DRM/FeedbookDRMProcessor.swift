@@ -137,7 +137,7 @@ class FeedbookDRMProcessor {
                 return false
             }
         } catch {
-            ATLog(.error, "Failed to canonicalize license document, \(error)")
+            ATLog(.error, "Failed to canonicalize license document", error: error)
             return false
         }
         

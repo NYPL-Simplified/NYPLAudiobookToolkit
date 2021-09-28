@@ -49,7 +49,7 @@ final class OverdriveDownloadTask: DownloadTask {
                 try FileManager.default.removeItem(at: url)
                 self.delegate?.downloadTaskDidDeleteAsset(self)
             } catch {
-                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                ATLog(.error, "FileManager removeItem error", error: error)
             }
         case .missing(_):
             ATLog(.debug, "No file located at directory to delete.")
@@ -153,7 +153,8 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
                         do {
                             try FileManager.default.removeItem(at: location)
                         } catch {
-                            ATLog(.error, "Could not remove original downloaded file at \(location.absoluteString) Error: \(error)")
+                            ATLog(.error, "Could not remove original downloaded file at \(location.absoluteString)",
+                                  error: error)
                         }
                     }
                     self.downloadTask.downloadProgress = 1.0
@@ -230,7 +231,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
                 try FileManager.default.moveItem(at: from, to: to)
                 completionHandler(true)
             } catch {
-                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                ATLog(.error, "FileManager removeItem error", error: error)
                 completionHandler(false)
             }
         }
