@@ -94,7 +94,7 @@ class MediaProcessor {
             }
             fh.closeFile()
         } catch {
-            ATLog(.error, "Error optimizing file: \(error)")
+            ATLog(.error, "Error optimizing file", error: error)
             finalSuccess = false
         }
         
@@ -113,7 +113,8 @@ class MediaProcessor {
             do {
                 offset = try MediaProcessor.offset(filehandle: fh)
             } catch {
-                ATLog(.error, "Could not get file offset for \(url.absoluteString): \(error.localizedDescription)")
+                ATLog(.error, "Could not get file offset for \(url.absoluteString)",
+                      error: error)
                 atoms = []
                 break
             }
@@ -128,7 +129,7 @@ class MediaProcessor {
             do {
                 size = UInt64(try sizeData.bigEndianUInt32())
             } catch {
-                ATLog(.warn, "Could not read atom size")
+                ATLog(.warn, "Could not read atom size", error: error)
                 atoms = []
                 break
             }
@@ -142,7 +143,7 @@ class MediaProcessor {
                 do {
                     size = try fh.readData(ofLength: 8).bigEndianUInt64()
                 } catch {
-                    ATLog(.warn, "Could not read atom ext size")
+                    ATLog(.warn, "Could not read atom ext size", error: error)
                     atoms = []
                     break
                 }
@@ -151,7 +152,7 @@ class MediaProcessor {
             do {
                 try seek(filehandle: fh, offset: offset + size)
             } catch {
-                ATLog(.error, "Could not seek for \(url.absoluteString): \(error.localizedDescription)")
+                ATLog(.error, "Could not seek for \(url.absoluteString)", error: error)
                 atoms = []
                 break
             }
@@ -169,7 +170,7 @@ class MediaProcessor {
             do {
                 size = try UInt64(data.bigEndianUInt32At(offset: Int(localOffset)))
             } catch {
-                print("Could not read atom size")
+                ATLog(.error, "Could not read atom size", error: error)
                 atoms = []
                 break
             }
@@ -181,7 +182,7 @@ class MediaProcessor {
                     // Extended size is 8 bytes after atom start
                     size = try data.bigEndianUInt64At(offset: Int(localOffset+8))
                 } catch {
-                    print("Could not read atom ext size")
+                    ATLog(.error, "Could not read atom ext size", error: error)
                     atoms = []
                     break
                 }
@@ -227,7 +228,7 @@ class MediaProcessor {
                 do {
                     try patchChunkOffsetAtom(data: &data, atom: c, moovSize: Int(moov.size))
                 } catch {
-                    ATLog(.warn, "Error patching chunk offset atom. \(error)")
+                    ATLog(.warn, "Error patching chunk offset atom", error: error)
                     return false
                 }
             }

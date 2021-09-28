@@ -71,7 +71,7 @@ final class OpenAccessDownloadTask: DownloadTask {
                 try FileManager.default.removeItem(at: url)
                 self.delegate?.downloadTaskDidDeleteAsset(self)
             } catch {
-                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                ATLog(.error, "FileManager removeItem error", error: error)
             }
         case .missing(_):
             ATLog(.debug, "No file located at directory to delete.")
@@ -139,7 +139,7 @@ final class OpenAccessDownloadTask: DownloadTask {
                         ATLog(.error, "Invalid or missing property in JSON response to download task.")
                     }
                 } catch {
-                    ATLog(.error, "Error deserializing JSON in download task.")
+                    ATLog(.error, "Error deserializing JSON in download task.", error: error)
                 }
             } else {
                 ATLog(.error, "Failed with server response: \n\(response.description)")
@@ -219,7 +219,8 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                         do {
                             try FileManager.default.removeItem(at: location)
                         } catch {
-                            ATLog(.error, "Could not remove original downloaded file at \(location.absoluteString) Error: \(error)")
+                            ATLog(.error, "Could not remove original downloaded file at \(location.absoluteString)",
+                                  error: error)
                         }
                     }
                     self.downloadTask.downloadProgress = 1.0
@@ -292,7 +293,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                 try FileManager.default.moveItem(at: from, to: to)
                 completionHandler(true)
             } catch {
-                ATLog(.error, "FileManager removeItem error:\n\(error)")
+                ATLog(.error, "FileManager removeItem error", error: error)
                 completionHandler(false)
             }
         }
