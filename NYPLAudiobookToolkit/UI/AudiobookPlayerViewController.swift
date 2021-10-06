@@ -22,7 +22,7 @@ let SkipTimeInterval: Double = 15
         fatalError("init(coder:) has not been implemented")
     }
 
-    private let activityIndicator = BufferActivityIndicatorView(style: .gray)
+    private let activityIndicator = BufferActivityIndicatorView()
     private let gradient = CAGradientLayer()
     private let padding = CGFloat(12)
 
@@ -38,14 +38,29 @@ let SkipTimeInterval: Double = 15
     private let sleepTimerDefaultAccessibilityLabel = NSLocalizedString("Sleep Timer", bundle: Bundle.audiobookToolkit()!, value: "Sleep Timer", comment:"Sleep Timer")
 
     private var audiobookProgressView = DownloadProgressView()
-
+    private var progressViewBackgroundColor: UIColor {
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            return NYPLColor.secondaryBackgroundColor
+        } else {
+            return view.tintColor
+        }
+    }
+    
     private let chapterInfoStack = ChapterInfoStack()
     public var coverView: AudiobookCoverImageView = { () -> AudiobookCoverImageView in
         let image = UIImage(named: "example_cover", in: Bundle.audiobookToolkit(), compatibleWith: nil)
         let imageView = AudiobookCoverImageView.init(image: image)
         return imageView
     }()
-    private let seekBar = ScrubberView()
+    private let seekBar: ScrubberView = {
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            return ScrubberView(tintColor: NYPLColor.actionColor)
+        } else {
+            return ScrubberView()
+        }
+    }()
     private let playbackControlView = PlaybackControlView()
 
     private var waitingForPlayer = false {
@@ -70,13 +85,21 @@ let SkipTimeInterval: Double = 15
     override public func viewDidLoad() {
         super.viewDidLoad()
 
+        self.view.backgroundColor = NYPLColor.primaryBackgroundColor
+        self.activityIndicator.color = NYPLColor.disabledFieldTextColor
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
         self.audiobookManager.networkService.fetch()
 
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            // Use solid color background for Dark Mode
+            self.gradient.colors = [ NYPLColor.primaryBackgroundColor.cgColor ]
+        } else {
+            let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
+            self.gradient.colors = [ startColor, UIColor.white.cgColor ]
+        }
         self.gradient.frame = self.view.bounds
-        let startColor = UIColor(red: (210 / 255), green: (217 / 255), blue: (221 / 255), alpha: 1).cgColor
-        self.gradient.colors = [ startColor, UIColor.white.cgColor]
         self.gradient.startPoint = CGPoint.zero
         self.gradient.endPoint = CGPoint(x: 1, y: 1)
         self.view.layer.insertSublayer(self.gradient, at: 0)
@@ -107,7 +130,7 @@ let SkipTimeInterval: Double = 15
         self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
 
         self.view.addSubview(self.audiobookProgressView)
-        self.audiobookProgressView.backgroundColor = view.tintColor
+        self.audiobookProgressView.backgroundColor = progressViewBackgroundColor
         self.audiobookProgressView.autoPin(toTopLayoutGuideOf: self, withInset: 0)
         self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .leading)
         self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .trailing)
@@ -468,8 +491,9 @@ let SkipTimeInterval: Double = 15
             self.updateSpeedButtonIfNeeded()
             self.updatePlayPauseButtonIfNeeded()
         }
-        if (self.audiobookProgressView.backgroundColor != view.tintColor) {
-            self.audiobookProgressView.backgroundColor = view.tintColor
+        let color = progressViewBackgroundColor
+        if (self.audiobookProgressView.backgroundColor != color) {
+            self.audiobookProgressView.backgroundColor = color
         }
     }
 

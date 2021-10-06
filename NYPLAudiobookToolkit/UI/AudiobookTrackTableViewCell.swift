@@ -5,7 +5,7 @@ class AudiobookTrackTableViewCell: UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         let view = UIView()
-        view.backgroundColor = view.tintColor.withAlphaComponent(0.1)
+        view.backgroundColor = NYPLColor.primaryBackgroundColor.withAlphaComponent(0.1)
         self.selectedBackgroundView = view
     }
 
@@ -37,6 +37,6 @@ class AudiobookTrackTableViewCell: UITableViewCell {
         self.textLabel?.text = title
         self.textLabel?.alpha = labelAlpha
         self.detailTextLabel?.text = detailLabel
-        self.backgroundColor = .white
+        self.backgroundColor = NYPLColor.primaryBackgroundColor
     }
 }

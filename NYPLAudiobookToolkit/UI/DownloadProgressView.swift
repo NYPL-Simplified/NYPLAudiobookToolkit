@@ -34,8 +34,14 @@ final class DownloadProgressView: UIView {
         percentageLabel.font = UIFont.systemFont(ofSize: 12.0)
 
         progressView.clipsToBounds = true
-        progressView.progressTintColor = .white
-        progressView.trackTintColor = .darkGray
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            progressView.progressTintColor = NYPLColor.actionColor
+            progressView.trackTintColor = NYPLColor.progressBarBackgroundColor
+        } else {
+            progressView.progressTintColor = .white
+            progressView.trackTintColor = .darkGray
+        }
 
         addSubview(downloadLabel)
         addSubview(progressView)

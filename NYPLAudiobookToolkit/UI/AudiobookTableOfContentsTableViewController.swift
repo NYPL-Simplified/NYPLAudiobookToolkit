@@ -22,7 +22,8 @@ public class AudiobookTableOfContentsTableViewController: UITableViewController 
     public init(tableOfContents: AudiobookTableOfContents, delegate: AudiobookTableOfContentsTableViewControllerDelegate) {
         self.tableOfContents = tableOfContents
         self.delegate = delegate
-        self.activityIndicator = UIActivityIndicatorView(style: .gray)
+        self.activityIndicator = UIActivityIndicatorView()
+        self.activityIndicator.color = NYPLColor.disabledFieldTextColor
         self.activityIndicator.hidesWhenStopped = true
         super.init(nibName: nil, bundle: nil)
         let activityItem = UIBarButtonItem(customView: self.activityIndicator)

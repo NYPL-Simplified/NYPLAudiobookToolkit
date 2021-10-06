@@ -163,7 +163,12 @@ final class ScrubberView: UIView {
         self.addSubview(self.leftLabel)
         self.addSubview(self.rightLabel)
         self.addSubview(self.middleLabel)
-        self.progressBackground.backgroundColor = UIColor.darkGray
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            self.progressBackground.backgroundColor = NYPLColor.progressBarBackgroundColor
+        } else {
+            self.progressBackground.backgroundColor = UIColor.darkGray
+        }
         self.progressBackground.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
         self.progressBackground.autoPinEdge(.left, to: .left, of: self)
         self.progressBackground.autoPinEdge(.right, to: .right, of: self)

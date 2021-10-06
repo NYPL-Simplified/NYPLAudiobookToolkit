@@ -57,7 +57,8 @@ final class PlaybackControlView: UIView {
     private var horizontalPadding = CGFloat(30)
     private let skipBackView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
-        view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)
+        view.image = UIImage(named: "skip_back", in: Bundle.audiobookToolkit(), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+        view.tintColor = NYPLColor.primaryTextColor
         view.subtext = NSLocalizedString("sec", bundle: Bundle.audiobookToolkit()!, value: "sec", comment: "Abbreviations for seconds")
         view.accessibilityIdentifier = "skip_back"
         return view
@@ -65,7 +66,8 @@ final class PlaybackControlView: UIView {
     
     private let skipForwardView: TextOverImageView = { () -> TextOverImageView in
         let view = TextOverImageView()
-        view.image = UIImage(named: "skip_forward", in: Bundle.audiobookToolkit(), compatibleWith: nil)
+        view.image = UIImage(named: "skip_forward", in: Bundle.audiobookToolkit(), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+        view.tintColor = NYPLColor.primaryTextColor
         view.subtext = NSLocalizedString("sec", bundle: Bundle.audiobookToolkit()!, value: "sec", comment: "Abbreviations for seconds")
         view.accessibilityIdentifier = "skip_forward"
         return view
@@ -75,17 +77,18 @@ final class PlaybackControlView: UIView {
         named: "play",
         in: Bundle.audiobookToolkit(),
         compatibleWith: nil
-    )
+    )?.withRenderingMode(.alwaysTemplate)
 
     private let pauseImage = UIImage(
         named: "pause",
         in: Bundle.audiobookToolkit(),
         compatibleWith: nil
-    )
+    )?.withRenderingMode(.alwaysTemplate)
     
     private let playButton: ImageControlView = { () -> ImageControlView in
         let imageView = ImageControlView()
         imageView.accessibilityIdentifier = "play_button"
+        imageView.tintColor = NYPLColor.primaryTextColor
         return imageView
     }()
 
