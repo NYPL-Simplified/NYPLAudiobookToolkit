@@ -63,7 +63,7 @@ struct ScrubberProgress {
 
 struct ScrubberUIState {
     let gripperHeight: CGFloat
-    let progressColor: UIColor
+    var progressColor: UIColor
     let progress: ScrubberProgress
     let middleText: String?
     let scrubbing: Bool
@@ -88,7 +88,14 @@ struct ScrubberUIState {
 
 final class ScrubberView: UIView {
     weak var delegate: ScrubberViewDelegate?
-    let trimColor: UIColor
+    var trimColor: UIColor {
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            return NYPLColor.actionColor
+        } else {
+            return UIColor.red
+        }
+    }
     let barHeight = 16
     let padding: CGFloat = 8
     var progressBar = UIView()
@@ -147,11 +154,19 @@ final class ScrubberView: UIView {
         self.layoutIfNeeded()
     }
 
-    init(tintColor: UIColor = UIColor.red) {
-        self.trimColor = tintColor
+    init() {
         super.init(frame: CGRect.zero)
         self.setupView()
         self.setupAccessibility()
+        updateColors()
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle {
+            updateColors()
+        }
     }
     
     private func setupView () {
@@ -163,12 +178,7 @@ final class ScrubberView: UIView {
         self.addSubview(self.leftLabel)
         self.addSubview(self.rightLabel)
         self.addSubview(self.middleLabel)
-        if #available(iOS 12.0, *),
-           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
-            self.progressBackground.backgroundColor = NYPLColor.progressBarBackgroundColor
-        } else {
-            self.progressBackground.backgroundColor = UIColor.darkGray
-        }
+        
         self.progressBackground.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
         self.progressBackground.autoPinEdge(.left, to: .left, of: self)
         self.progressBackground.autoPinEdge(.right, to: .right, of: self)
@@ -215,7 +225,6 @@ final class ScrubberView: UIView {
         self.labelWidthConstraints.append(leftLabelWidth)
         self.labelWidthConstraints.append(rightLabelWidth)
 
-        self.progressBar.backgroundColor = self.state.progressColor
         self.progressBar.autoPinEdge(.left, to: .left, of: self.progressBackground)
         self.progressBar.autoSetDimension(.height, toSize: CGFloat(self.barHeight))
         self.barWidthConstraint = self.progressBar.autoSetDimension(.width, toSize: CGFloat(self.state.gripperHeight))
@@ -228,7 +237,6 @@ final class ScrubberView: UIView {
         self.topLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.vertical)
         self.topLabel.setContentCompressionResistancePriority(UILayoutPriority.defaultHigh, for: NSLayoutConstraint.Axis.horizontal)
         
-        self.gripper.backgroundColor = self.state.progressColor
         self.gripper.autoPinEdge(.top, to: .bottom, of: self.topLabel, withOffset: self.padding / 2)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBackground)
         self.gripper.autoAlignAxis(.horizontal, toSameAxisOf: self.progressBar)
@@ -256,12 +264,25 @@ final class ScrubberView: UIView {
 
     override func updateConstraints() {
         self.barWidthConstraint?.constant = self.state.progressLocationFor(self.progressBarWidth)
-        self.progressBar.backgroundColor = self.state.progressColor
-        self.gripper.backgroundColor = self.trimColor
         self.labelWidthConstraints.forEach { (constraint) in
             constraint.constant = self.state.progress.labelWidth
         }
         super.updateConstraints()
+    }
+    
+    private func updateColors() {
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            self.progressBackground.backgroundColor = NYPLColor.progressBarBackgroundColor
+            self.state.progressColor = NYPLColor.actionColor
+        } else {
+            self.progressBackground.backgroundColor = UIColor.darkGray
+            self.state.progressColor = .black
+        }
+        
+        self.progressBar.backgroundColor = self.state.progressColor
+        self.gripper.backgroundColor = self.trimColor
+        self.setNeedsDisplay()
     }
     
     required init?(coder aDecoder: NSCoder) {

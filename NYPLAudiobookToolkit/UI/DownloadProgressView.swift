@@ -13,10 +13,19 @@ final class DownloadProgressView: UIView {
     required init() {
         super.init(frame: .zero)
         setupView()
+        updateColors()
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle {
+            updateColors()
+        }
     }
 
     private func setupView() {
@@ -34,14 +43,6 @@ final class DownloadProgressView: UIView {
         percentageLabel.font = UIFont.systemFont(ofSize: 12.0)
 
         progressView.clipsToBounds = true
-        if #available(iOS 12.0, *),
-           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
-            progressView.progressTintColor = NYPLColor.actionColor
-            progressView.trackTintColor = NYPLColor.progressBarBackgroundColor
-        } else {
-            progressView.progressTintColor = .white
-            progressView.trackTintColor = .darkGray
-        }
 
         addSubview(downloadLabel)
         addSubview(progressView)
@@ -76,5 +77,16 @@ final class DownloadProgressView: UIView {
         progressView.progress = progress
         let percent = Int(progress * 100)
         percentageLabel.text = "\(percent)%"
+    }
+    
+    private func updateColors() {
+        if #available(iOS 12.0, *),
+           UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            progressView.progressTintColor = NYPLColor.actionColor
+            progressView.trackTintColor = NYPLColor.progressBarBackgroundColor
+        } else {
+            progressView.progressTintColor = .white
+            progressView.trackTintColor = .darkGray
+        }
     }
 }
