@@ -13,6 +13,8 @@
 		177E52FC24908FD80031CCCD /* OverdrivePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */; };
 		178707C824DA505700649567 /* RSAUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178707C724DA505700649567 /* RSAUtils.swift */; };
 		178707CE24DA5E1300649567 /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 178707CD24DA5E1300649567 /* Constants.m */; };
+		1788AAE1270BAF5200AA7F46 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1788AAE0270BAF5200AA7F46 /* Colors.xcassets */; };
+		1788AAE4270BB04D00AA7F46 /* NYPLColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1788AAE3270BB04D00AA7F46 /* NYPLColor.swift */; };
 		21B26CCE257FB95300A60238 /* LCPPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCD257FB95300A60238 /* LCPPlayer.swift */; };
 		21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */; };
 		21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0F15925768E9A001E51EF /* LCPSpineElement.swift */; };
@@ -111,6 +113,8 @@
 		177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverdrivePlayer.swift; sourceTree = "<group>"; };
 		178707C724DA505700649567 /* RSAUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSAUtils.swift; sourceTree = "<group>"; };
 		178707CD24DA5E1300649567 /* Constants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
+		1788AAE0270BAF5200AA7F46 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
+		1788AAE3270BB04D00AA7F46 /* NYPLColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NYPLColor.swift; sourceTree = "<group>"; };
 		21B26CCD257FB95300A60238 /* LCPPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPPlayer.swift; sourceTree = "<group>"; };
 		21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPDownloadTask.swift; sourceTree = "<group>"; };
 		21C0F15925768E9A001E51EF /* LCPSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPSpineElement.swift; sourceTree = "<group>"; };
@@ -272,6 +276,7 @@
 				7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */,
 				A934D08B22065B9400724200 /* NYPLStringAdditions.h */,
 				A934D08C22065B9400724200 /* NYPLStringAdditions.m */,
+				1788AAE0270BAF5200AA7F46 /* Colors.xcassets */,
 			);
 			path = NYPLAudiobookToolkit;
 			sourceTree = "<group>";
@@ -386,6 +391,7 @@
 				8CF57BD9243277180053C31E /* MediaProcessor.swift */,
 				178707C724DA505700649567 /* RSAUtils.swift */,
 				178707CD24DA5E1300649567 /* Constants.m */,
+				1788AAE3270BB04D00AA7F46 /* NYPLColor.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -495,6 +501,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */,
+				1788AAE1270BAF5200AA7F46 /* Colors.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -555,6 +562,7 @@
 				A97CE12F21ED0BF700B64305 /* OpenAccessSpineElement.swift in Sources */,
 				8C6CD8AD240DB3C000E2DFB0 /* FeedbookDRMProcessor.swift in Sources */,
 				177E52FC24908FD80031CCCD /* OverdrivePlayer.swift in Sources */,
+				1788AAE4270BB04D00AA7F46 /* NYPLColor.swift in Sources */,
 				17576CAA248E898600E18B4C /* OverdriveAudiobook.swift in Sources */,
 				21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */,
 				178707CE24DA5E1300649567 /* Constants.m in Sources */,
