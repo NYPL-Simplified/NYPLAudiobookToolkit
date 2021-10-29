@@ -64,8 +64,11 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     private var cursor: Cursor<SpineElement>?
+
+    /// Delegate callbacks will always be invoked on the main thread.
     private var delegates: NSHashTable<AudiobookNetworkServiceDelegate> = NSHashTable(options: [NSPointerFunctions.Options.weakMemory])
     
+    /// Delegate callbacks will always be invoked on the main thread.
     public func registerDelegate(_ delegate: AudiobookNetworkServiceDelegate) {
         self.delegates.add(delegate)
     }
@@ -136,27 +139,33 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
     }
 
-    func notifyDelegatesThatPlaybackIsReadyFor(_ spineElement: SpineElement) {
+    // Currently all these private methods are called on the main thread
+
+    /// - Important: Must be called on the main thread.
+    private func notifyDelegatesThatPlaybackIsReadyFor(_ spineElement: SpineElement) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
             delegate.audiobookNetworkService(self, didUpdateOverallDownloadProgress: self.downloadProgress)
         }
     }
 
-    func notifyDelegatesOfDownloadPercentFor(_ spineElement: SpineElement) {
+    /// - Important: Must be called on the main thread.
+    private func notifyDelegatesOfDownloadPercentFor(_ spineElement: SpineElement) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didUpdateProgressFor: spineElement)
             delegate.audiobookNetworkService(self, didUpdateOverallDownloadProgress: self.downloadProgress)
         }
     }
 
-    func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError?) {
+    /// - Important: Must be called on the main thread.
+    private func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError?) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
         }
     }
     
-    func notifyDelegatesOfDeleteFor(_ spineElement: SpineElement) {
+    /// - Important: Must be called on the main thread.
+    private func notifyDelegatesOfDeleteFor(_ spineElement: SpineElement) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didDeleteFileFor: spineElement)
         }

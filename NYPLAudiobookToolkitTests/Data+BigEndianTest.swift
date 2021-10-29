@@ -3,11 +3,11 @@ import XCTest
 
 @testable import NYPLAudiobookToolkit
 
-fileprivate let emptyData = Data.init(bytes: [])
-fileprivate let int32 = Data.init(bytes: [0, 0, 0, 1])
-fileprivate let int64 = Data.init(bytes: [0, 0, 0, 0, 0, 0, 0, 1])
-fileprivate let int32Offset1 = Data.init(bytes: [255, 0, 0, 0, 1])
-fileprivate let int64Offset1 = Data.init(bytes: [255, 0, 0, 0, 0, 0, 0, 0, 1])
+fileprivate let emptyData = Data.init([])
+fileprivate let int32 = Data.init( [0, 0, 0, 1])
+fileprivate let int64 = Data.init([0, 0, 0, 0, 0, 0, 0, 1])
+fileprivate let int32Offset1 = Data.init([255, 0, 0, 0, 1])
+fileprivate let int64Offset1 = Data.init([255, 0, 0, 0, 0, 0, 0, 0, 1])
 
 class DataBigEndianTest: XCTestCase {
   func testBigEndianUInt32() {

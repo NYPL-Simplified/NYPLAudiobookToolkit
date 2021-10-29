@@ -3,7 +3,8 @@ import XCTest
 
 @testable import NYPLAudiobookToolkit
 
-fileprivate let complexString = String.init(data: Data(bytes: [34, 70, 111, 111, 9, 66, 97, 114, 92]), encoding: .utf8)!
+fileprivate let complexString = String(data: Data([34, 70, 111, 111, 9, 66, 97, 114, 92]),
+                                       encoding: .utf8)!
 fileprivate let complexStringExpected = #"\"Foo\u0009Bar\\"#
 fileprivate let obj1: [String: Any?] = [
     "stringKey": complexString, // Should be \"Foo\u0009Bar\\

@@ -9,6 +9,8 @@ extension AVPlayer.Status {
     case .readyToPlay:
       s = "readyToPlay"
     case .unknown:
+      fallthrough
+    @unknown default:
       s = "unknown"
     }
     return s
@@ -24,6 +26,8 @@ extension AVPlayerItem.Status {
     case .readyToPlay:
       s = "readyToPlay"
     case .unknown:
+      fallthrough
+    @unknown default:
       s = "unknown"
     }
     return s

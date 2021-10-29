@@ -10,6 +10,6 @@ extension String {
                 }
             }
         }
-        return Data(bytes: digest)
+        return Data(digest)
     }
 }
