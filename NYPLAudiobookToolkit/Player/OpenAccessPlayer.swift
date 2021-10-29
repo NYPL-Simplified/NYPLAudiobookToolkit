@@ -86,7 +86,14 @@ class OpenAccessPlayer: NSObject, Player {
             if rate != self.avQueuePlayer.rate {
                 self.avQueuePlayer.rate = rate
             }
+        case .failed:
+            ATLog(.error, "Ready status is \"failed\".")
+            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
+            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
+            break
         case .unknown:
+            fallthrough
+        @unknown default:
             self.cursorQueuedToPlay = self.cursor
             ATLog(.error, "Player not yet ready. QueuedToPlay = true.")
             if self.avQueuePlayer.currentItem == nil {
@@ -104,11 +111,6 @@ class OpenAccessPlayer: NSObject, Player {
                     }
                 }
             }
-        case .failed:
-            ATLog(.error, "Ready status is \"failed\".")
-            let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
-            self.notifyDelegatesOfPlaybackFailureFor(chapter: self.chapterAtCurrentCursor, error)
-            break
         }
     }
 
@@ -284,6 +286,8 @@ class OpenAccessPlayer: NSObject, Player {
             case .failed:
                 fallthrough
             case .unknown:
+                fallthrough
+            @unknown default:
                 break
             }
         }
@@ -512,6 +516,8 @@ extension OpenAccessPlayer{
                 let error = (object as? AVQueuePlayer)?.error.debugDescription ?? "error: nil"
                 ATLog(.error, "AVQueuePlayer status: failed. Error:\n\(error)")
             case .unknown:
+                fallthrough
+            @unknown default:
                 ATLog(.debug, "AVQueuePlayer status: unknown.")
             }
 

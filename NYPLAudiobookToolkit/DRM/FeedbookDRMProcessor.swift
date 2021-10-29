@@ -163,7 +163,7 @@ class FeedbookDRMProcessor {
                 // Explicitly check status value
                 if let licenseData = data,
                     let jsonObj = try? JSONSerialization.jsonObject(with: licenseData, options: JSONSerialization.ReadingOptions()) as? [String: Any],
-                    let statusString = jsonObj?["status"] as? String {
+                    let statusString = jsonObj["status"] as? String {
                     
                     if statusString != "ready" && statusString != "active" {
                         ATLog(.debug, "feedbooks::performAsyncDrm licenseCheck failed: \((try? JSONUtils.canonicalize(jsonObj: jsonObj) as String) ?? "")")
