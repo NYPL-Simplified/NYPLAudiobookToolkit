@@ -8,7 +8,7 @@
 
 
 /// Notifications about the status of the download.
-@objc public protocol DownloadTaskDelegate: class {
+@objc public protocol DownloadTaskDelegate: AnyObject {
     func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask)
     func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
@@ -23,7 +23,7 @@
 ///
 /// If a DownloadTask is attempting to download a file that is already available
 /// locally, it should notify it's delegates as if it were a successful download.
-@objc public protocol DownloadTask: class {
+@objc public protocol DownloadTask: AnyObject {
     
     /// Ask the task to fetch the file and notify it's delegate
     /// when playback is ready. If this file is stored locally

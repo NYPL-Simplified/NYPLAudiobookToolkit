@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-@objc public protocol AudiobookLifecycleListener: class {
+@objc public protocol AudiobookLifecycleListener: AnyObject {
     func didFinishLaunching()
     func didEnterBackground()
     func willTerminate()

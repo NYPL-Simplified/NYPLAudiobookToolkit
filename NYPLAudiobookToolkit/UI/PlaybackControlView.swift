@@ -12,7 +12,7 @@ import AVKit
 import MediaPlayer
 
 
-protocol PlaybackControlViewDelegate: class {
+protocol PlaybackControlViewDelegate: AnyObject {
     func playbackControlViewPlayButtonWasTapped(_ playbackControlView: PlaybackControlView)
     func playbackControlViewPauseButtonWasTapped(_ playbackControlView: PlaybackControlView)
     func playbackControlViewSkipForwardButtonWasTapped(_ playbackControlView: PlaybackControlView)

@@ -9,7 +9,7 @@
 import UIKit
 import PureLayout
 
-protocol ScrubberViewDelegate: class {
+protocol ScrubberViewDelegate: AnyObject {
     func scrubberView(_ scrubberView: ScrubberView, didRequestScrubTo offset: TimeInterval)
     func scrubberViewDidRequestAccessibilityIncrement(_ scrubberView: ScrubberView)
     func scrubberViewDidRequestAccessibilityDecrement(_ scrubberView: ScrubberView)
