@@ -93,19 +93,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		7B5441EB200EA8810047B6C6 /* Copy Files */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		17576CA9248E898600E18B4C /* OverdriveAudiobook.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverdriveAudiobook.swift; sourceTree = "<group>"; };
 		17576CAB248E89DE00E18B4C /* OverdriveDownloadTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverdriveDownloadTask.swift; sourceTree = "<group>"; };
@@ -419,8 +406,6 @@
 				7B544188200EA7C20047B6C6 /* Frameworks */,
 				7B544189200EA7C20047B6C6 /* Headers */,
 				7B54418A200EA7C20047B6C6 /* Resources */,
-				7B5441EB200EA8810047B6C6 /* Copy Files */,
-				E6EF9A1C218CE5D9000CE559 /* Copy Frameworks (Carthage) */,
 			);
 			buildRules = (
 			);
@@ -439,8 +424,6 @@
 			buildPhases = (
 				7B544191200EA7C20047B6C6 /* Sources */,
 				7B544192200EA7C20047B6C6 /* Frameworks */,
-				7B544193200EA7C20047B6C6 /* Resources */,
-				8C944DAA240734A9004A1601 /* Copy Frameworks (Carthage) */,
 			);
 			buildRules = (
 			);
@@ -459,7 +442,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1310;
 				ORGANIZATIONNAME = "Dean Silfen";
 				TargetAttributes = {
 					7B54418B200EA7C20047B6C6 = {
@@ -505,53 +488,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7B544193200EA7C20047B6C6 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		8C944DAA240734A9004A1601 /* Copy Frameworks (Carthage) */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Frameworks (Carthage)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
-		};
-		E6EF9A1C218CE5D9000CE559 /* Copy Frameworks (Carthage) */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Frameworks (Carthage)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7B544187200EA7C20047B6C6 /* Sources */ = {
