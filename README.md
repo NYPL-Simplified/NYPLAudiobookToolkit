@@ -1,6 +1,6 @@
 # Build
 
-Use Xcode 12 and carthage v0.37.
+Use Xcode 13 and carthage v0.38.
 
 First build carthage dependencies:
 ```bash
