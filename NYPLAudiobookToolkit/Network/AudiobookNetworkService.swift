@@ -8,7 +8,7 @@
 
 import UIKit
 
-@objc public protocol AudiobookNetworkServiceDelegate: class {
+@objc public protocol AudiobookNetworkServiceDelegate: AnyObject {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float)
@@ -24,7 +24,7 @@ import UIKit
 /// The purpose of an AudiobookNetworkService is to manage the download
 /// tasks and tie them back to their spine elements
 /// for delegates to consume.
-@objc public protocol AudiobookNetworkService: class {
+@objc public protocol AudiobookNetworkService: AnyObject {
     var spine: [SpineElement] { get }
     var downloadProgress: Float { get }
     

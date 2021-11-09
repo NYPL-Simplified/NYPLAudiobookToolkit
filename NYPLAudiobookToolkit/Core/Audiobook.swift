@@ -26,13 +26,13 @@ import UIKit
     func decrypt(url: URL, to resultUrl: URL, completion: @escaping (_ error: Error?) -> Void)
 }
 
-@objc public protocol SpineElement: class {
+@objc public protocol SpineElement: AnyObject {
     var key: String { get }
     var downloadTask: DownloadTask { get }
     var chapter: ChapterLocation { get }
 }
 
-@objc public protocol Audiobook: class {
+@objc public protocol Audiobook: AnyObject {
     var uniqueIdentifier: String { get }
     var spine: [SpineElement] { get }
     var player: Player { get }

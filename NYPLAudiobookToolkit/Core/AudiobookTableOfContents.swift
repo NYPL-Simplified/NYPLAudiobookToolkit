@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol AudiobookTableOfContentsDelegate: class {
+protocol AudiobookTableOfContentsDelegate: AnyObject {
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
     func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool)
     func audiobookTableOfContentsUserSelected(spineItem: SpineElement)

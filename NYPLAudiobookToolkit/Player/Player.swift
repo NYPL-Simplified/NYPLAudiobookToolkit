@@ -13,7 +13,7 @@ import Foundation
 }
 
 /// Receive updates from player as events happen
-@objc public protocol PlayerDelegate: class {
+@objc public protocol PlayerDelegate: AnyObject {
 
     /// Guaranteed to be called on the following scenarios:
     ///   * The playhead crossed to a new chapter
