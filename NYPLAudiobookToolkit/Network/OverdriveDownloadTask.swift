@@ -170,7 +170,11 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
             self.downloadTask.downloadProgress = 0.0
             var error:NSError? = nil
             if (httpResponse.statusCode == 410) {
-                error = NSError(domain: OverdrivePlayerErrorDomain, code: OverdrivePlayerError.downloadExpired.rawValue, userInfo: nil)
+                error = NSError(domain: OverdrivePlayerErrorDomain,
+                                code: OverdrivePlayerError.downloadExpired.rawValue,
+                                userInfo: ["error cause": "download task failed",
+                                           "request": downloadTask.originalRequest ?? "",
+                                           "response": httpResponse])
             }
             self.delegate?.downloadTaskFailed(self.downloadTask, withError: error)
         }
@@ -191,8 +195,13 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
             case NSURLErrorNotConnectedToInternet,
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
-                let networkLossError = NSError(domain: OverdrivePlayerErrorDomain, code: OverdrivePlayerError.connectionLost.rawValue, userInfo: nil)
-                self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
+                let networkLossError = NSError(domain: OverdrivePlayerErrorDomain,
+                                               code: OverdrivePlayerError.connectionLost.rawValue,
+                                               userInfo: ["error cause": "connection loss",
+                                                          "request": task.originalRequest ?? "",
+                                                          "error": error])
+                self.delegate?.downloadTaskFailed(self.downloadTask,
+                                                  withError: networkLossError)
                 return
             default:
                 break
