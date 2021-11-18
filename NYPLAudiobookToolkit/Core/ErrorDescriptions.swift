@@ -1,5 +1,5 @@
-let OpenAccessPlayerErrorDomain = "org.nypl.labs.NYPLAudiobookToolkit.OpenAccessPlayer"
-let OverdrivePlayerErrorDomain = "org.nypl.labs.NYPLAudiobookToolkit.OverdrivePlayer"
+let OpenAccessPlayerErrorDomain = "NYPLAudiobookToolkit.OpenAccessPlayer"
+let OverdrivePlayerErrorDomain = "NYPLAudiobookToolkit.OverdrivePlayer"
 
 enum OpenAccessPlayerError: Int {
     case unknown = 0
@@ -26,7 +26,7 @@ enum OpenAccessPlayerError: Int {
         case .unknown:
             return """
             An unknown error has occurred. Please leave the book, and try again.
-            If the problem persists, go to Settings and sign out.
+            If the problem persists, sign out and sign back in.
             """
         case .downloadNotFinished:
             return """
@@ -43,8 +43,8 @@ enum OpenAccessPlayerError: Int {
             """
         case .drmExpired:
             return """
-            DRM Permissions for this Audiobook have expired. Please leave the book, and try again.
-            If the problem persists, go to Settings and sign out.
+            DRM permissions for this Audiobook have expired. Please leave the book, and try again.
+            If the problem persists, sign out and sign back in.
             """
         }
     }

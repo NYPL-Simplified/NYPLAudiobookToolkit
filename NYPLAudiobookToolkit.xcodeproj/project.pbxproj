@@ -764,7 +764,6 @@
 		7B5441A4200EA7C20047B6C6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7262U6ST2R;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -786,7 +785,6 @@
 		7B5441A5200EA7C20047B6C6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7262U6ST2R;
 				FRAMEWORK_SEARCH_PATHS = (
