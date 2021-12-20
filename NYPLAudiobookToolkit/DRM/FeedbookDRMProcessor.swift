@@ -1,4 +1,5 @@
 import CommonCrypto
+import NYPLUtilities
 
 fileprivate let jwtHeaderObj = [
     "alg" : "HS256",

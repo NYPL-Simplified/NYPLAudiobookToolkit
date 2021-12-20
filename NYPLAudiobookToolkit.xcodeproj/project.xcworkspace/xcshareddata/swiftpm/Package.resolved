@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "NYPLUtilities",
+        "repositoryURL": "https://github.com/NYPL-Simplified/iOS-Utilities",
+        "state": {
+          "branch": "main",
+          "revision": "42b9c48e1da947d28789be9aa5822ebc0802a80b",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
