@@ -3,36 +3,6 @@
 
 @implementation NYPLStringAdditions
 
-+ (NSString *)fileSystemSafeBase64DecodedStringUsingEncoding:(NSStringEncoding)encoding forString:(NSString *)inputString
-{
-  NSMutableString *const s = [[[inputString stringByReplacingOccurrencesOfString:@"-" withString:@"+"]
-                               stringByReplacingOccurrencesOfString:@"_" withString:@"/"]
-                              mutableCopy];
-
-  while([s length] % 4) {
-    [s appendString:@"="];
-  }
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wassign-enum"
-  return [[NSString alloc]
-          initWithData:[[NSData alloc] initWithBase64EncodedString:s options:0]
-          encoding:encoding];
-#pragma clang diagnostic pop
-}
-
-+ (NSString *)fileSystemSafeBase64EncodedStringUsingEncoding:(NSStringEncoding)encoding forString:(NSString *)inputString
-{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wassign-enum"
-  return [[[[[inputString dataUsingEncoding:encoding] base64EncodedStringWithOptions:0]
-            stringByTrimmingCharactersInSet:[NSCharacterSet
-                                             characterSetWithCharactersInString:@"="]]
-           stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
-          stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
-#pragma clang diagnostic pop
-}
-
 + (NSString *)SHA256forString:(NSString *)inputString
 {
   NSData *const input = [inputString dataUsingEncoding:NSUTF8StringEncoding];
