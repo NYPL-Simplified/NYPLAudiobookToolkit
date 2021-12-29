@@ -19,7 +19,7 @@
 		21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0F15925768E9A001E51EF /* LCPSpineElement.swift */; };
 		21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */; };
 		730C7A752771328C00DCE08A /* NYPLUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 730C7A742771328C00DCE08A /* NYPLUtilities */; };
-		732FD86C26333E6A0018A82E /* PureLayout.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 732FD86B26333E6A0018A82E /* PureLayout.xcframework */; };
+		730DFEC1277CD6FC006B62C4 /* PureLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 730DFEC0277CD6FC006B62C4 /* PureLayout */; };
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
 		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
@@ -105,7 +105,6 @@
 		21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPDownloadTask.swift; sourceTree = "<group>"; };
 		21C0F15925768E9A001E51EF /* LCPSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPSpineElement.swift; sourceTree = "<group>"; };
 		21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPAudiobook.swift; sourceTree = "<group>"; };
-		732FD86B26333E6A0018A82E /* PureLayout.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = PureLayout.xcframework; path = Carthage/Build/PureLayout.xcframework; sourceTree = "<group>"; };
 		732FD874263342BE0018A82E /* Cartfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
 		732FD875263342BE0018A82E /* Cartfile.resolved */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
 		732FD876263342BF0018A82E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -181,9 +180,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				730DFEC1277CD6FC006B62C4 /* PureLayout in Frameworks */,
 				7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */,
 				730C7A752771328C00DCE08A /* NYPLUtilities in Frameworks */,
-				732FD86C26333E6A0018A82E /* PureLayout.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,7 +290,6 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				732FD86B26333E6A0018A82E /* PureLayout.xcframework */,
 				7BD759CB20191980004CE65F /* CoreData.framework */,
 				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
 			);
@@ -413,6 +411,7 @@
 			name = NYPLAudiobookToolkit;
 			packageProductDependencies = (
 				730C7A742771328C00DCE08A /* NYPLUtilities */,
+				730DFEC0277CD6FC006B62C4 /* PureLayout */,
 			);
 			productName = NYPLAudiobookToolkit;
 			productReference = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */;
@@ -468,6 +467,7 @@
 			mainGroup = 7B544182200EA7C20047B6C6;
 			packageReferences = (
 				730C7A732771328C00DCE08A /* XCRemoteSwiftPackageReference "iOS-Utilities" */,
+				730DFEBF277CD6FC006B62C4 /* XCRemoteSwiftPackageReference "PureLayout" */,
 			);
 			productRefGroup = 7B54418D200EA7C20047B6C6 /* Products */;
 			projectDirPath = "";
@@ -842,6 +842,14 @@
 				kind = branch;
 			};
 		};
+		730DFEBF277CD6FC006B62C4 /* XCRemoteSwiftPackageReference "PureLayout" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PureLayout/PureLayout.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.9;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -849,6 +857,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 730C7A732771328C00DCE08A /* XCRemoteSwiftPackageReference "iOS-Utilities" */;
 			productName = NYPLUtilities;
+		};
+		730DFEC0277CD6FC006B62C4 /* PureLayout */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 730DFEBF277CD6FC006B62C4 /* XCRemoteSwiftPackageReference "PureLayout" */;
+			productName = PureLayout;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

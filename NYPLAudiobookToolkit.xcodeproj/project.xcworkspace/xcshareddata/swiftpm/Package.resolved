@@ -9,6 +9,15 @@
           "revision": "42b9c48e1da947d28789be9aa5822ebc0802a80b",
           "version": null
         }
+      },
+      {
+        "package": "PureLayout",
+        "repositoryURL": "https://github.com/PureLayout/PureLayout.git",
+        "state": {
+          "branch": null,
+          "revision": "5561683c96dc49b023c1299bfe4f6fbeed5f8199",
+          "version": "3.1.9"
+        }
       }
     ]
   },
