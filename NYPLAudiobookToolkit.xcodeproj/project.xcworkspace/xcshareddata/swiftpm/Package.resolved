@@ -5,8 +5,8 @@
         "package": "NYPLUtilities",
         "repositoryURL": "https://github.com/NYPL-Simplified/iOS-Utilities",
         "state": {
-          "branch": "main",
-          "revision": "42b9c48e1da947d28789be9aa5822ebc0802a80b",
+          "branch": "task/IOS-294/objc",
+          "revision": "47940280f3a3466ed9bc9b1b00c72bc8ac5f30ee",
           "version": null
         }
       },

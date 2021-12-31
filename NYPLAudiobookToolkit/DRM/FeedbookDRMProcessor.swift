@@ -1,5 +1,11 @@
+import Foundation
 import CommonCrypto
 import NYPLUtilities
+
+public class FeedbookDRM: NSObject {
+    static let privateKeyTag = "feedbook_drm_private_key_"
+    public static let publicKeyTag = "feedbook_drm_public_key_"
+}
 
 fileprivate let jwtHeaderObj = [
     "alg" : "HS256",
@@ -210,7 +216,7 @@ class FeedbookDRMProcessor {
     }
     
     class private func getFeedbookPublicKeyFromKeychain(forVendor: String) -> Data? {
-        let tag = FeedbookDRMPublicKeyTag + forVendor
+        let tag = FeedbookDRM.publicKeyTag + forVendor
         guard let tagData = tag.data(using: .utf8) else {
             ATLog(.error, "Failed to get Feedbook DRM public key tag data for Keychain access")
             return nil

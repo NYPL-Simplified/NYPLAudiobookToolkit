@@ -1,4 +1,5 @@
 import AVFoundation
+import NYPLUtilities
 
 let OverdriveTaskCompleteNotification = NSNotification.Name(rawValue: "OverdriveDownloadTaskCompleteNotification")
 
@@ -107,7 +108,7 @@ final class OverdriveDownloadTask: DownloadTask {
     }
 
     private func hash(_ key: String) -> String? {
-        guard let hash = NYPLStringAdditions.sha256forString(key) else {
+        guard let hash = key.sha256 else {
             return nil
         }
         return hash
