@@ -1,3 +1,5 @@
+import Foundation
+
 class JSONUtils {
     enum JSONCanonicalizatoinError: Error {
         case canonicalizationError(String)

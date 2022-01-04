@@ -1,3 +1,5 @@
+import Foundation
+
 @objcMembers public final class OverdriveAudiobook: NSObject, Audiobook {
     
     public let uniqueIdentifier: String

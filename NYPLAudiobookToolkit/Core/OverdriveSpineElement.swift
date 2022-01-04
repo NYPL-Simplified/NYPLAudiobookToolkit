@@ -1,3 +1,5 @@
+import Foundation
+
 enum OverdriveSpineElementMediaType: String {
     case audioMP3 = "audio/mp3"
 }

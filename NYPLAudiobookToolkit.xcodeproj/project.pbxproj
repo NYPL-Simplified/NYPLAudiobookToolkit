@@ -201,6 +201,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		73D5844F2783B0D300071C17 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7B5441F3200FB3EE0047B6C6 /* Media.xcassets */,
+				1788AAE0270BAF5200AA7F46 /* Colors.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		7B3BD9C62011737B002C5416 /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -251,10 +260,9 @@
 				7B7B3709202274C400030A1E /* Player */,
 				7B3BD9C62011737B002C5416 /* UI */,
 				8C882C932409B0320000CA59 /* Utils */,
+				73D5844F2783B0D300071C17 /* Resources */,
 				7B544190200EA7C20047B6C6 /* Info.plist */,
 				7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */,
-				7B5441F3200FB3EE0047B6C6 /* Media.xcassets */,
-				1788AAE0270BAF5200AA7F46 /* Colors.xcassets */,
 			);
 			path = NYPLAudiobookToolkit;
 			sourceTree = "<group>";

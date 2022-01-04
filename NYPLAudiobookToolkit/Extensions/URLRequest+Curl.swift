@@ -1,3 +1,5 @@
+import Foundation
+
 // Based on
 // https://gist.github.com/shaps80/ba6a1e2d477af0383e8f19b87f53661d
 

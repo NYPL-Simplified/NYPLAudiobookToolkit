@@ -6,6 +6,7 @@
 //  Copyright © 2018 Dean Silfen. All rights reserved.
 //
 
+import Foundation
 
 /// Notifications about the status of the download.
 @objc public protocol DownloadTaskDelegate: AnyObject {
