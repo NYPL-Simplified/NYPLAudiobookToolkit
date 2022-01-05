@@ -1,3 +1,5 @@
+import Foundation
+
 class DateUtils {
     class func parseDate(_ str: String) -> Date? {
         let date: Date?

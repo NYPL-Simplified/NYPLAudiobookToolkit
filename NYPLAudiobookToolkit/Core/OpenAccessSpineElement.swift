@@ -1,3 +1,5 @@
+import Foundation
+
 enum OpenAccessSpineElementMediaType: String {
     case audioMPEG = "audio/mpeg"
     case audioMP4 = "audio/mp4"

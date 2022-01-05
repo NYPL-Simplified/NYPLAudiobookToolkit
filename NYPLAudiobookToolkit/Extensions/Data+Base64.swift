@@ -1,3 +1,5 @@
+import Foundation
+
 extension Data {
     // Encodes data into URL-safe Base64
     // see RFC4648 Section 5

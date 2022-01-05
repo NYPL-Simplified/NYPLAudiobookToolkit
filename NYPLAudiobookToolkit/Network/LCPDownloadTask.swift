@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import NYPLUtilities
 
 let LCPDownloadTaskCompleteNotification = NSNotification.Name(rawValue: "LCPDownloadTaskCompleteNotification")
 /**
@@ -63,7 +64,7 @@ final class LCPDownloadTask: DownloadTask {
             ATLog(.error, "Could not find caches directory.")
             return nil
         }
-        guard let hashedUrl = NYPLStringAdditions.sha256forString(url.path) else {
+        guard let hashedUrl = url.path.sha256 else {
             ATLog(.error, "Could not create a valid hash from download task ID.")
             return nil
         }

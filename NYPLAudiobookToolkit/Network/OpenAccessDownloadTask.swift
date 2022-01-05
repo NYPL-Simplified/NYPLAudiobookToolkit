@@ -1,4 +1,5 @@
 import AVFoundation
+import NYPLUtilities
 
 let OpenAccessTaskCompleteNotification = NSNotification.Name(rawValue: "OpenAccessDownloadTaskCompleteNotification")
 
@@ -173,7 +174,7 @@ final class OpenAccessDownloadTask: DownloadTask {
     }
 
     private func hash(_ key: String) -> String? {
-        guard let hash = NYPLStringAdditions.sha256forString(key) else {
+        guard let hash = key.sha256 else {
             return nil
         }
         return hash

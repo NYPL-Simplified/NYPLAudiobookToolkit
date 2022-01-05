@@ -11,7 +11,6 @@
 		17576CAC248E89DE00E18B4C /* OverdriveDownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17576CAB248E89DE00E18B4C /* OverdriveDownloadTask.swift */; };
 		17576CAE248E8A0100E18B4C /* OverdriveSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17576CAD248E8A0100E18B4C /* OverdriveSpineElement.swift */; };
 		177E52FC24908FD80031CCCD /* OverdrivePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */; };
-		178707CE24DA5E1300649567 /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 178707CD24DA5E1300649567 /* Constants.m */; };
 		1788AAE1270BAF5200AA7F46 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1788AAE0270BAF5200AA7F46 /* Colors.xcassets */; };
 		1788AAE4270BB04D00AA7F46 /* NYPLColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1788AAE3270BB04D00AA7F46 /* NYPLColor.swift */; };
 		21B26CCE257FB95300A60238 /* LCPPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B26CCD257FB95300A60238 /* LCPPlayer.swift */; };
@@ -19,7 +18,8 @@
 		21B26CD1257FBB2900A60238 /* LCPSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C0F15925768E9A001E51EF /* LCPSpineElement.swift */; };
 		21D623A1257E6BBE006F5DCE /* LCPAudiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */; };
 		730C7A752771328C00DCE08A /* NYPLUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 730C7A742771328C00DCE08A /* NYPLUtilities */; };
-		732FD86C26333E6A0018A82E /* PureLayout.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 732FD86B26333E6A0018A82E /* PureLayout.xcframework */; };
+		730DFEC1277CD6FC006B62C4 /* PureLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 730DFEC0277CD6FC006B62C4 /* PureLayout */; };
+		73829F4327861D58008B2A80 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73829F4227861D58008B2A80 /* CoreTests.swift */; };
 		7B3BD9C82011739E002C5416 /* ScrubberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3BD9C72011739E002C5416 /* ScrubberView.swift */; };
 		7B3BD9CC2011848B002C5416 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5441F3200FB3EE0047B6C6 /* Media.xcassets */; };
 		7B473A2D20640D030074D472 /* ScrubberProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */; };
@@ -72,8 +72,6 @@
 		8CF57BDA243277180053C31E /* MediaProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF57BD9243277180053C31E /* MediaProcessor.swift */; };
 		8CF57BDC2432788C0053C31E /* Data+BigEndian.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF57BDB2432788C0053C31E /* Data+BigEndian.swift */; };
 		A92FB10421CDF94A004740F4 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92FB10321CDF94A004740F4 /* DownloadProgressView.swift */; };
-		A934D08D22065B9500724200 /* NYPLStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = A934D08B22065B9400724200 /* NYPLStringAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A934D08E22065B9500724200 /* NYPLStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = A934D08C22065B9400724200 /* NYPLStringAdditions.m */; };
 		A94E769C219F7B4200E943A2 /* AudiobookCoverImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94E769B219F7B4200E943A2 /* AudiobookCoverImageView.swift */; };
 		A97CE12F21ED0BF700B64305 /* OpenAccessSpineElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97CE12E21ED0BF700B64305 /* OpenAccessSpineElement.swift */; };
 		A97CE13121ED388D00B64305 /* OpenAccessAudiobook.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97CE13021ED388D00B64305 /* OpenAccessAudiobook.swift */; };
@@ -98,17 +96,16 @@
 		17576CAB248E89DE00E18B4C /* OverdriveDownloadTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverdriveDownloadTask.swift; sourceTree = "<group>"; };
 		17576CAD248E8A0100E18B4C /* OverdriveSpineElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverdriveSpineElement.swift; sourceTree = "<group>"; };
 		177E52FB24908FD80031CCCD /* OverdrivePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverdrivePlayer.swift; sourceTree = "<group>"; };
-		178707CD24DA5E1300649567 /* Constants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
 		1788AAE0270BAF5200AA7F46 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		1788AAE3270BB04D00AA7F46 /* NYPLColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NYPLColor.swift; sourceTree = "<group>"; };
 		21B26CCD257FB95300A60238 /* LCPPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPPlayer.swift; sourceTree = "<group>"; };
 		21B26CCF257FBA9F00A60238 /* LCPDownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPDownloadTask.swift; sourceTree = "<group>"; };
 		21C0F15925768E9A001E51EF /* LCPSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPSpineElement.swift; sourceTree = "<group>"; };
 		21D623A0257E6BBE006F5DCE /* LCPAudiobook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LCPAudiobook.swift; sourceTree = "<group>"; };
-		732FD86B26333E6A0018A82E /* PureLayout.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = PureLayout.xcframework; path = Carthage/Build/PureLayout.xcframework; sourceTree = "<group>"; };
 		732FD874263342BE0018A82E /* Cartfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
 		732FD875263342BE0018A82E /* Cartfile.resolved */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
 		732FD876263342BF0018A82E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		73829F4227861D58008B2A80 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
 		7B3BD9C72011739E002C5416 /* ScrubberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberView.swift; sourceTree = "<group>"; };
 		7B473A2C20640D030074D472 /* ScrubberProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberProgressTests.swift; sourceTree = "<group>"; };
 		7B473A2E20642FAA0074D472 /* ScrubberUIStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrubberUIStateTests.swift; sourceTree = "<group>"; };
@@ -165,8 +162,6 @@
 		8CF57BD9243277180053C31E /* MediaProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaProcessor.swift; sourceTree = "<group>"; };
 		8CF57BDB2432788C0053C31E /* Data+BigEndian.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+BigEndian.swift"; sourceTree = "<group>"; };
 		A92FB10321CDF94A004740F4 /* DownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressView.swift; sourceTree = "<group>"; };
-		A934D08B22065B9400724200 /* NYPLStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NYPLStringAdditions.h; sourceTree = "<group>"; };
-		A934D08C22065B9400724200 /* NYPLStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NYPLStringAdditions.m; sourceTree = "<group>"; };
 		A94E769B219F7B4200E943A2 /* AudiobookCoverImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiobookCoverImageView.swift; sourceTree = "<group>"; };
 		A97CE12E21ED0BF700B64305 /* OpenAccessSpineElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAccessSpineElement.swift; sourceTree = "<group>"; };
 		A97CE13021ED388D00B64305 /* OpenAccessAudiobook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAccessAudiobook.swift; sourceTree = "<group>"; };
@@ -181,9 +176,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				730DFEC1277CD6FC006B62C4 /* PureLayout in Frameworks */,
 				7BD759B820127E32004CE65F /* MediaPlayer.framework in Frameworks */,
 				730C7A752771328C00DCE08A /* NYPLUtilities in Frameworks */,
-				732FD86C26333E6A0018A82E /* PureLayout.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,6 +201,15 @@
 				732FD876263342BF0018A82E /* README.md */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		73D5844F2783B0D300071C17 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7B5441F3200FB3EE0047B6C6 /* Media.xcassets */,
+				1788AAE0270BAF5200AA7F46 /* Colors.xcassets */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		7B3BD9C62011737B002C5416 /* UI */ = {
@@ -258,12 +262,9 @@
 				7B7B3709202274C400030A1E /* Player */,
 				7B3BD9C62011737B002C5416 /* UI */,
 				8C882C932409B0320000CA59 /* Utils */,
+				73D5844F2783B0D300071C17 /* Resources */,
 				7B544190200EA7C20047B6C6 /* Info.plist */,
-				7B5441F3200FB3EE0047B6C6 /* Media.xcassets */,
 				7B54418F200EA7C20047B6C6 /* NYPLAudiobookToolkit.h */,
-				A934D08B22065B9400724200 /* NYPLStringAdditions.h */,
-				A934D08C22065B9400724200 /* NYPLStringAdditions.m */,
-				1788AAE0270BAF5200AA7F46 /* Colors.xcassets */,
 			);
 			path = NYPLAudiobookToolkit;
 			sourceTree = "<group>";
@@ -273,6 +274,7 @@
 			children = (
 				7B54419C200EA7C20047B6C6 /* Info.plist */,
 				7B78545A204DEE8500F6589B /* AudiobookNetworkServiceTest.swift */,
+				73829F4227861D58008B2A80 /* CoreTests.swift */,
 				7B6C1BD320405C4D00EB791E /* CursorTests.swift */,
 				8CD8A20E243E7A0D009DA4CC /* Data+BigEndianTest.swift */,
 				7B78545C204DEE9900F6589B /* DownloadTaskMock.swift */,
@@ -291,7 +293,6 @@
 		7B5441E8200EA8740047B6C6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				732FD86B26333E6A0018A82E /* PureLayout.xcframework */,
 				7BD759CB20191980004CE65F /* CoreData.framework */,
 				7BD759B720127E31004CE65F /* MediaPlayer.framework */,
 			);
@@ -376,7 +377,6 @@
 				8C882C942409B04F0000CA59 /* DateUtils.swift */,
 				8C6CD8A9240D9F8A00E2DFB0 /* JSONUtils.swift */,
 				8CF57BD9243277180053C31E /* MediaProcessor.swift */,
-				178707CD24DA5E1300649567 /* Constants.m */,
 				1788AAE3270BB04D00AA7F46 /* NYPLColor.swift */,
 			);
 			path = Utils;
@@ -389,7 +389,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A934D08D22065B9500724200 /* NYPLStringAdditions.h in Headers */,
 				7B54419D200EA7C20047B6C6 /* NYPLAudiobookToolkit.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -413,6 +412,7 @@
 			name = NYPLAudiobookToolkit;
 			packageProductDependencies = (
 				730C7A742771328C00DCE08A /* NYPLUtilities */,
+				730DFEC0277CD6FC006B62C4 /* PureLayout */,
 			);
 			productName = NYPLAudiobookToolkit;
 			productReference = 7B54418C200EA7C20047B6C6 /* NYPLAudiobookToolkit.framework */;
@@ -468,6 +468,7 @@
 			mainGroup = 7B544182200EA7C20047B6C6;
 			packageReferences = (
 				730C7A732771328C00DCE08A /* XCRemoteSwiftPackageReference "iOS-Utilities" */,
+				730DFEBF277CD6FC006B62C4 /* XCRemoteSwiftPackageReference "PureLayout" */,
 			);
 			productRefGroup = 7B54418D200EA7C20047B6C6 /* Products */;
 			projectDirPath = "";
@@ -503,7 +504,6 @@
 				1788AAE4270BB04D00AA7F46 /* NYPLColor.swift in Sources */,
 				17576CAA248E898600E18B4C /* OverdriveAudiobook.swift in Sources */,
 				21B26CD0257FBA9F00A60238 /* LCPDownloadTask.swift in Sources */,
-				178707CE24DA5E1300649567 /* Constants.m in Sources */,
 				7B5441E4200EA82C0047B6C6 /* AudiobookPlayerViewController.swift in Sources */,
 				E67CA9A5215C0D320081A10B /* Log.swift in Sources */,
 				7BF3C446205B0A010056D46B /* HumanReadableTimeRemaining.swift in Sources */,
@@ -541,7 +541,6 @@
 				7B6C1BD2203F5BE600EB791E /* AudiobookTableOfContentsTableViewController.swift in Sources */,
 				8C3CDB0E2422E7F40020FC0B /* String+Hmac.swift in Sources */,
 				A92FB10421CDF94A004740F4 /* DownloadProgressView.swift in Sources */,
-				A934D08E22065B9500724200 /* NYPLStringAdditions.m in Sources */,
 				7BDD33AF204461A000CC8807 /* HumanReadableTimestamp.swift in Sources */,
 				8C218AE8242C4C8500C53F0A /* AVPlayer+Description.swift in Sources */,
 				7BF18B2B205C467C0001992C /* ChapterInfoStack.swift in Sources */,
@@ -569,6 +568,7 @@
 				8CD8A20F243E7A0D009DA4CC /* Data+BigEndianTest.swift in Sources */,
 				7B6C1BD420405C4D00EB791E /* CursorTests.swift in Sources */,
 				7B87DCC52087AE5D00256331 /* PlayerManipulationTest.swift in Sources */,
+				73829F4327861D58008B2A80 /* CoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -636,6 +636,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -694,6 +695,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -838,8 +840,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/NYPL-Simplified/iOS-Utilities";
 			requirement = {
-				branch = main;
+				branch = "task/IOS-294/objc";
 				kind = branch;
+			};
+		};
+		730DFEBF277CD6FC006B62C4 /* XCRemoteSwiftPackageReference "PureLayout" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PureLayout/PureLayout.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.9;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -849,6 +859,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 730C7A732771328C00DCE08A /* XCRemoteSwiftPackageReference "iOS-Utilities" */;
 			productName = NYPLUtilities;
+		};
+		730DFEC0277CD6FC006B62C4 /* PureLayout */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 730DFEBF277CD6FC006B62C4 /* XCRemoteSwiftPackageReference "PureLayout" */;
+			productName = PureLayout;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

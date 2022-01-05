@@ -3,10 +3,10 @@
     "pins": [
       {
         "package": "NYPLUtilities",
-        "repositoryURL": "https://github.com/NYPL-Simplified/iOS-Utilities",
+        "repositoryURL": "https://github.com/NYPL-Simplified/iOS-Utilities.git",
         "state": {
-          "branch": "task/IOS-294/objc",
-          "revision": "47940280f3a3466ed9bc9b1b00c72bc8ac5f30ee",
+          "branch": "main",
+          "revision": "242bb22e7addf5ed35b0dfb1ea3775d4004e1228",
           "version": null
         }
       },

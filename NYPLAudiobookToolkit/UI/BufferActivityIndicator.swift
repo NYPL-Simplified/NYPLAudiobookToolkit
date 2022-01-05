@@ -1,3 +1,5 @@
+import UIKit
+
 class BufferActivityIndicatorView: UIActivityIndicatorView {
 
     var debounceTimer: Timer? = nil {
