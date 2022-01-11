@@ -443,7 +443,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
 				LastUpgradeCheck = 1310;
-				ORGANIZATIONNAME = "Dean Silfen";
+				ORGANIZATIONNAME = NYPL;
 				TargetAttributes = {
 					7B54418B200EA7C20047B6C6 = {
 						CreatedOnToolsVersion = 9.2;
