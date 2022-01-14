@@ -12,4 +12,4 @@ jobs:
       - name: Checkout main repo and submodules
         uses: actions/checkout@v2
       - name: Run SPM Unit Tests
-        run: swift test
+        run: xcodebuild -scheme 'NYPLAudiobookToolkit' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPad mini (6th generation)' test | if command -v xcpretty; then xcpretty; else cat; fi
