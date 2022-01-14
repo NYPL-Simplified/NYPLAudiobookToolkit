@@ -23,6 +23,9 @@ DerivedData/
 !default.perspectivev3
 .DS_Store
 
+## SPM 
+.build
+
 ## Do not commit private AudioEngine SDK
 AudioEngine/
 Carthage/

@@ -1,3 +1,5 @@
+[![Build and Unit Tests](https://github.com/NYPL-Simplified/NYPLAudiobookToolkit/Unit%20Tests/badge.svg)](https://github.com/NYPL-Simplified/NYPLAudiobookToolkit/actions?query=workflow%3A%22Unit%20Tests%22) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 # Overview
 
 NYPLAudiobookToolkit provides utilities and UI components for audiobook playback.  It provides audio players based on AVFoundation for Open Access and DRM systems such as Overdrive and LCP. It is also possible to extend it externally with additional DRM systems. 
