@@ -6,7 +6,7 @@
 //  Copyright © 2018 Dean Silfen. All rights reserved.
 //
 
-import UIKit
+import Foundation
 import MediaPlayer
 import AVFoundation
 
