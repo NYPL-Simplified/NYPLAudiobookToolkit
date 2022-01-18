@@ -6,7 +6,7 @@
 //  Copyright © 2018 Dean Silfen. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 @objcMembers public final class AudiobookMetadata: NSObject {
     public let title: String?

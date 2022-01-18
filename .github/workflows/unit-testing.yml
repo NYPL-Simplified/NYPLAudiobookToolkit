@@ -1,0 +1,15 @@
+name: Unit Tests
+on:
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: macOS-latest
+    steps:
+      - name: Force Xcode 13.1
+        run: sudo xcode-select -switch /Applications/Xcode_13.1.app
+      - name: Print System Architecture
+        run: uname -a
+      - name: Checkout main repo and submodules
+        uses: actions/checkout@v2
+      - name: Run SPM Unit Tests
+        run: xcodebuild -scheme 'NYPLAudiobookToolkit' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPad mini (6th generation)' test | if command -v xcpretty; then xcpretty; else cat; fi
