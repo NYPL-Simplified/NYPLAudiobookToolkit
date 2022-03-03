@@ -85,6 +85,7 @@ var sharedLogHandler: LogHandler?
         return SleepTimer(player: self.audiobook.player)
     }()
 
+    public var progressSavingTimer: DispatchSourceTimer?
     private(set) public var timer: Timer?
     private let mediaControlHandler: MediaControlHandler
     public init (metadata: AudiobookMetadata, audiobook: Audiobook, networkService: AudiobookNetworkService) {
@@ -182,8 +183,15 @@ var sharedLogHandler: LogHandler?
 extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.mediaControlHandler.enableMediaControlCommands()
+        if let timer = self.progressSavingTimer {
+          timer.resume()
+        }
     }
-    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) { }
+    public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
+        if let timer = self.progressSavingTimer {
+          timer.suspend()
+        }
+    }
     public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
     public func player(_ player: Player, didComplete chapter: ChapterLocation) {
         let sortedSpine = self.networkService.spine.map{ $0.chapter }.sorted{ $0 < $1 }
@@ -266,6 +274,8 @@ private class MediaControlHandler {
         ATLog(.debug, "MediaControlHandler is deinitializing.")
     }
 
+    // Passing in `false` means user will not able to resume playback from media control center,
+    // theoretically this function should only be called when we open and close an audiobook
     private func setMediaControlCommands(enabled: Bool) {
         ATLog(.debug, "MediaControlHandler commands toggled to \(enabled)")
         self.commandCenter.playCommand.isEnabled = enabled
