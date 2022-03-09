@@ -191,6 +191,7 @@ var sharedLogHandler: LogHandler?
       
         // Make sure timer is in the right state,
         // calling resume or suspend twice in a row will cause a crash
+        // ref: https://developer.apple.com/forums/thread/15902?answerId=669654022#669654022
         if !self.audiobook.player.isPlaying {
             self.progressSavingTimer?.suspend()
         }
@@ -199,6 +200,7 @@ var sharedLogHandler: LogHandler?
     public func cancelProgressSavingTimer() {
         // Make sure timer is in the right state,
         // releasing a suspended timer will cause a crash
+        // ref: https://developer.apple.com/forums/thread/15902?answerId=669654022#669654022
         if !self.audiobook.player.isPlaying {
             self.progressSavingTimer?.resume()
         }
