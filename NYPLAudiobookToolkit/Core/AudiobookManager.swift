@@ -85,7 +85,7 @@ var sharedLogHandler: LogHandler?
         return SleepTimer(player: self.audiobook.player)
     }()
 
-    public var progressSavingTimer: DispatchSourceTimer?
+    private var progressSavingTimer: DispatchSourceTimer?
     private(set) public var timer: Timer?
     private let mediaControlHandler: MediaControlHandler
     public init (metadata: AudiobookMetadata, audiobook: Audiobook, networkService: AudiobookNetworkService) {
@@ -178,18 +178,50 @@ var sharedLogHandler: LogHandler?
     public func updateAudiobook(with spine: [SpineElement]) {
         self.networkService = DefaultAudiobookNetworkService(spine: spine)
     }
+  
+    // MARK: - Helper for ProgressSavingTimer
+  
+    public func setProgressSavingTimer(_ timer: DispatchSourceTimer) {
+        // Cancel previous timer if existed
+        if !progressSavingTimerIsNil() {
+            cancelProgressSavingTimer()
+        }
+        
+        self.progressSavingTimer = timer
+      
+        // Make sure timer is in the right state,
+        // calling resume or suspend twice in a row will cause a crash
+        // ref: https://developer.apple.com/forums/thread/15902?answerId=669654022#669654022
+        if !self.audiobook.player.isPlaying {
+            self.progressSavingTimer?.suspend()
+        }
+    }
+  
+    public func cancelProgressSavingTimer() {
+        // Make sure timer is in the right state,
+        // releasing a suspended timer will cause a crash
+        // ref: https://developer.apple.com/forums/thread/15902?answerId=669654022#669654022
+        if !self.audiobook.player.isPlaying {
+            self.progressSavingTimer?.resume()
+        }
+        self.progressSavingTimer = nil
+    }
+  
+    public func progressSavingTimerIsNil() -> Bool {
+        return self.progressSavingTimer == nil
+    }
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.mediaControlHandler.enableMediaControlCommands()
         if let timer = self.progressSavingTimer {
-          timer.resume()
+            timer.resume()
         }
     }
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
         if let timer = self.progressSavingTimer {
-          timer.suspend()
+            timer.suspend()
         }
     }
     public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
