@@ -9,6 +9,7 @@
 import Foundation
 import MediaPlayer
 import AVFoundation
+import NYPLUtilities
 
 /// If the AudiobookManager runs into an error that may
 /// be resolved by fetching a new audiobook manifest from
@@ -85,7 +86,7 @@ var sharedLogHandler: LogHandler?
         return SleepTimer(player: self.audiobook.player)
     }()
 
-    private var progressSavingTimer: DispatchSourceTimer?
+    private var progressSavingTimer: NYPLRepeatingTimer?
     private(set) public var timer: Timer?
     private let mediaControlHandler: MediaControlHandler
     public init (metadata: AudiobookMetadata, audiobook: Audiobook, networkService: AudiobookNetworkService) {
@@ -181,29 +182,11 @@ var sharedLogHandler: LogHandler?
   
     // MARK: - Helper for ProgressSavingTimer
   
-    public func setProgressSavingTimer(_ timer: DispatchSourceTimer) {
-        // Cancel previous timer if existed
-        if !progressSavingTimerIsNil() {
-            cancelProgressSavingTimer()
-        }
-        
+    public func setProgressSavingTimer(_ timer: NYPLRepeatingTimer) {
         self.progressSavingTimer = timer
-      
-        // Make sure timer is in the right state,
-        // calling resume or suspend twice in a row will cause a crash
-        // ref: https://developer.apple.com/forums/thread/15902?answerId=669654022#669654022
-        if !self.audiobook.player.isPlaying {
-            self.progressSavingTimer?.suspend()
-        }
     }
   
     public func cancelProgressSavingTimer() {
-        // Make sure timer is in the right state,
-        // releasing a suspended timer will cause a crash
-        // ref: https://developer.apple.com/forums/thread/15902?answerId=669654022#669654022
-        if !self.audiobook.player.isPlaying {
-            self.progressSavingTimer?.resume()
-        }
         self.progressSavingTimer = nil
     }
   
