@@ -40,6 +40,7 @@ import UIKit
     /// come through delegate methods.
     func fetch()
     
+    func cancelFetch()
     
     /// Implmenters of this should attempt to delete all
     /// spine elements.
@@ -100,6 +101,12 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
             self.cursor = Cursor(data: self.spine)
         }
         self.cursor?.currentElement.downloadTask.fetch()
+    }
+  
+    public func cancelFetch() {
+        self.spine.forEach { (spineElement) in
+            spineElement.downloadTask.cancel()
+        }
     }
 }
 

@@ -42,6 +42,9 @@ import Foundation
     /// task is in the process of deleting the file, it should
     /// not raise an error.
     func delete()
+  
+    /// Cancel the task if fetch has not completed
+    func cancel()
     
     var downloadProgress: Float { get }
     var key: String { get }
