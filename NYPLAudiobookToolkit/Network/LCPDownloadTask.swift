@@ -32,6 +32,10 @@ final class LCPDownloadTask: DownloadTask {
             ATLog(.warn, "Could not delete decrypted file.", error: error)
         }
     }
+  
+    func cancel() {
+        // No cancellation needed since we don't need to download files.
+    }
     
     /// All encrypted files are included in the audiobook, download progress is 1.0
     let downloadProgress: Float = 1.0

@@ -58,6 +58,15 @@ final class OverdriveDownloadTask: DownloadTask {
             ATLog(.error, "Invalid file directory from command")
         }
     }
+  
+    func cancel() {
+        switch self.assetFileStatus() {
+        case .saved(_):
+            break
+        default:
+            self.urlSession?.invalidateAndCancel()
+        }
+    }
 
     func assetFileStatus() -> AssetResult {
         guard let localAssetURL = localDirectory() else {
