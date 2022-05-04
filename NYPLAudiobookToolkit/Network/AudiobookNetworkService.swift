@@ -27,6 +27,7 @@ import UIKit
 @objc public protocol AudiobookNetworkService: AnyObject {
     var spine: [SpineElement] { get }
     var downloadProgress: Float { get }
+    var isDownloading: Bool { get }
     
     /// Implementers of this should attempt to download all
     /// spine elements in a serial order. Once the
@@ -63,6 +64,10 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         ATLog(.debug, "ANS: Overall Download Progress: \(taskCompletedPercentage / Float(self.spine.count))")
         return taskCompletedPercentage / Float(self.spine.count)
     }
+  
+    public var isDownloading: Bool = false
+  
+    private let downloadStatusLock = NSRecursiveLock()
     
     private var cursor: Cursor<SpineElement>?
 
@@ -97,27 +102,52 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     }
     
     public func fetch() {
+        self.downloadStatusLock.lock()
+        defer {
+          self.downloadStatusLock.unlock()
+        }
+        
+        guard !isDownloading else {
+          return
+        }
+      
         if self.cursor == nil {
             self.cursor = Cursor(data: self.spine)
         }
         self.cursor?.currentElement.downloadTask.fetch()
+        self.isDownloading = true
     }
   
     public func cancelFetch() {
+        self.downloadStatusLock.lock()
+        defer {
+          self.downloadStatusLock.unlock()
+        }
+        
         self.spine.forEach { (spineElement) in
             spineElement.downloadTask.cancel()
         }
+        self.isDownloading = false
     }
 }
 
 extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     public func downloadTaskReadyForPlayback(_ downloadTask: DownloadTask) {
+        self.downloadStatusLock.lock()
+        defer {
+          self.downloadStatusLock.unlock()
+        }
+        
         self.cursor = self.cursor?.next()
         self.cursor?.currentElement.downloadTask.fetch()
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesThatPlaybackIsReadyFor(spineElement)
             }
+        }
+        
+        if downloadProgress == 1.0 {
+          self.isDownloading = false
         }
     }
 
@@ -138,7 +168,13 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
 
     public func downloadTaskFailed(_ downloadTask: DownloadTask, withError error: NSError?) {
+        self.downloadStatusLock.lock()
+        defer {
+          self.downloadStatusLock.unlock()
+        }
+      
         self.cursor = nil
+        self.isDownloading = false
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
