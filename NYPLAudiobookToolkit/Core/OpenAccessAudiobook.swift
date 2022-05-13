@@ -35,10 +35,10 @@ final class OpenAccessAudiobook: Audiobook {
             return nil
         }
         
-        let mappedSpine = payloadSpine.enumerated().compactMap { (tupleItem:(index: Int, element: Any)) -> OpenAccessSpineElement? in
+        let mappedSpine = payloadSpine.enumerated().compactMap { tuple -> OpenAccessSpineElement? in
             OpenAccessSpineElement(
-                JSON: tupleItem.element,
-                index: UInt(tupleItem.index),
+                JSON: tuple.element,
+                index: UInt(tuple.offset),
                 audiobookID: identifier
             )
             }.sorted {
