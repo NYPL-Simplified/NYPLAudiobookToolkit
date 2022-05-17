@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import NYPLUtilities
+import NYPLUtilitiesObjc
 
 @objc public protocol AudiobookNetworkServiceDelegate: AnyObject {
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didCompleteDownloadFor spineElement: SpineElement)
@@ -14,6 +16,13 @@ import UIKit
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateOverallDownloadProgress progress: Float)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement)
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                 didTimeoutFor spineElement: SpineElement?,
+                                 networkStatus: NetworkStatus)
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                 downloadExceededTimeLimitFor spineElement: SpineElement,
+                                 elapsedTime: TimeInterval,
+                                 networkStatus: NetworkStatus)
 }
 
 
@@ -56,6 +65,11 @@ import UIKit
 }
 
 public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
+    private var timeoutTimer: NYPLRepeatingTimer?
+    private var reachabilityManager: ReachabilityManager?
+  
+    public var lastProgressUpdate: (date: Date, progress: Float)
+    
     public var downloadProgress: Float {
         guard !self.spine.isEmpty else { return 0 }
         let taskCompletedPercentage = self.spine.reduce(0) { (memo: Float, element: SpineElement) -> Float in
@@ -95,10 +109,12 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     public init(spine: [SpineElement]) {
         self.spine = spine
         self.spineElementByKey = [String: SpineElement]()
+        self.lastProgressUpdate = (date: Date(), progress: 0)
         self.spine.forEach { (element) in
             element.downloadTask.delegate = self
             self.spineElementByKey[element.downloadTask.key] = element
         }
+        self.reachabilityManager = ReachabilityManager.reachability(withHostName: "www.apple.com")
     }
     
     public func fetch() {
@@ -116,6 +132,9 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         }
         self.cursor?.currentElement.downloadTask.fetch()
         self.isDownloading = true
+        self.timeoutTimer = NYPLRepeatingTimer(interval: .seconds(60), handler: { [weak self] in
+            self?.performDownloadTaskTimeoutCheck()
+        })
     }
   
     public func cancelFetch() {
@@ -128,6 +147,33 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
             spineElement.downloadTask.cancel()
         }
         self.isDownloading = false
+        self.timeoutTimer = nil
+    }
+  
+    private func performDownloadTaskTimeoutCheck() {
+        /// If the last progress update has less than 1% difference,
+        /// happened more than 10 minutes ago on Wifi,
+        /// 8 minutes ago on cellular or 1 minute ago with no internet connection.
+        /// We determine it's a timeout and fail the download attempt.
+        if downloadProgress - self.lastProgressUpdate.progress <= 0.01 {
+            var timeoutLimit = 60.0
+            if let reachabilityManager = reachabilityManager {
+              switch reachabilityManager.currentReachabilityStatus() {
+              case ReachableViaWWAN:
+                timeoutLimit = 60.0 * 8.0
+              case ReachableViaWiFi:
+                timeoutLimit = 60.0 * 10.0
+              default:
+                timeoutLimit = 60.0
+              }
+            }
+            
+            if Date().timeIntervalSince(lastProgressUpdate.date) >= timeoutLimit {
+                DispatchQueue.main.async { [weak self] () -> Void in
+                    self?.notifyDelegatesOfTimeoutFor(self?.cursor?.currentElement)
+                }
+            }
+        }
     }
 }
 
@@ -147,7 +193,8 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         }
         
         if downloadProgress == 1.0 {
-          self.isDownloading = false
+            self.timeoutTimer = nil
+            self.isDownloading = false
         }
     }
 
@@ -160,7 +207,13 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
 
     public func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask) {
+        self.downloadStatusLock.lock()
+        defer {
+          self.downloadStatusLock.unlock()
+        }
+        
         if let spineElement = self.spineElementByKey[downloadTask.key] {
+            self.lastProgressUpdate = (date: Date(), progress: downloadProgress)
             DispatchQueue.main.async { [weak self] () -> Void in
                 self?.notifyDelegatesOfDownloadPercentFor(spineElement)
             }
@@ -173,6 +226,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
           self.downloadStatusLock.unlock()
         }
       
+        self.timeoutTimer = nil
         self.cursor = nil
         self.isDownloading = false
         if let spineElement = self.spineElementByKey[downloadTask.key] {
@@ -204,6 +258,15 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     private func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError?) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
+        }
+    }
+    
+    /// - Important: Must be called on the main thread.
+    private func notifyDelegatesOfTimeoutFor(_ spineElement: SpineElement?) {
+        self.delegates.allObjects.forEach { delegate in
+            delegate.audiobookNetworkService(self,
+                                             didTimeoutFor: spineElement,
+                                             networkStatus: reachabilityManager?.currentReachabilityStatus() ?? NotReachable)
         }
     }
     

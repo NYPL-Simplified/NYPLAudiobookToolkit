@@ -3,6 +3,7 @@ import Foundation
 import PureLayout
 import AVKit
 import MediaPlayer
+import NYPLUtilitiesObjc
 
 let SkipTimeInterval: Double = 15
 
@@ -702,7 +703,7 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didUpdateProgressFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didDeleteFileFor spineElement: SpineElement) {}
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement) {
-        presentAlertAndLog(error: error)
+        self.presentAlertAndLog(error: error)
         self.audiobookProgressView.stopShowingProgress()
         if let error = error,
           error.domain == OverdrivePlayerErrorDomain && error.code == OverdrivePlayerError.downloadExpired.rawValue {
@@ -716,6 +717,12 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
             self.audiobookProgressView.stopShowingProgress()
         }
         self.audiobookProgressView.updateProgress(progress)
+    }
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                        didTimeoutFor spineElement: SpineElement?,
+                                        networkStatus: NetworkStatus) {
+        self.presentAlertAndLog(error: nil)
+        self.audiobookProgressView.stopShowingProgress()
     }
 }
 
