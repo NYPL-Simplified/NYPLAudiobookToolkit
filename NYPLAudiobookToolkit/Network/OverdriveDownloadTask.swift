@@ -5,11 +5,19 @@ let OverdriveTaskCompleteNotification = NSNotification.Name(rawValue: "Overdrive
 
 final class OverdriveDownloadTask: DownloadTask {
 
-    private static let DownloadTaskTimeoutValue = 60.0
+    /// The timeout value is now based on user's connectivity, this is more like a fail-safe
+    /// if the timeout timer in the AudiobookNetworkService is not working properly
+    private static let DownloadTaskTimeoutValue = 660.0
 
     private var urlSession: URLSession?
     
     weak var delegate: DownloadTaskDelegate?
+
+    /// For monitoring download task with long download time
+    private var fetchStartTime: Date?
+    private var downloadTimer: NYPLRepeatingTimer?
+    private var downloadTimeLimit: Double
+    private var serialQueue: DispatchQueue
 
     /// Progress should be set to 1 if the file already exists.
     var downloadProgress: Float = 0 {
@@ -26,6 +34,8 @@ final class OverdriveDownloadTask: DownloadTask {
         self.key = spineElement.key
         self.url = spineElement.url
         self.urlMediaType = spineElement.mediaType
+        self.downloadTimeLimit = 30.0
+        self.serialQueue = DispatchQueue(label: "org.nypl.labs.NYPLAudiobookToolkit.OverdriveDownloadTask")
     }
     
     func fetch() {
@@ -37,6 +47,7 @@ final class OverdriveDownloadTask: DownloadTask {
             switch urlMediaType {
             case .audioMP3:
                 self.downloadAsset(fromRemoteURL: self.url, toLocalDirectory: missingAssetURL)
+                startDownloadTimer()
             }
         case .unknown:
             self.delegate?.downloadTaskFailed(self, withError: nil)
@@ -66,6 +77,7 @@ final class OverdriveDownloadTask: DownloadTask {
         default:
             self.urlSession?.invalidateAndCancel()
         }
+        removeDownloadTimer()
     }
 
     func assetFileStatus() -> AssetResult {
@@ -122,6 +134,53 @@ final class OverdriveDownloadTask: DownloadTask {
         }
         return hash
     }
+  
+    // MARK: - Download Timer
+  
+    private func startDownloadTimer() {
+        serialQueue.async {
+            /// These value should be reset every time we start fetching,
+            /// so that we have the right time in case of retrying download
+            self.fetchStartTime = Date()
+            self.downloadTimeLimit = 30.0
+            
+            self.downloadTimer = NYPLRepeatingTimer(interval: .seconds(30),
+                                                    queue: self.serialQueue,
+                                                    handler: { [weak self] in
+                guard let self = self,
+                      let startTime = self.fetchStartTime else {
+                    return
+                }
+              
+                let elapsedTime = Date().timeIntervalSince(startTime)
+                if elapsedTime >= self.downloadTimeLimit {
+                    self.delegate?.downloadTaskExceededTimeLimit(self,
+                                                                 elapsedTime: elapsedTime)
+                    self.updateDownloadTimeLimit()
+                }
+            })
+        }
+    }
+
+    fileprivate func removeDownloadTimer() {
+        serialQueue.async {
+            self.downloadTimer = nil
+        }
+    }
+
+    /// We call the delegate when the download task has not completed
+    /// at the 30 seconds mark and 3 minutes (180 seconds) mark.
+    /// Therefore, we update the time limit every time the delegate is called and
+    /// remove the timer when we are done with it.
+    private func updateDownloadTimeLimit() {
+        serialQueue.async {
+            if self.downloadTimeLimit == 30.0 {
+                self.downloadTimeLimit = 180.0
+            } else if self.downloadTimeLimit == 180.0 {
+                self.removeDownloadTimer()
+            }
+        }
+    }
 }
 
 final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
@@ -149,6 +208,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL)
     {
+        self.downloadTask.removeDownloadTimer()
         guard let httpResponse = downloadTask.response as? HTTPURLResponse else {
             ATLog(.error, "Response could not be cast to HTTPURLResponse: \(self.downloadTask.key)")
             self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
@@ -192,6 +252,7 @@ final class OverdriveDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegat
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?)
     {
+        self.downloadTask.removeDownloadTimer()
         ATLog(.debug, "urlSession:task:didCompleteWithError: curl representation \(task.originalRequest?.curlString ?? "")")
         guard let error = error else {
             ATLog(.debug, "urlSession:task:didCompleteWithError: no error.")

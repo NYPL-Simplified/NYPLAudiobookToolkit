@@ -235,6 +235,14 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
             }
         }
     }
+  
+    public func downloadTaskExceededTimeLimit(_ downloadTask: DownloadTask, elapsedTime: Double) {
+        guard let spineElement = self.spineElementByKey[downloadTask.key] else {
+            return
+        }
+        self.notifyDelegatesOfDownloadExceededTimeLimitFor(spineElement,
+                                                           elapsedTime: elapsedTime)
+    }
 
     // Currently all these private methods are called on the main thread
 
@@ -266,6 +274,18 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         self.delegates.allObjects.forEach { delegate in
             delegate.audiobookNetworkService(self,
                                              didTimeoutFor: spineElement,
+                                             networkStatus: reachabilityManager?.currentReachabilityStatus() ?? NotReachable)
+        }
+    }
+  
+    /// No UI update is needed, can be called on background thread.
+    private func notifyDelegatesOfDownloadExceededTimeLimitFor(_ spineElement: SpineElement,
+                                                               elapsedTime: TimeInterval)
+    {
+        self.delegates.allObjects.forEach { delegate in
+            delegate.audiobookNetworkService(self,
+                                             downloadExceededTimeLimitFor: spineElement,
+                                             elapsedTime: elapsedTime,
                                              networkStatus: reachabilityManager?.currentReachabilityStatus() ?? NotReachable)
         }
     }

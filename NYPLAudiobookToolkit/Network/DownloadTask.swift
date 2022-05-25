@@ -14,6 +14,7 @@ import Foundation
     func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
     func downloadTaskFailed(_ downloadTask: DownloadTask, withError error: NSError?)
+    func downloadTaskExceededTimeLimit(_ downloadTask: DownloadTask, elapsedTime: Double)
 }
 
 /// Protocol to handle hitting the network to download an audiobook.
