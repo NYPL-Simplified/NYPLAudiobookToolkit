@@ -68,7 +68,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
     private var timeoutTimer: NYPLRepeatingTimer?
     private var reachabilityManager: ReachabilityManager?
   
-    public var lastProgressUpdate: (date: Date, progress: Float)
+    var lastProgressUpdate: (date: Date, progress: Float)
     
     public var downloadProgress: Float {
         guard !self.spine.isEmpty else { return 0 }
@@ -114,7 +114,7 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
             element.downloadTask.delegate = self
             self.spineElementByKey[element.downloadTask.key] = element
         }
-        self.reachabilityManager = ReachabilityManager.reachability(withHostName: "www.apple.com")
+        self.reachabilityManager = ReachabilityManager.reachability(withHostName: "www.librarysimplified.org")
     }
     
     public func fetch() {
@@ -157,8 +157,10 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         /// We determine it's a timeout and fail the download attempt.
         if downloadProgress - self.lastProgressUpdate.progress <= 0.01 {
             var timeoutLimit = 60.0
+            var networkStatus: NetworkStatus = NotReachable
             if let reachabilityManager = reachabilityManager {
-              switch reachabilityManager.currentReachabilityStatus() {
+              networkStatus = reachabilityManager.currentReachabilityStatus()
+              switch networkStatus {
               case ReachableViaWWAN:
                 timeoutLimit = 60.0 * 8.0
               case ReachableViaWiFi:
@@ -170,7 +172,9 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
             
             if Date().timeIntervalSince(lastProgressUpdate.date) >= timeoutLimit {
                 DispatchQueue.main.async { [weak self] () -> Void in
-                    self?.notifyDelegatesOfTimeoutFor(self?.cursor?.currentElement)
+                    self?.cancelFetch()
+                    self?.notifyDelegatesOfTimeout(for: self?.cursor?.currentElement,
+                                                   networkStatus: networkStatus)
                 }
             }
         }
@@ -188,7 +192,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         self.cursor?.currentElement.downloadTask.fetch()
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesThatPlaybackIsReadyFor(spineElement)
+                self?.notifyDelegatesThatPlaybackIsReady(for: spineElement)
             }
         }
         
@@ -201,7 +205,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     public func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask) {
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesOfDeleteFor(spineElement)
+                self?.notifyDelegatesOfDelete(for: spineElement)
             }
         }
     }
@@ -215,7 +219,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             self.lastProgressUpdate = (date: Date(), progress: downloadProgress)
             DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesOfDownloadPercentFor(spineElement)
+                self?.notifyDelegatesOfDownloadPercent(for: spineElement)
             }
         }
     }
@@ -225,13 +229,13 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         defer {
           self.downloadStatusLock.unlock()
         }
-      
+        
         self.timeoutTimer = nil
         self.cursor = nil
         self.isDownloading = false
         if let spineElement = self.spineElementByKey[downloadTask.key] {
             DispatchQueue.main.async { [weak self] () -> Void in
-                self?.notifyDelegatesThatErrorWasReceivedFor(spineElement, error: error)
+                self?.notifyDelegatesThatErrorWasReceived(for: spineElement, error: error)
             }
         }
     }
@@ -240,14 +244,15 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
         guard let spineElement = self.spineElementByKey[downloadTask.key] else {
             return
         }
-        self.notifyDelegatesOfDownloadExceededTimeLimitFor(spineElement,
-                                                           elapsedTime: elapsedTime)
+        self.notifyDelegatesOfDownloadExceededTimeLimit(for: spineElement,
+                                                        elapsedTime: elapsedTime,
+                                                        networkStatus: reachabilityManager?.currentReachabilityStatus() ?? NotReachable)
     }
 
-    // Currently all these private methods are called on the main thread
+    // MARK: - Delegate Helper
 
     /// - Important: Must be called on the main thread.
-    private func notifyDelegatesThatPlaybackIsReadyFor(_ spineElement: SpineElement) {
+    private func notifyDelegatesThatPlaybackIsReady(for spineElement: SpineElement) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didCompleteDownloadFor: spineElement)
             delegate.audiobookNetworkService(self, didUpdateOverallDownloadProgress: self.downloadProgress)
@@ -255,7 +260,7 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
 
     /// - Important: Must be called on the main thread.
-    private func notifyDelegatesOfDownloadPercentFor(_ spineElement: SpineElement) {
+    private func notifyDelegatesOfDownloadPercent(for spineElement: SpineElement) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didUpdateProgressFor: spineElement)
             delegate.audiobookNetworkService(self, didUpdateOverallDownloadProgress: self.downloadProgress)
@@ -263,35 +268,38 @@ extension DefaultAudiobookNetworkService: DownloadTaskDelegate {
     }
 
     /// - Important: Must be called on the main thread.
-    private func notifyDelegatesThatErrorWasReceivedFor(_ spineElement: SpineElement, error: NSError?) {
+    private func notifyDelegatesThatErrorWasReceived(for spineElement: SpineElement, error: NSError?) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didReceive: error, for: spineElement)
         }
     }
     
-    /// - Important: Must be called on the main thread.
-    private func notifyDelegatesOfTimeoutFor(_ spineElement: SpineElement?) {
+    /// This is called on background thread.
+    /// The class responding to `audiobookNetworkService(_:didTimeoutFor:networkStatus:)`
+    /// needs to switch back to main thread if UI updated is needed.
+    private func notifyDelegatesOfTimeout(for spineElement: SpineElement?, networkStatus: NetworkStatus) {
         self.delegates.allObjects.forEach { delegate in
             delegate.audiobookNetworkService(self,
                                              didTimeoutFor: spineElement,
-                                             networkStatus: reachabilityManager?.currentReachabilityStatus() ?? NotReachable)
+                                             networkStatus: networkStatus)
         }
     }
   
     /// No UI update is needed, can be called on background thread.
-    private func notifyDelegatesOfDownloadExceededTimeLimitFor(_ spineElement: SpineElement,
-                                                               elapsedTime: TimeInterval)
+    private func notifyDelegatesOfDownloadExceededTimeLimit(for spineElement: SpineElement,
+                                                            elapsedTime: TimeInterval,
+                                                            networkStatus: NetworkStatus)
     {
         self.delegates.allObjects.forEach { delegate in
             delegate.audiobookNetworkService(self,
                                              downloadExceededTimeLimitFor: spineElement,
                                              elapsedTime: elapsedTime,
-                                             networkStatus: reachabilityManager?.currentReachabilityStatus() ?? NotReachable)
+                                             networkStatus: networkStatus)
         }
     }
     
     /// - Important: Must be called on the main thread.
-    private func notifyDelegatesOfDeleteFor(_ spineElement: SpineElement) {
+    private func notifyDelegatesOfDelete(for spineElement: SpineElement) {
         self.delegates.allObjects.forEach { (delegate) in
             delegate.audiobookNetworkService(self, didDeleteFileFor: spineElement)
         }

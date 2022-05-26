@@ -721,8 +721,10 @@ extension AudiobookPlayerViewController: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didTimeoutFor spineElement: SpineElement?,
                                         networkStatus: NetworkStatus) {
-        self.presentAlertAndLog(error: nil)
-        self.audiobookProgressView.stopShowingProgress()
+        DispatchQueue.main.async {
+            self.presentAlertAndLog(error: nil)
+            self.audiobookProgressView.stopShowingProgress()
+        }
     }
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         downloadExceededTimeLimitFor spineElement: SpineElement,
