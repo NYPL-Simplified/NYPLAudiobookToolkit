@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import NYPLUtilitiesObjc
 
 protocol AudiobookTableOfContentsDelegate: AnyObject {
     func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
@@ -135,5 +136,18 @@ extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
 
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didUpdateOverallDownloadProgress progress: Float) {
+    }
+    
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                        didTimeoutFor spineElement: SpineElement?,
+                                        networkStatus: NetworkStatus) {
+        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
+        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+    }
+  
+    public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                        downloadExceededTimeLimitFor spineElement: SpineElement,
+                                        elapsedTime: TimeInterval,
+                                        networkStatus: NetworkStatus) {
     }
 }

@@ -14,6 +14,7 @@ import Foundation
     func downloadTaskDidDeleteAsset(_ downloadTask: DownloadTask)
     func downloadTaskDidUpdateDownloadPercentage(_ downloadTask: DownloadTask)
     func downloadTaskFailed(_ downloadTask: DownloadTask, withError error: NSError?)
+    func downloadTaskExceededTimeLimit(_ downloadTask: DownloadTask, elapsedTime: Double)
 }
 
 /// Protocol to handle hitting the network to download an audiobook.
@@ -49,4 +50,24 @@ import Foundation
     var downloadProgress: Float { get }
     var key: String { get }
     weak var delegate: DownloadTaskDelegate? { get set }
+}
+
+public extension DownloadTask {
+    /// The timeout value is now based on user's connectivity, this is more like a fail-safe
+    /// if the timeout timer in the AudiobookNetworkService is not working properly.
+    static var timeoutValue: TimeInterval {
+        return 660.0
+    }
+  
+    static var monitoringTimerInterval: DispatchTimeInterval {
+        return .seconds(30)
+    }
+    
+    static var firstDownloadTimeLimit: TimeInterval {
+        return 30.0
+    }
+    
+    static var secondDownloadTimeLimit: TimeInterval {
+        return 180.0
+    }
 }

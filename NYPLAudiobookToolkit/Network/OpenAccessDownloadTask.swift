@@ -12,13 +12,25 @@ enum AssetResult {
     case unknown
 }
 
+/// To improve the user experience, we need the information of download task
+/// that takes a longer than usual time to complete.
+/// We implement a timer to log warning statements through delegate method
+/// when the download task reaches 30 seconds and 180 seconds marks.
+/// The timer is removed when a download task completes, fails or is being cancelled.
 final class OpenAccessDownloadTask: DownloadTask {
-
-    private static let DownloadTaskTimeoutValue = 60.0
     
     private var urlSession: URLSession?
 
     weak var delegate: DownloadTaskDelegate?
+
+    /// For monitoring download task with long download time.
+    private var fetchStartTime: Date?
+    /// Timer for monitoring the duration of the download task takes to complete.
+    /// We log a warning statement by calling the delegates
+    /// when the download task reaches 30s and 180s marks.
+    private var monitoringTimer: NYPLRepeatingTimer?
+    private var downloadTimeLimit: TimeInterval
+    private var serialQueue: DispatchQueue
 
     /// Progress should be set to 1 if the file already exists.
     var downloadProgress: Float = 0 {
@@ -41,6 +53,8 @@ final class OpenAccessDownloadTask: DownloadTask {
         self.urlMediaType = spineElement.mediaType
         self.alternateLinks = spineElement.alternateUrls
         self.feedbooksProfile = spineElement.feedbooksProfile
+        self.downloadTimeLimit = OpenAccessDownloadTask.firstDownloadTimeLimit
+        self.serialQueue = DispatchQueue(label: "org.nypl.labs.NYPLAudiobookToolkit.OpenAccessDownloadTask")
     }
 
     /// If the asset is already downloaded and verified, return immediately and
@@ -60,6 +74,7 @@ final class OpenAccessDownloadTask: DownloadTask {
             case .audioMP4:
                 self.downloadAsset(fromRemoteURL: self.url, toLocalDirectory: missingAssetURL)
             }
+            startDownloadTimer()
         case .unknown:
             self.delegate?.downloadTaskFailed(self, withError: nil)
         }
@@ -88,6 +103,7 @@ final class OpenAccessDownloadTask: DownloadTask {
         default:
             self.urlSession?.invalidateAndCancel()
         }
+        removeDownloadTimer()
     }
 
     func assetFileStatus() -> AssetResult {
@@ -120,12 +136,13 @@ final class OpenAccessDownloadTask: DownloadTask {
     /// to the url of the actual asset to download.
     private func downloadAssetForRBDigital(toLocalDirectory localURL: URL) {
 
-        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+        let task = URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
 
             guard let data = data,
                 let response = response,
                 (error == nil) else {
                 ATLog(.error, "Network request failed for RBDigital partial file. Error: \(error!.localizedDescription)")
+                self?.notifyDelegateOfDownloadTaskFailed(error: nil)
                 return
             }
 
@@ -141,18 +158,22 @@ final class OpenAccessDownloadTask: DownloadTask {
                         case .audioMPEG:
                             fallthrough
                         case .audioMP4:
-                            self.downloadAsset(fromRemoteURL: assetUrl, toLocalDirectory: localURL)
+                            self?.downloadAsset(fromRemoteURL: assetUrl, toLocalDirectory: localURL)
                         case .rbDigital:
                             ATLog(.error, "Wrong media type for download task.")
+                            self?.notifyDelegateOfDownloadTaskFailed(error: nil)
                         }
                     } else {
                         ATLog(.error, "Invalid or missing property in JSON response to download task.")
+                        self?.notifyDelegateOfDownloadTaskFailed(error: nil)
                     }
                 } catch {
                     ATLog(.error, "Error deserializing JSON in download task.", error: error)
+                    self?.notifyDelegateOfDownloadTaskFailed(error: error as NSError)
                 }
             } else {
                 ATLog(.error, "Failed with server response: \n\(response.description)")
+                self?.notifyDelegateOfDownloadTaskFailed(error: nil)
             }
         }
         task.resume()
@@ -162,12 +183,13 @@ final class OpenAccessDownloadTask: DownloadTask {
     {
         let config = URLSessionConfiguration.ephemeral
         let delegate = OpenAccessDownloadTaskURLSessionDelegate(downloadTask: self,
-                                                                delegate: self.delegate,
                                                                 finalDirectory: finalURL)
         urlSession = URLSession(configuration: config,
                                 delegate: delegate,
                                 delegateQueue: nil)
-        var request = URLRequest(url: remoteURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: OpenAccessDownloadTask.DownloadTaskTimeoutValue)
+        var request = URLRequest(url: remoteURL,
+                                 cachePolicy: .useProtocolCachePolicy,
+                                 timeoutInterval: OpenAccessDownloadTask.timeoutValue)
         
         // Feedbooks DRM
         if let profile = self.feedbooksProfile {
@@ -188,12 +210,74 @@ final class OpenAccessDownloadTask: DownloadTask {
         }
         return hash
     }
+  
+    // MARK: - Download Timer
+  
+    private func startDownloadTimer() {
+        serialQueue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+          
+            /// These value should be reset every time we start fetching,
+            /// so that we have the right time in case of retrying download
+            self.fetchStartTime = Date()
+            self.downloadTimeLimit = OpenAccessDownloadTask.firstDownloadTimeLimit
+            
+            self.monitoringTimer = NYPLRepeatingTimer(interval: OpenAccessDownloadTask.monitoringTimerInterval,
+                                                      queue: self.serialQueue,
+                                                      handler: { [weak self] in
+                guard let self = self,
+                      let startTime = self.fetchStartTime else {
+                    return
+                }
+              
+                let elapsedTime = Date().timeIntervalSince(startTime)
+                if elapsedTime >= self.downloadTimeLimit {
+                    self.delegate?.downloadTaskExceededTimeLimit(self,
+                                                                 elapsedTime: elapsedTime)
+                    self.updateDownloadTimeLimit()
+                }
+            })
+        }
+    }
+  
+    fileprivate func removeDownloadTimer() {
+        serialQueue.async { [weak self] in
+            self?.monitoringTimer = nil
+        }
+    }
+  
+    /// We call the delegate to log a warning statement when the download task
+    /// has not completed at the 30 seconds mark and 3 minutes (180 seconds) mark.
+    /// Therefore, we update the time limit every time the delegate is called and
+    /// remove the timer when we are done with it.
+    private func updateDownloadTimeLimit() {
+        serialQueue.async { [weak self] in
+            if self?.downloadTimeLimit == OpenAccessDownloadTask.firstDownloadTimeLimit {
+                self?.downloadTimeLimit = OpenAccessDownloadTask.secondDownloadTimeLimit
+            } else {
+                self?.removeDownloadTimer()
+            }
+        }
+    }
+    
+    // MARK: - Notify delegate
+    
+    fileprivate func notifyDelegateOfDownloadTaskReadyForPlayback() {
+        self.removeDownloadTimer()
+        self.delegate?.downloadTaskReadyForPlayback(self)
+    }
+  
+    fileprivate func notifyDelegateOfDownloadTaskFailed(error: NSError?) {
+        self.removeDownloadTimer()
+        self.delegate?.downloadTaskFailed(self, withError: error)
+    }
 }
 
 final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
 
     private let downloadTask: OpenAccessDownloadTask
-    private let delegate: DownloadTaskDelegate?
     private let finalURL: URL
 
     /// Each Spine Element's Download Task has a URLSession delegate.
@@ -203,13 +287,10 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
     ///
     /// - Parameters:
     ///   - downloadTask: The corresponding download task for the URLSession.
-    ///   - delegate: The DownloadTaskDelegate, to forward download progress
     ///   - finalDirectory: Final directory to move the asset to
     required init(downloadTask: OpenAccessDownloadTask,
-                  delegate: DownloadTaskDelegate?,
                   finalDirectory: URL) {
         self.downloadTask = downloadTask
-        self.delegate = delegate
         self.finalURL = finalDirectory
     }
 
@@ -217,7 +298,7 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
     {
         guard let httpResponse = downloadTask.response as? HTTPURLResponse else {
             ATLog(.error, "Response could not be cast to HTTPURLResponse: \(self.downloadTask.key)")
-            self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+            self.downloadTask.notifyDelegateOfDownloadTaskFailed(error: nil)
             return
         }
 
@@ -234,17 +315,17 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                         }
                     }
                     self.downloadTask.downloadProgress = 1.0
-                    self.delegate?.downloadTaskReadyForPlayback(self.downloadTask)
+                    self.downloadTask.notifyDelegateOfDownloadTaskReadyForPlayback()
                     NotificationCenter.default.post(name: OpenAccessTaskCompleteNotification, object: self.downloadTask)
                 } else {
                     self.downloadTask.downloadProgress = 0.0
-                    self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+                    self.downloadTask.notifyDelegateOfDownloadTaskFailed(error: nil)
                 }
             }
         } else {
             ATLog(.error, "Download Task failed with server response: \n\(httpResponse.description)")
             self.downloadTask.downloadProgress = 0.0
-            self.delegate?.downloadTaskFailed(self.downloadTask, withError: nil)
+            self.downloadTask.notifyDelegateOfDownloadTaskFailed(error: nil)
         }
     }
 
@@ -264,14 +345,14 @@ final class OpenAccessDownloadTaskURLSessionDelegate: NSObject, URLSessionDelega
                  NSURLErrorTimedOut,
                  NSURLErrorNetworkConnectionLost:
                 let networkLossError = NSError(domain: OpenAccessPlayerErrorDomain, code: OpenAccessPlayerError.connectionLost.rawValue, userInfo: nil)
-                self.delegate?.downloadTaskFailed(self.downloadTask, withError: networkLossError)
+                self.downloadTask.notifyDelegateOfDownloadTaskFailed(error: networkLossError)
                 return
             default:
                 break
             }
         }
 
-        self.delegate?.downloadTaskFailed(self.downloadTask, withError: error as NSError?)
+        self.downloadTask.notifyDelegateOfDownloadTaskFailed(error: error as NSError?)
     }
 
     func urlSession(_ session: URLSession,
