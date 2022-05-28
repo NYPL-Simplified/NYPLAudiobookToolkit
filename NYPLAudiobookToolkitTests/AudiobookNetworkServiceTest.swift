@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import NYPLUtilitiesObjc
 @testable import NYPLAudiobookToolkit
 
 class RetryAfterErrorAudiobookNetworkServiceDelegate: AudiobookNetworkServiceDelegate {
@@ -18,7 +19,14 @@ class RetryAfterErrorAudiobookNetworkServiceDelegate: AudiobookNetworkServiceDel
     func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didReceive error: NSError?, for spineElement: SpineElement) {
         audiobookNetworkService.fetch()
     }
-    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService, didTimeoutFor spineElement: SpineElement?) { }
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                 didTimeoutFor spineElement: SpineElement?,
+                                 networkStatus: NetworkStatus) { }
+    
+    func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
+                                 downloadExceededTimeLimitFor spineElement: SpineElement,
+                                 elapsedTime: TimeInterval,
+                                 networkStatus: NetworkStatus) { }
 }
 
 class AudiobookNetworkServiceTest: XCTestCase {
