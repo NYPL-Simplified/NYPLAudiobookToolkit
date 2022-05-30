@@ -34,6 +34,9 @@ class FeedbookAudiobookTest: XCTestCase {
       finished = true
       failed = true
     }
+    
+    func downloadTaskExceededTimeLimit(_ downloadTask: DownloadTask, elapsedTime: Double) {
+    }
   }
 
   func testFeedBookTimeExpired() {
