@@ -48,6 +48,7 @@ import Foundation
     func cancel()
     
     var downloadProgress: Float { get }
+    var downloadCompleted: Bool { get }
     var key: String { get }
     weak var delegate: DownloadTaskDelegate? { get set }
 }

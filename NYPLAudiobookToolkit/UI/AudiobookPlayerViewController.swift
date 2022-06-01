@@ -82,7 +82,6 @@ let SkipTimeInterval: Double = 15
         self.activityIndicator.color = NYPLColor.disabledFieldTextColor
         self.audiobookManager.audiobook.player.registerDelegate(self)
         self.audiobookManager.networkService.registerDelegate(self)
-        self.audiobookManager.networkService.fetch()
 
         self.gradient.frame = self.view.bounds
         self.gradient.startPoint = CGPoint.zero

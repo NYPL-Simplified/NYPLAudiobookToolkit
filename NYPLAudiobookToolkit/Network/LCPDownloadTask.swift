@@ -39,6 +39,9 @@ final class LCPDownloadTask: DownloadTask {
     
     /// All encrypted files are included in the audiobook, download progress is 1.0
     let downloadProgress: Float = 1.0
+  
+    /// All encrypted files are included in the audiobook, download completed
+    let downloadCompleted: Bool = true
     
     /// Spine element key
     let key: String

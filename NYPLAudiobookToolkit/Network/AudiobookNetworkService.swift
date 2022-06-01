@@ -36,6 +36,7 @@ import NYPLUtilitiesObjc
 @objc public protocol AudiobookNetworkService: AnyObject {
     var spine: [SpineElement] { get }
     var downloadProgress: Float { get }
+    var downloadCompleted: Bool { get }
     var isDownloading: Bool { get }
     
     /// Implementers of this should attempt to download all
@@ -77,6 +78,17 @@ public final class DefaultAudiobookNetworkService: AudiobookNetworkService {
         }
         ATLog(.debug, "ANS: Overall Download Progress: \(taskCompletedPercentage / Float(self.spine.count))")
         return taskCompletedPercentage / Float(self.spine.count)
+    }
+  
+    /// Since download progress would be 0 if the download has not begun,
+    /// we use this computed property to check if the files have been downloaded or not.
+    public var downloadCompleted: Bool {
+        for spineElement in self.spine {
+            if !spineElement.downloadTask.downloadCompleted {
+                return false
+            }
+        }
+        return true
     }
   
     public var isDownloading: Bool = false

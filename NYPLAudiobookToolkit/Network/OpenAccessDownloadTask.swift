@@ -38,6 +38,17 @@ final class OpenAccessDownloadTask: DownloadTask {
             self.delegate?.downloadTaskDidUpdateDownloadPercentage(self)
         }
     }
+  
+    /// Since download progress would be 0 if the download has not begun,
+    /// we use this computed property to check if the file has been downloaded or not.
+    var downloadCompleted: Bool {
+        switch assetFileStatus() {
+        case .saved(_):
+            return true
+        default:
+            return false
+        }
+    }
 
     let key: String
     let url: URL

@@ -15,28 +15,32 @@ class AudiobookTrackTableViewCell: UITableViewCell {
         let title = spineElement.chapter.title
         let detailLabel: String
         let labelAlpha: CGFloat
-        if progress == 0 {
-            let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
-            self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
-            let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
-            detailLabel = String(format: labelFormat, duration)
-            labelAlpha = 0.4
-        } else if progress > 0 && progress < 1  {
+        if progress > 0 && progress < 1  {
+            // Spine element downloading in progress
             let percentage = HumanReadablePercentage(percentage: progress).value
             let labelFormat = NSLocalizedString("Downloading: %@%%", bundle: Bundle.audiobookToolkit()!, value: "Downloading: %@%%", comment: "The percentage of the chapter that has been downloaded, formatting for string should be localized at this point.")
             detailLabel = String(format: labelFormat, percentage)
             labelAlpha = 0.4
-        } else {
-            let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
-            self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
-            let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
-            detailLabel = String(format: labelFormat, duration)
+        } else if (progress == 1 || spineElement.downloadTask.downloadCompleted) {
+            // Spine element download completed
+            detailLabel = customFormatString(for: spineDuration)
             labelAlpha = 1.0
+        } else {
+            // Spine element download not started
+            detailLabel = customFormatString(for: spineDuration)
+            labelAlpha = 0.4
         }
 
         self.textLabel?.text = title
         self.textLabel?.alpha = labelAlpha
         self.detailTextLabel?.text = detailLabel
         self.backgroundColor = NYPLColor.primaryBackgroundColor
+    }
+  
+    func customFormatString(for spineDuration: TimeInterval) -> String {
+        let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
+        self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
+        let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
+        return String(format: labelFormat, duration)
     }
 }
