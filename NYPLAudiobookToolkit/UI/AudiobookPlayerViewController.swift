@@ -500,6 +500,8 @@ let SkipTimeInterval: Double = 15
     private func updateColors() {
         if #available(iOS 12.0, *),
            UIScreen.main.traitCollection.userInterfaceStyle == .dark {
+            // Set background color to avoid transparent background while presenting
+            self.view.backgroundColor = NYPLColor.primaryBackgroundColor
             // Use solid color background for Dark Mode
             self.gradient.colors = [ NYPLColor.primaryBackgroundColor.cgColor ]
         } else {
