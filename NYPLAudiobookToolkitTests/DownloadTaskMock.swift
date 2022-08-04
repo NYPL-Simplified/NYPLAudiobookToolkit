@@ -28,6 +28,10 @@ class DownloadTaskMock: DownloadTask {
     
     let downloadProgress: Float
     
+    var downloadCompleted: Bool {
+        return false
+    }
+
     let key: String
     
     weak var delegate: DownloadTaskDelegate?
