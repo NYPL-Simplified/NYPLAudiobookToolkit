@@ -9,6 +9,12 @@ NYPLAudiobookToolkit provides utilities and UI components for audiobook playback
 Requirements: 
 - Xcode 13
 
+# Unit Testing
+
+`./scripts/run-unittests.sh` 
+
+Unit testing on CI currently is done via xcodebuild because `swift test` is producing build errors.
+
 # Integration
 
 The only supported way to integrate NYPLAudioToolkit as a dependency is via SPM.

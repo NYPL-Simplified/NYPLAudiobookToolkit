@@ -22,7 +22,7 @@ let package = Package(
       dependencies: ["NYPLUtilities", "PureLayout"],
       path: "NYPLAudiobookToolkit",
       exclude: [
-        "Info.plist", "NYPLAudiobookToolkit.h", "Core/Bundle.swift"
+        "Info.plist", "NYPLAudiobookToolkit.h", "Core/Bundle.swift", "scripts"
       ],
       resources: [
         .process("Resources")
