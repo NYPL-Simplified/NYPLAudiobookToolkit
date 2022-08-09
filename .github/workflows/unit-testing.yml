@@ -5,8 +5,8 @@ jobs:
   build-and-test:
     runs-on: macOS-latest
     steps:
-      - name: Force Xcode 13.1
-        run: sudo xcode-select -switch /Applications/Xcode_13.1.app
+      - name: Force latest Xcode #currently 13.2.1 cos 13.3.1 still in beta at github; once ready for prod the Xcode.app symlink will automatically select it
+        run: ls -la /Applications && sudo xcode-select -switch /Applications/Xcode.app
       - name: Print System Architecture
         run: uname -a
       - name: Checkout main repo and submodules
