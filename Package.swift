@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
   name: "NYPLAudiobookToolkit",
-  platforms: [.iOS(.v10), .macOS(.v10_12)],
+  platforms: [.iOS(.v11), .macOS(.v10_12)],
   products: [
     .library(name: "NYPLAudiobookToolkit",
              targets: ["NYPLAudiobookToolkit"]),

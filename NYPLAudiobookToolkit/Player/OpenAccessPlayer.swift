@@ -313,13 +313,7 @@ class OpenAccessPlayer: NSObject, Player {
 
         self.buildNewPlayerQueue(atCursor: self.cursor) { _ in }
 
-        if #available(iOS 10.0, *) {
-            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [])
-        } else {
-            // https://forums.swift.org/t/using-methods-marked-unavailable-in-swift-4-2/14949
-            AVAudioSession.sharedInstance().perform(NSSelectorFromString("setCategory:error:"),
-                                                    with: AVAudioSession.Category.playback)
-        }
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [])
         try? AVAudioSession.sharedInstance().setActive(true, options: [])
 
         self.addPlayerObservers()
