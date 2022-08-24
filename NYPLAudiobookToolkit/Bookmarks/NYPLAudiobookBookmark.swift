@@ -1,15 +1,6 @@
 import Foundation
 import NYPLUtilities
 
-public protocol NYPLAudiobookBookmarksBusinessLogicDelegate {
-  var bookmarksCount: Int { get }
-  
-  func bookmark(at index: Int) -> NYPLAudiobookBookmark?
-  func addAudiobookBookmark(_ chapterLocation: ChapterLocation)
-  func deleteAudiobookBookmark(at index: Int)
-  func syncBookmarks(completion: @escaping (_ success: Bool) -> ())
-}
-
 // TODO: Decide if this should be a class or struct when implementation is completed
 public final class NYPLAudiobookBookmark: NYPLBookmark {
   public let title: String?
@@ -85,7 +76,7 @@ public final class NYPLAudiobookBookmark: NYPLBookmark {
   // Serialize the bookmark for posting to server and storing in local storage
   public func serializableRepresentation(forMotivation motivation: NYPLBookmarkSpec.Motivation,
                                          bookID: String) -> [String : Any] {
-    // TODO:
+    // TODO: iOS-444
     return [:]
   }
 }

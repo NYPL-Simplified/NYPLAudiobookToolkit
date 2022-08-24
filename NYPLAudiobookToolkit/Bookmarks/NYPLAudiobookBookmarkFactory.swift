@@ -2,7 +2,7 @@ import Foundation
 import NYPLUtilities
 
 public final class NYPLAudiobookBookmarkFactory {
-  class public func parseLocatorString(
+  public class func parseLocatorString(
     _ selectorValueEscJSON: String) -> (title: String?, part: UInt, chapter: UInt, audiobookId: String, duration: Double, time: Double)? {
       
       // Convert string to JSON object
@@ -32,7 +32,7 @@ public final class NYPLAudiobookBookmarkFactory {
   }
   
   // Create a locator string to be store as the selector value of a bookmark
-  class public func makeLocatorString(title: String,
+  public class func makeLocatorString(title: String,
                                       part: Int,
                                       chapter: Int,
                                       audiobookId: String,
