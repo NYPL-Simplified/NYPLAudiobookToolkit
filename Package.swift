@@ -34,6 +34,9 @@ let package = Package(
       path: "NYPLAudiobookToolkitTests",
       exclude: [
         "Info.plist"
+      ],
+      resources: [
+        .copy("Resources/Tests/")
       ]
     ),
   ]
