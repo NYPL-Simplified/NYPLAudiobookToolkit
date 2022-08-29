@@ -36,7 +36,7 @@ let package = Package(
         "Info.plist"
       ],
       resources: [
-        .copy("Resources/Tests/")
+        .copy("Resources")
       ]
     ),
   ]
