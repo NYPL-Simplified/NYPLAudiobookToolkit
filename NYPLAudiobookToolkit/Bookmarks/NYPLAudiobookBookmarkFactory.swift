@@ -1,7 +1,63 @@
 import Foundation
 import NYPLUtilities
 
+public protocol NYPLBookmarkSelectorParsing {
+  static func parseSelectorJSONString(fromServerAnnotation annotation: [String: Any],
+                                     annotationType: NYPLBookmarkSpec.Motivation,
+                                     bookID: String) -> String?
+}
+
+// TODO: iOS-444 Implement NYPLAudiobookBookmarkFactory and related unit tests
 public final class NYPLAudiobookBookmarkFactory {
+  /// Factory method to create a new bookmark from a server annotation.
+  ///
+  /// - Parameters:
+  ///   - annotation: The annotation object coming from the server in a
+  ///   JSON-like structure.
+  ///   - selectorValueParser: A class that parses the bookmark's selector value from the annotation
+  ///   - annotationType: Whether it's an explicit bookmark or a reading progress.
+  ///   - bookID: The book the annotation is related to.
+  /// - Returns: a client-side representation of a bookmark.
+  public class func make(fromServerAnnotation annotation: [String: Any],
+                         selectorValueParser: NYPLBookmarkSelectorParsing.Type,
+                         annotationType: NYPLBookmarkSpec.Motivation,
+                         bookID: String) -> NYPLAudiobookBookmark? {
+    guard let selectorValueEscJSON = selectorValueParser.parseSelectorJSONString(fromServerAnnotation: annotation,
+                                                                                 annotationType: annotationType,
+                                                                                 bookID: bookID) else {
+      // Error is logged in selector value parser
+      return nil
+    }
+    
+    guard let annotationID = annotation[NYPLBookmarkSpec.Id.key] as? String else {
+      ATLog(.error, "Missing AnnotationID:\(annotation)")
+      return nil
+    }
+
+    guard
+      let body = annotation[NYPLBookmarkSpec.Body.key] as? [String: Any]
+    else {
+      ATLog(.error, "Error parsing required info (body) for bookID \(bookID) in annotation: \(annotation)")
+      return nil
+    }
+
+    guard let device = body[NYPLBookmarkSpec.Body.Device.key] as? String else {
+      ATLog(.error, "Error reading `device` info for bookID \(bookID) from `body`:\(body)")
+      return nil
+    }
+
+    var creationTime = Date()
+    if let rfc3339time = body[NYPLBookmarkSpec.Body.Time.key] as? String,
+        let date = NSDate(rfc3339String: rfc3339time) {
+      creationTime = date as Date
+    }
+    
+    return NYPLAudiobookBookmark(selectorString: selectorValueEscJSON,
+                                 annotationId: annotationID,
+                                 device: device,
+                                 creationTime: creationTime)
+  }
+  
   public class func parseLocatorString(
     _ selectorValueEscJSON: String) -> (title: String?, part: UInt, chapter: UInt, audiobookId: String, duration: Double, time: Double)? {
       

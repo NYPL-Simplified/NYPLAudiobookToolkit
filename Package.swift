@@ -36,7 +36,8 @@ let package = Package(
         "Info.plist"
       ],
       resources: [
-        .copy("Resources")
+        .copy("Resources/invalid-locator-5.json"),
+        .copy("Resources/valid-locator-3.json")
       ]
     ),
   ]
