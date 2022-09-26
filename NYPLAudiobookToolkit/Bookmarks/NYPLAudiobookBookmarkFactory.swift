@@ -1,12 +1,6 @@
 import Foundation
 import NYPLUtilities
 
-public protocol NYPLBookmarkSelectorParsing {
-  static func parseSelectorJSONString(fromServerAnnotation annotation: [String: Any],
-                                     annotationType: NYPLBookmarkSpec.Motivation,
-                                     bookID: String) -> String?
-}
-
 // TODO: iOS-444 Implement NYPLAudiobookBookmarkFactory and related unit tests
 public final class NYPLAudiobookBookmarkFactory {
   /// Factory method to create a new bookmark from a server annotation.
