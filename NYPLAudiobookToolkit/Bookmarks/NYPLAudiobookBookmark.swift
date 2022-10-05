@@ -45,7 +45,7 @@ import NYPLUtilities
               chapter: chapterLocation.number,
               part: chapterLocation.part,
               duration: chapterLocation.duration,
-              time: chapterLocation.startOffset,
+              time: chapterLocation.playheadOffset,
               audiobookId: chapterLocation.audiobookID,
               annotationId: nil,
               device: device,
@@ -136,7 +136,9 @@ import NYPLUtilities
 
 public extension NYPLAudiobookBookmark {
   /// Determines if a given chapter location matches the location addressed by this
-  /// bookmark.
+  /// bookmark. Locations are considered matching if the offset difference is less than 3 seconds.
+  /// The 3 seconds difference is only applied when we attempt to create a new bookmark.
+  /// Use the =~= operator when we want to know if two existing bookmarks are the same.
   ///
   /// - Complexity: O(*1*).
   ///
@@ -152,7 +154,7 @@ public extension NYPLAudiobookBookmark {
       return false
     }
     
-    return Float(self.time) =~= Float(location.playheadOffset)
+    return abs(Float(self.time) - Float(location.playheadOffset)) < 3
   }
   
   override func isEqual(_ object: Any?) -> Bool {
