@@ -28,8 +28,8 @@ class NYPLBookmarkSpec_AudiobookTests: XCTestCase {
     let typeValue = json[NYPLBookmarkSpec.Target.Selector.Value.locatorTypeKey] as! String
     let title = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorTitleKey] as! String
     let audiobookId = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorBookIDKey] as! String
-    let chapter = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as! Int
-    let part = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as! Int
+    let chapter = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as! UInt
+    let part = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as! UInt
     let duration = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorDurationKey] as! Double
     let offset = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey] as! Double
 
@@ -57,8 +57,8 @@ class NYPLBookmarkSpec_AudiobookTests: XCTestCase {
     let parsedType = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.locatorTypeKey] as? String
     let parsedTitle = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorTitleKey] as? String
     let parsedAudiobookId = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorBookIDKey] as? String
-    let parsedChapter = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as? Int
-    let parsedPart = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as? Int
+    let parsedChapter = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as? UInt
+    let parsedPart = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as? UInt
     let parsedDuration = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorDurationKey] as? Double
     let parsedOffset = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey] as? Double
     XCTAssertNotNil(parsedType)
@@ -76,7 +76,7 @@ class NYPLBookmarkSpec_AudiobookTests: XCTestCase {
     XCTAssertEqual(parsedOffset, offset)
   }
   
-  func testInvalidAudiobookLocatorNegativeChapterFromJSON() throws {
+  func testInvalidAudiobookLocatorNegativeDurationFromJSON() throws {
     // preconditions: get expected values from manually reading locator on disk
     let locatorURL = Bundle.module.url(forResource: "invalid-locator-5", withExtension: "json")!
     let locatorData = try Data(contentsOf: locatorURL)
@@ -84,11 +84,11 @@ class NYPLBookmarkSpec_AudiobookTests: XCTestCase {
     let typeValue = json[NYPLBookmarkSpec.Target.Selector.Value.locatorTypeKey] as! String
     let title = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorTitleKey] as! String
     let audiobookId = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorBookIDKey] as! String
-    let chapter = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as! Int
-    let part = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as! Int
+    let chapter = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as! UInt
+    let part = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as! UInt
     let duration = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorDurationKey] as! Double
     let offset = json[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey] as! Double
-    XCTAssertLessThan(chapter, 0)
+    XCTAssertLessThan(duration, 0)
 
     // test: make a locator, encode it to binary, parse binary back to JSON
     let madeLocatorString = NYPLAudiobookBookmarkFactory.makeLocatorString(title: title,
@@ -114,8 +114,8 @@ class NYPLBookmarkSpec_AudiobookTests: XCTestCase {
     let parsedType = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.locatorTypeKey] as? String
     let parsedTitle = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorTitleKey] as? String
     let parsedAudiobookId = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorBookIDKey] as? String
-    let parsedChapter = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as? Int
-    let parsedPart = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as? Int
+    let parsedChapter = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as? UInt
+    let parsedPart = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey] as? UInt
     let parsedDuration = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorDurationKey] as? Double
     let parsedOffset = madeJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey] as? Double
     XCTAssertNotNil(parsedType)
@@ -127,9 +127,9 @@ class NYPLBookmarkSpec_AudiobookTests: XCTestCase {
     
     XCTAssertEqual(parsedType, typeValue)
     XCTAssertEqual(parsedAudiobookId, audiobookId)
-    XCTAssertEqual(parsedChapter, 0)
+    XCTAssertEqual(parsedChapter, chapter)
     XCTAssertEqual(parsedPart, part)
-    XCTAssertEqual(parsedDuration, duration)
+    XCTAssertEqual(parsedDuration, 0)
     XCTAssertEqual(parsedOffset, offset)
   }
 }

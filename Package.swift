@@ -37,7 +37,8 @@ let package = Package(
       ],
       resources: [
         .copy("Resources/invalid-locator-5.json"),
-        .copy("Resources/valid-locator-3.json")
+        .copy("Resources/valid-locator-3.json"),
+        .copy("Resources/valid-bookmark-4.json")
       ]
     ),
   ]

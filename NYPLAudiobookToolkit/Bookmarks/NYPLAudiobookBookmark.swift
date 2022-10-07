@@ -29,8 +29,12 @@ import NYPLUtilities
     self.title = title
     self.chapter = chapter
     self.part = part
-    self.duration = duration
-    self.time = time
+    /// Correction on negative `duration` and `time` value is being done when
+    /// 1. Creating audiobook bookmark
+    /// 2. Making locator string for uploading to server
+    /// Correction is done in both places to avoid dyssynchronous when bookmark is being uploaded.
+    self.duration = duration >= 0.0 ? duration : TimeInterval(0)
+    self.time = time >= 0.0 ? time : TimeInterval(0)
     self.audiobookId = audiobookId
     self.annotationId = annotationId
     self.device = device
@@ -127,10 +131,25 @@ import NYPLUtilities
   }
   
   // Serialize the bookmark for posting to server and storing in local storage
+  // Note: Unit test for this function is located in Simplified-iOS repo
+  // because we need access to NYPLAnnotations class to test it.
   public func serializableRepresentation(forMotivation motivation: NYPLBookmarkSpec.Motivation,
                                          bookID: String) -> [String : Any] {
-    // TODO: iOS-444
-    return [:]
+    let selectorString = NYPLAudiobookBookmarkFactory.makeLocatorString(title: title ?? "",
+                                                                        part: part,
+                                                                        chapter: chapter,
+                                                                        audiobookId: audiobookId,
+                                                                        duration: duration,
+                                                                        time: time)
+    let spec = NYPLBookmarkSpec(id: annotationId,
+                                time: creationTime,
+                                device: device ?? "",
+                                bodyOthers: nil,
+                                motivation: motivation,
+                                bookID: bookID,
+                                selectorValue: selectorString)
+    
+    return spec.dictionaryForJSONSerialization()
   }
 }
 

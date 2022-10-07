@@ -1,7 +1,6 @@
 import Foundation
 import NYPLUtilities
 
-// TODO: iOS-444 Implement NYPLAudiobookBookmarkFactory and related unit tests
 public final class NYPLAudiobookBookmarkFactory {
   /// Factory method to create a new bookmark from a server annotation.
   ///
@@ -70,7 +69,8 @@ public final class NYPLAudiobookBookmarkFactory {
         let chapter = selectorValueJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey] as? UInt,
         let audiobookId = selectorValueJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorBookIDKey] as? String,
         let duration = selectorValueJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorDurationKey] as? Double,
-        let time = selectorValueJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey] as? Double
+        let time = selectorValueJSON[NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey] as? Double,
+        !audiobookId.isEmpty
       else {
         ATLog(.error, "Locator does not contain required value. SelectorValue=\(selectorValueEscJSON)")
         return nil
@@ -82,14 +82,14 @@ public final class NYPLAudiobookBookmarkFactory {
   }
   
   // Create a locator string to be store as the selector value of a bookmark
+  // Note: We should use UInt for `part` and `chapter`
+  // as we do in `NYPLAudiobookBookmark` to maintain it's integrity
   public class func makeLocatorString(title: String,
-                                      part: Int,
-                                      chapter: Int,
+                                      part: UInt,
+                                      chapter: UInt,
                                       audiobookId: String,
                                       duration: TimeInterval,
                                       time: TimeInterval) -> String {
-    let newPart = part >= 0 ? part : 0
-    let newChapter = chapter >= 0 ? chapter : 0
     let newDuration = duration >= 0.0 ? duration : TimeInterval(0)
     let newTime = time >= 0.0 ? time : TimeInterval(0)
     
@@ -97,8 +97,8 @@ public final class NYPLAudiobookBookmarkFactory {
     {
       "\(NYPLBookmarkSpec.Target.Selector.Value.locatorTypeKey)": "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorTypeValue)",
       "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorTitleKey)": "\(title)",
-      "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey)": \(newPart),
-      "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey)": \(newChapter),
+      "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorPartKey)": \(part),
+      "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorChapterKey)": \(chapter),
       "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorBookIDKey)": "\(audiobookId)",
       "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorDurationKey)": \(newDuration),
       "\(NYPLBookmarkSpec.Target.Selector.Value.audiobookLocatorOffsetKey)": \(newTime)
