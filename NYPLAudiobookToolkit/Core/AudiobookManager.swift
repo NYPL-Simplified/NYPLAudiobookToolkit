@@ -41,6 +41,7 @@ var sharedLogHandler: LogHandler?
 @objc public protocol AudiobookManager {
     var refreshDelegate: RefreshDelegate? { get set }
     var timerDelegate: AudiobookManagerTimerDelegate? { get set }
+    var bookmarkBusinessLogic: NYPLAudiobookBookmarksBusinessLogicDelegate? { get }
 
     var networkService: AudiobookNetworkService { get }
     var metadata: AudiobookMetadata { get }
@@ -60,6 +61,7 @@ var sharedLogHandler: LogHandler?
 @objcMembers public final class DefaultAudiobookManager: NSObject, AudiobookManager {
     public weak var timerDelegate: AudiobookManagerTimerDelegate?
     public weak var refreshDelegate: RefreshDelegate?
+    public weak var bookmarkBusinessLogic: NYPLAudiobookBookmarksBusinessLogicDelegate?
 
     static public func setLogHandler(_ handler: @escaping LogHandler) {
         sharedLogHandler = handler

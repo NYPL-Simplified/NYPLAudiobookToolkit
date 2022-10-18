@@ -317,10 +317,11 @@ let SkipTimeInterval: Double = 15
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
-        let tocVC = AudiobookTableOfContentsTableViewController(
-            tableOfContents: self.audiobookManager.tableOfContents,
-            delegate: self)
-        self.navigationController?.pushViewController(tocVC, animated: true)
+      let readerPositionVC = AudiobookReaderPositionsVC(
+        bookmarksBusinessLogic: audiobookManager.bookmarkBusinessLogic,
+        tocProvider: audiobookManager.tableOfContents)
+      readerPositionVC.selectionDelegate = self
+      self.navigationController?.pushViewController(readerPositionVC, animated: true)
     }
     
     @objc public func speedWasPressed(_ sender: Any) {
@@ -596,30 +597,39 @@ let SkipTimeInterval: Double = 15
     }
 }
 
-extension AudiobookPlayerViewController: AudiobookTableOfContentsTableViewControllerDelegate {
-    public func userSelectedSpineItem(item: SpineElement) {
+extension AudiobookPlayerViewController: AudiobookReaderPositionSelectionDelegate {
+  func didSelectTOC(_ spineElement: SpineElement) {
+    advancePlayer(to: spineElement.chapter)
+    self.navigationController?.popViewController(animated: true)
+  }
+  
+  func didSelectBookmark(_ bookmark: NYPLAudiobookBookmark) {
+    // Convert bookmark back to chapter location
+    //    advancePlayer(to: bookmark)
+    self.navigationController?.popViewController(animated: true)
+  }
+  
+  func advancePlayer(to chapter: ChapterLocation) {
+    self.audiobookManager.audiobook.player.playAtLocation(chapter)
+    self.waitingForPlayer = true
+    self.activityIndicator.startAnimating()
 
-        self.waitingForPlayer = true
-        self.activityIndicator.startAnimating()
+    self.playbackControlView.showPauseButtonIfNeeded()
 
-        self.playbackControlView.showPauseButtonIfNeeded()
+    let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
+    self.seekBar.setOffset(
+      chapter.playheadOffset,
+      duration: chapter.duration,
+      timeLeftInBook: timeLeftInBook,
+      middleText: self.middleTextFor(chapter: chapter)
+    )
 
-        let selectedChapter = item.chapter
-        let timeLeftInBook = self.timeLeftAfter(chapter: selectedChapter)
-        self.seekBar.setOffset(
-            selectedChapter.playheadOffset,
-            duration: selectedChapter.duration,
-            timeLeftInBook: timeLeftInBook,
-            middleText: self.middleTextFor(chapter: selectedChapter)
-        )
-
-        if self.audiobookManager.audiobook.player.isPlaying {
-            self.shouldBeginToAutoPlay = true
-        } else {
-            self.shouldBeginToAutoPlay = false
-        }
-        self.navigationController?.popViewController(animated: true)
+    if self.audiobookManager.audiobook.player.isPlaying {
+      self.shouldBeginToAutoPlay = true
+    } else {
+      self.shouldBeginToAutoPlay = false
     }
+  }
 }
 
 extension AudiobookPlayerViewController: AudiobookManagerTimerDelegate {
