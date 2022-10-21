@@ -17,10 +17,10 @@ class AudiobookTrackTableViewCell: UITableViewCell {
     super.setSelected(selected, animated: animated)
     let view = UIView()
     view.backgroundColor = NYPLColor.primaryBackgroundColor.withAlphaComponent(0.1)
-    self.selectedBackgroundView = view
+    selectedBackgroundView = view
   }
 
-  func configureFor(_ spineElement: SpineElement) {
+  func configure(for spineElement: SpineElement) {
     let progress = spineElement.downloadTask.downloadProgress
     let spineDuration = spineElement.chapter.duration
     let title = spineElement.chapter.title
@@ -42,10 +42,22 @@ class AudiobookTrackTableViewCell: UITableViewCell {
       labelAlpha = 0.4
     }
 
-    self.textLabel?.text = title
-    self.textLabel?.alpha = labelAlpha
-    self.detailTextLabel?.text = detailLabel
-    self.backgroundColor = NYPLColor.primaryBackgroundColor
+    textLabel?.text = title
+    textLabel?.alpha = labelAlpha
+    detailTextLabel?.text = detailLabel
+    backgroundColor = NYPLColor.primaryBackgroundColor
+  }
+  
+  func configure(for bookmark: NYPLAudiobookBookmark) {
+    let durationString = customFormatString(for: bookmark.duration)
+    let offsetString = customFormatString(for: bookmark.time)
+    
+    let detailLabelString = "\(offsetString) / \(durationString)"
+
+    textLabel?.text = bookmark.title
+    detailTextLabel?.text = detailLabelString
+    backgroundColor = NYPLColor.primaryBackgroundColor
+    textLabel?.alpha = 1.0
   }
   
   func customFormatString(for spineDuration: TimeInterval) -> String {

@@ -8,6 +8,10 @@
 import UIKit
 
 private let segmentControlSpacing: CGFloat = 10.0
+private let defaultNoBookmarksText = NSLocalizedString("There are no bookmarks for this audiobook",
+                                                       bundle: Bundle.audiobookToolkit()!,
+                                                       value: "There are no bookmarks for this audiobook",
+                                                       comment: "Announce there are no bookmarks for this audiobook")
 
 protocol AudiobookReaderPositionSelectionDelegate: AnyObject {
   func didSelectTOC(_ spineElement: SpineElement)
@@ -43,8 +47,14 @@ public class AudiobookReaderPositionsVC: UIViewController {
   
   init(bookmarksBusinessLogic: NYPLAudiobookBookmarksBusinessLogicDelegate?,
        tocProvider: AudiobookTableOfContentsProviding?) {
-    // Localize
-    segmentedControl = UISegmentedControl(items: ["Chapters","Bookmarks"])
+    segmentedControl = UISegmentedControl(items: [NSLocalizedString("Contents",
+                                                                    bundle: Bundle.audiobookToolkit()!,
+                                                                    value: "Contents",
+                                                                    comment: "Present the table of contents of this audiobook"),
+                                                  NSLocalizedString("Bookmarks",
+                                                                    bundle: Bundle.audiobookToolkit()!,
+                                                                    value: "Bookmarks",
+                                                                    comment: "Present the bookmarks of this audiobook")])
     tableView = UITableView()
     
     self.bookmarksBusinessLogic = bookmarksBusinessLogic
@@ -69,7 +79,6 @@ public class AudiobookReaderPositionsVC: UIViewController {
     tableView.delegate = self
     
     tableView.register(AudiobookTrackTableViewCell.self, forCellReuseIdentifier: AudiobookTrackTableViewCell.cellIdentifier)
-    // Register bookmark cell
     
     segmentedControl.selectedSegmentIndex = currentTab.rawValue
   }
@@ -102,7 +111,7 @@ public class AudiobookReaderPositionsVC: UIViewController {
     tableView.autoPinEdgesToSuperviewSafeArea(with: .zero, excludingEdge: .top)
     tableView.autoPinEdge(.top, to: .bottom, of: segmentedControl, withOffset: segmentControlSpacing)
     
-    noBookmarksLabel.text = bookmarksBusinessLogic?.noBookmarksText ?? "There are no bookmarks for this audiobook"
+    noBookmarksLabel.text = bookmarksBusinessLogic?.noBookmarksText ?? defaultNoBookmarksText
     view.insertSubview(noBookmarksLabel, belowSubview: tableView)
     noBookmarksLabel.autoCenterInSuperview()
     noBookmarksLabel.autoSetDimension(.width, toSize: 250)
@@ -156,15 +165,25 @@ public class AudiobookReaderPositionsVC: UIViewController {
   
   @objc(userDidRefreshBookmarksWith:)
   private func userDidRefreshBookmarks(with refreshControl: UIRefreshControl) {
-    bookmarksBusinessLogic?.syncBookmarks(completion: { success in
+    // Sanity check
+    guard let bookmarksBusinessLogic = bookmarksBusinessLogic else {
+      return
+    }
+
+    bookmarksBusinessLogic.syncBookmarks(completion: { success in
       DispatchQueue.main.async { [weak self] in
-        self?.tableView.reloadData()
-        self?.bookmarksRefreshControl?.endRefreshing()
+        guard let self = self else {
+          return
+        }
+        
+        self.tableView.reloadData()
+        self.bookmarksRefreshControl?.endRefreshing()
         if !success {
           let alert = UIAlertController(title: "Error Syncing Bookmarks",
                                         message: "There was an error syncing bookmarks to the server. Ensure your device is connected to the internet or try again later.",
                                         preferredStyle: .alert)
-          self?.present(alert, animated: true)
+          alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+          self.present(alert, animated: true)
         }
       }
     })
@@ -197,29 +216,21 @@ extension AudiobookReaderPositionsVC: UITableViewDataSource {
   }
   
   public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTrackTableViewCell.cellIdentifier,
+                                             for: indexPath)
     switch currentTab {
-
     case .toc:
-      let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTrackTableViewCell.cellIdentifier,
-                                               for: indexPath)
       if let cell = cell as? AudiobookTrackTableViewCell,
          let spineElement = tocProvider?.spineElement(for: indexPath.row) {
-        cell.configureFor(spineElement)
+        cell.configure(for:spineElement)
       }
-      return cell
-
     case .bookmarks:
-      let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTrackTableViewCell.cellIdentifier,
-                                               for: indexPath)
-      let bookmark = bookmarksBusinessLogic?.bookmark(at: indexPath.row)
-
-//      if let cell = cell as? NYPLReaderBookmarkCell, let bookmark = bookmark {
-//        cell.config(withChapterName: bookmark.chapter ?? "",
-//                    percentInChapter: bookmark.percentInChapter,
-//                    rfc3339DateString: bookmark.timestamp)
-//      }
-      return cell
+      if let cell = cell as? AudiobookTrackTableViewCell,
+         let bookmark = bookmarksBusinessLogic?.bookmark(at: indexPath.row) {
+        cell.configure(for:bookmark)
+      }
     }
+    return cell
   }
   
   public func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

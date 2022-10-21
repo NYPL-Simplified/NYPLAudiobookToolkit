@@ -6,6 +6,9 @@ import MediaPlayer
 import NYPLUtilitiesObjc
 
 let SkipTimeInterval: Double = 15
+private let bookmarkOnImageName = "BookmarkOn"
+private let bookmarkOffImageName = "BookmarkOff"
+private let tocImageName = "table_of_contents"
 
 @objcMembers public final class AudiobookPlayerViewController: UIViewController {
 
@@ -22,6 +25,10 @@ let SkipTimeInterval: Double = 15
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+  
+    private var bookmarkBarButton: UIBarButtonItem?
+    private var bookmarkButtonOn: Bool = false
+    private let bookmarkButtonStateLock = NSRecursiveLock()
 
     private let activityIndicator = BufferActivityIndicatorView()
     private let gradient = CAGradientLayer()
@@ -79,169 +86,10 @@ let SkipTimeInterval: Double = 15
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        self.activityIndicator.color = NYPLColor.disabledFieldTextColor
-        self.audiobookManager.audiobook.player.registerDelegate(self)
-        self.audiobookManager.networkService.registerDelegate(self)
+        playbackControlView.delegate = self
+        seekBar.delegate = self
 
-        self.gradient.frame = self.view.bounds
-        self.gradient.startPoint = CGPoint.zero
-        self.gradient.endPoint = CGPoint(x: 1, y: 1)
-        self.view.layer.insertSublayer(self.gradient, at: 0)
-
-        let tocImage = UIImage(
-            named: "table_of_contents",
-            in: Bundle.audiobookToolkit(),
-            compatibleWith: nil
-        )
-        let tocBbi = UIBarButtonItem(
-            image: tocImage,
-            style: .plain,
-            target: self,
-            action: #selector(AudiobookPlayerViewController.tocWasPressed)
-        )
-        tocBbi.width = audioRouteButtonWidth
-        tocBbi.accessibilityLabel = NSLocalizedString("Table of Contents",
-                                                   bundle: Bundle.audiobookToolkit()!,
-                                                   value: "Table of Contents",
-                                                   comment: "Title to describe the list of chapters or tracks.")
-        tocBbi.accessibilityHint = NSLocalizedString("Select a chapter or track from a list.",
-                                                  bundle: Bundle.audiobookToolkit()!,
-                                                  value: "Select a chapter or track from a list.",
-                                                  comment: "Explain what a table of contents is.")
-
-        self.activityIndicator.hidesWhenStopped = true
-        let indicatorBbi = UIBarButtonItem(customView: self.activityIndicator)
-        self.navigationItem.rightBarButtonItems = [ tocBbi, indicatorBbi ]
-
-        self.view.addSubview(self.audiobookProgressView)
-        self.audiobookProgressView.backgroundColor = progressViewBackgroundColor
-        self.audiobookProgressView.autoPinEdge(toSuperviewSafeArea: .top)
-        self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .leading)
-        self.audiobookProgressView.autoPinEdge(toSuperviewEdge: .trailing)
-
-        self.chapterInfoStack.titleText = self.audiobookManager.metadata.title ?? "Audiobook"
-        self.chapterInfoStack.authors = self.audiobookManager.metadata.authors ?? [""]
-
-        self.view.addSubview(self.chapterInfoStack)
-        self.chapterInfoStack.autoSetDimension(.width, toSize: 500, relation: .lessThanOrEqual)
-        self.chapterInfoStack.autoAlignAxis(toSuperviewAxis: .vertical)
-        self.chapterInfoStack.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
-        self.chapterInfoStack.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
-
-        self.view.addSubview(self.coverView)
-
-        self.coverView.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
-        self.coverView.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
-
-        let playbackControlViewContainer = UIView()
-        playbackControlViewContainer.addSubview(self.playbackControlView)
-        self.view.addSubview(playbackControlViewContainer)
-        self.view.addSubview(self.toolbar)
-        self.playbackControlView.delegate = self
-        self.playbackControlView.autoCenterInSuperview()
-        self.playbackControlView.autoPinEdge(toSuperviewEdge: .leading, withInset: 0, relation: .greaterThanOrEqual)
-        self.playbackControlView.autoPinEdge(toSuperviewEdge: .trailing, withInset: 0, relation: .greaterThanOrEqual)
-        self.playbackControlView.autoPinEdge(toSuperviewEdge: .top, withInset: 0, relation: .greaterThanOrEqual)
-        self.playbackControlView.autoPinEdge(toSuperviewEdge: .bottom, withInset: 0, relation: .greaterThanOrEqual)
-
-        playbackControlViewContainer.autoSetDimension(.height, toSize: 75, relation: .greaterThanOrEqual)
-        playbackControlViewContainer.autoPinEdge(toSuperviewEdge: .left)
-        playbackControlViewContainer.autoPinEdge(toSuperviewEdge: .right)
-        playbackControlViewContainer.autoPinEdge(.top, to: .bottom, of: self.coverView, withOffset: self.padding)
-        playbackControlViewContainer.autoPinEdge(.bottom, to: .top, of: self.toolbar, withOffset: -self.padding * 2)
-
-        let seekBarContainerView = UIView()
-        seekBarContainerView.isAccessibilityElement = false
-        self.view.addSubview(seekBarContainerView)
-
-        seekBarContainerView.autoSetDimension(.height, toSize: 100.0)
-        seekBarContainerView.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding)
-        seekBarContainerView.autoPinEdge(.bottom, to: .top, of: self.coverView, withOffset: -self.padding)
-        seekBarContainerView.autoPinEdge(toSuperviewEdge: .leading)
-        seekBarContainerView.autoPinEdge(toSuperviewEdge: .trailing)
-
-        seekBarContainerView.addSubview(self.seekBar)
-        self.seekBar.delegate = self;
-        self.seekBar.isUserInteractionEnabled = false
-        self.seekBar.autoCenterInSuperview()
-        self.seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: self.padding * 2, relation: .greaterThanOrEqual)
-        self.seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: self.padding * 2, relation: .greaterThanOrEqual)
-        
-        NSLayoutConstraint.autoSetPriority(.defaultHigh) {
-            self.coverView.autoMatch(.width, to: .height, of: self.coverView, withMultiplier: 1)
-            self.chapterInfoStack.autoSetDimension(.height, toSize: 50)
-            playbackControlViewContainer.autoSetDimension(.height, toSize: 100.0)
-            self.seekBar.autoSetDimension(.width, toSize: 500)
-            self.seekBar.autoPinEdge(.top, to: .bottom, of: self.chapterInfoStack, withOffset: self.padding * 6)
-        }
-
-        compactWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
-            self.coverView.autoAlignAxis(toSuperviewAxis: .vertical)
-            self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding)
-            self.chapterInfoStack.autoSetDimension(.height, toSize: 60.0, relation: .lessThanOrEqual)
-        }
-
-        regularWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
-            self.coverView.autoCenterInSuperview()
-            self.coverView.autoSetDimension(.width, toSize: 500.0)
-            self.chapterInfoStack.autoPinEdge(.top, to: .bottom, of: self.audiobookProgressView, withOffset: self.padding, relation: .greaterThanOrEqual)
-        }
-
-        let chapter = ChapterLocation(
-            number: 0,
-            part: 0,
-            duration: 4000,
-            startOffset: 0,
-            playheadOffset: 0,
-            title: "test title",
-            audiobookID: "12345")!
-
-        self.toolbar.autoPinEdge(toSuperviewSafeArea: .bottom)
-        self.toolbar.autoPinEdge(.left, to: .left, of: self.view)
-        self.toolbar.autoPinEdge(.right, to: .right, of: self.view)
-        self.toolbar.autoSetDimension(.height, toSize: self.toolbarHeight)
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
-        var playbackSpeedText = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).value
-        if self.audiobookManager.audiobook.player.playbackRate == .normalTime {
-            playbackSpeedText = NSLocalizedString("1.0×",
-                                                  bundle: Bundle.audiobookToolkit()!,
-                                                  value: "1.0×",
-                                                  comment: "Default title to explain that button changes the speed of playback.")
-        }
-        let speed =  UIBarButtonItem(
-            title: playbackSpeedText,
-            style: .plain,
-            target: self,
-            action: #selector(AudiobookPlayerViewController.speedWasPressed(_:))
-        )
-        speed.width = toolbarButtonWidth
-        let playbackButtonName = NSLocalizedString("Playback Speed", bundle: Bundle.audiobookToolkit()!, value: "Playback Speed", comment: "Title to set how fast the audio plays")
-        let playbackRateDescription = HumanReadablePlaybackRate(rate: self.audiobookManager.audiobook.player.playbackRate).accessibleDescription
-        speed.accessibilityLabel = "\(playbackButtonName): Currently \(playbackRateDescription)"
-        items.insert(speed, at: self.speedBarButtonIndex)
-
-        let audioRoutingItem = self.audioRoutingBarButtonItem()
-        items.insert(audioRoutingItem, at: self.audioRoutingBarButtonIndex)
-        let texts = self.sleepTimerTextFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
-        let sleepTimer = UIBarButtonItem(
-            title: texts.title,
-            style: .plain,
-            target: self,
-            action: #selector(AudiobookPlayerViewController.sleepTimerWasPressed(_:))
-        )
-        sleepTimer.width = toolbarButtonWidth
-        sleepTimer.accessibilityLabel = texts.accessibilityLabel
-
-        items.insert(sleepTimer, at: self.sleepTimerBarButtonIndex)
-        self.toolbar.setItems(items, animated: true)
-        self.seekBar.setOffset(
-            chapter.playheadOffset,
-            duration: chapter.duration,
-            timeLeftInBook: self.timeLeftAfter(chapter: chapter),
-            middleText: self.middleTextFor(chapter: chapter)
-        )
-
+        setupUI()
         enableConstraints() // iOS < 13 used to guarantee `traitCollectionDidChange` was called, but not anymore
         updateColors()
     }
@@ -315,6 +163,28 @@ let SkipTimeInterval: Double = 15
         })
         return timeLeftAfterChapter
     }
+  
+    @objc func bookmarkWasPressed() {
+      guard let chapterLocation = currentChapterLocation,
+            let businessLogic = audiobookManager.bookmarkBusinessLogic else {
+        return
+      }
+      
+      bookmarkButtonStateLock.lock()
+      defer {
+        bookmarkButtonStateLock.unlock()
+      }
+      
+      var newBookmarkButtonState = !bookmarkButtonOn
+      if bookmarkButtonOn,
+         let bookmark = businessLogic.bookmarkExisting(at: chapterLocation) {
+        newBookmarkButtonState = !businessLogic.deleteAudiobookBookmark(bookmark)
+      } else {
+        newBookmarkButtonState = !businessLogic.addAudiobookBookmark(chapterLocation)
+      }
+      
+      updateBookmarkButton(withState: newBookmarkButtonState)
+    }
 
     @objc public func tocWasPressed(_ sender: Any) {
       let readerPositionVC = AudiobookReaderPositionsVC(
@@ -384,6 +254,30 @@ let SkipTimeInterval: Double = 15
         buttonItem.width = toolbarButtonWidth
         buttonItem.title = buttonTitle
         buttonItem.accessibilityLabel = HumanReadablePlaybackRate(rate: rate).accessibleDescription
+    }
+  
+    private func updateBookmarkButton(withState isOn: Bool) {
+      bookmarkButtonStateLock.lock()
+      defer {
+        bookmarkButtonStateLock.unlock()
+      }
+      
+      guard let btn = bookmarkBarButton,
+            bookmarkButtonOn != isOn else {
+        return
+      }
+      
+      bookmarkButtonOn = isOn
+
+      if bookmarkButtonOn {
+        btn.image = UIImage(named: bookmarkOnImageName)
+        btn.accessibilityLabel = NSLocalizedString("Remove Bookmark",
+                                                   comment: "Accessibility label for button to remove a bookmark")
+      } else {
+        btn.image = UIImage(named: bookmarkOffImageName)
+        btn.accessibilityLabel = NSLocalizedString("Add Bookmark",
+                                                   comment: "Accessibility label for button to add a bookmark")
+      }
     }
 
     @objc public func sleepTimerWasPressed(_ sender: Any) {
@@ -460,6 +354,221 @@ let SkipTimeInterval: Double = 15
         buttonItem.accessibilityTraits = UIAccessibilityTraits.button
         return buttonItem
     }
+  
+    func setupUI() {
+      setupNavBar()
+      setupToolbar()
+      
+      activityIndicator.color = NYPLColor.disabledFieldTextColor
+      audiobookManager.audiobook.player.registerDelegate(self)
+      audiobookManager.networkService.registerDelegate(self)
+
+      gradient.frame = view.bounds
+      gradient.startPoint = CGPoint.zero
+      gradient.endPoint = CGPoint(x: 1, y: 1)
+      view.layer.insertSublayer(gradient, at: 0)
+
+      view.addSubview(audiobookProgressView)
+      audiobookProgressView.backgroundColor = progressViewBackgroundColor
+      audiobookProgressView.autoPinEdge(toSuperviewSafeArea: .top)
+      audiobookProgressView.autoPinEdge(toSuperviewEdge: .leading)
+      audiobookProgressView.autoPinEdge(toSuperviewEdge: .trailing)
+
+      chapterInfoStack.titleText = audiobookManager.metadata.title ?? "Audiobook"
+      chapterInfoStack.authors = audiobookManager.metadata.authors ?? [""]
+
+      view.addSubview(chapterInfoStack)
+      chapterInfoStack.autoSetDimension(.width, toSize: 500, relation: .lessThanOrEqual)
+      chapterInfoStack.autoAlignAxis(toSuperviewAxis: .vertical)
+      chapterInfoStack.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
+      chapterInfoStack.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
+
+      view.addSubview(coverView)
+
+      coverView.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
+      coverView.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
+
+      let playbackControlViewContainer = setupPlaybackControlViewContainer()
+      
+      setupSeekBar()
+      
+      NSLayoutConstraint.autoSetPriority(.defaultHigh) {
+        coverView.autoMatch(.width, to: .height, of: coverView, withMultiplier: 1)
+        chapterInfoStack.autoSetDimension(.height, toSize: 50)
+        playbackControlViewContainer.autoSetDimension(.height, toSize: 100.0)
+        seekBar.autoSetDimension(.width, toSize: 500)
+        seekBar.autoPinEdge(.top, to: .bottom, of: chapterInfoStack, withOffset: padding * 6)
+      }
+
+      compactWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
+        coverView.autoAlignAxis(toSuperviewAxis: .vertical)
+        chapterInfoStack.autoPinEdge(.top, to: .bottom, of: audiobookProgressView, withOffset: padding)
+        chapterInfoStack.autoSetDimension(.height, toSize: 60.0, relation: .lessThanOrEqual)
+      }
+
+      regularWidthConstraints = NSLayoutConstraint.autoCreateConstraintsWithoutInstalling {
+        coverView.autoCenterInSuperview()
+        coverView.autoSetDimension(.width, toSize: 500.0)
+        chapterInfoStack.autoPinEdge(.top, to: .bottom, of: audiobookProgressView, withOffset: padding, relation: .greaterThanOrEqual)
+      }
+    }
+  
+    func setupNavBar() {
+      var items: [UIBarButtonItem] = []
+      
+      let tocImage = UIImage(
+        named: tocImageName,
+        in: Bundle.audiobookToolkit(),
+        compatibleWith: nil
+      )
+      
+      let tocBbi = UIBarButtonItem(
+        image: tocImage,
+        style: .plain,
+        target: self,
+        action: #selector(tocWasPressed)
+      )
+      tocBbi.accessibilityLabel = NSLocalizedString("Table of Contents",
+                                                    bundle: Bundle.audiobookToolkit()!,
+                                                    value: "Table of Contents",
+                                                    comment: "Title to describe the list of chapters or tracks.")
+      tocBbi.accessibilityHint = NSLocalizedString("Select a chapter or track from a list.",
+                                                   bundle: Bundle.audiobookToolkit()!,
+                                                   value: "Select a chapter or track from a list.",
+                                                   comment: "Explain what a table of contents is.")
+      items.append(tocBbi)
+      
+      let bookmarkImage = UIImage(
+        named: bookmarkOffImageName,
+        in: Bundle.audiobookToolkit(),
+        compatibleWith: nil
+      )
+    
+      let bookmarkBtn = UIBarButtonItem(
+        image: bookmarkImage,
+        style: .plain,
+        target: self,
+        action: #selector(bookmarkWasPressed)
+      )
+      bookmarkBarButton = bookmarkBtn
+      updateBookmarkButton(withState: false)
+      items.append(bookmarkBtn)
+      
+      activityIndicator.hidesWhenStopped = true
+      let indicatorBbi = UIBarButtonItem(customView: activityIndicator)
+      items.append(indicatorBbi)
+      
+      navigationItem.rightBarButtonItems = items
+    }
+  
+    func setupSeekBar() {
+      let seekBarContainerView = UIView()
+      seekBarContainerView.isAccessibilityElement = false
+      view.addSubview(seekBarContainerView)
+
+      seekBarContainerView.autoSetDimension(.height, toSize: 100.0)
+      seekBarContainerView.autoPinEdge(.top, to: .bottom, of: chapterInfoStack, withOffset: padding)
+      seekBarContainerView.autoPinEdge(.bottom, to: .top, of: coverView, withOffset: -padding)
+      seekBarContainerView.autoPinEdge(toSuperviewEdge: .leading)
+      seekBarContainerView.autoPinEdge(toSuperviewEdge: .trailing)
+
+      seekBarContainerView.addSubview(seekBar)
+      seekBar.isUserInteractionEnabled = false
+      seekBar.autoCenterInSuperview()
+      seekBar.autoPinEdge(toSuperviewEdge: .leading, withInset: padding * 2, relation: .greaterThanOrEqual)
+      seekBar.autoPinEdge(toSuperviewEdge: .trailing, withInset: padding * 2, relation: .greaterThanOrEqual)
+      
+      if let chapter = ChapterLocation(
+        number: 0,
+        part: 0,
+        duration: 4000,
+        startOffset: 0,
+        playheadOffset: 0,
+        title: "test title",
+        audiobookID: "12345")
+      {
+        seekBar.setOffset(
+          chapter.playheadOffset,
+          duration: chapter.duration,
+          timeLeftInBook: timeLeftAfter(chapter: chapter),
+          middleText: middleTextFor(chapter: chapter)
+        )
+      }
+    }
+  
+    func setupToolbar() {
+      let chapter = ChapterLocation(
+        number: 0,
+        part: 0,
+        duration: 4000,
+        startOffset: 0,
+        playheadOffset: 0,
+        title: "test title",
+        audiobookID: "12345")!
+
+      view.addSubview(toolbar)
+      toolbar.autoPinEdge(toSuperviewSafeArea: .bottom)
+      toolbar.autoPinEdge(.left, to: .left, of: view)
+      toolbar.autoPinEdge(.right, to: .right, of: view)
+      toolbar.autoSetDimension(.height, toSize: toolbarHeight)
+      let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+      var items: [UIBarButtonItem] = [flexibleSpace, flexibleSpace, flexibleSpace, flexibleSpace]
+      var playbackSpeedText = HumanReadablePlaybackRate(rate: audiobookManager.audiobook.player.playbackRate).value
+      if audiobookManager.audiobook.player.playbackRate == .normalTime {
+        playbackSpeedText = NSLocalizedString("1.0×",
+                                              bundle: Bundle.audiobookToolkit()!,
+                                              value: "1.0×",
+                                              comment: "Default title to explain that button changes the speed of playback.")
+      }
+      let speed =  UIBarButtonItem(
+        title: playbackSpeedText,
+        style: .plain,
+        target: self,
+        action: #selector(AudiobookPlayerViewController.speedWasPressed(_:))
+      )
+      speed.width = toolbarButtonWidth
+      let playbackButtonName = NSLocalizedString("Playback Speed",
+                                                 bundle: Bundle.audiobookToolkit()!,
+                                                 value: "Playback Speed",
+                                                 comment: "Title to set how fast the audio plays")
+      let playbackRateDescription = HumanReadablePlaybackRate(rate: audiobookManager.audiobook.player.playbackRate).accessibleDescription
+      speed.accessibilityLabel = "\(playbackButtonName): Currently \(playbackRateDescription)"
+      items.insert(speed, at: speedBarButtonIndex)
+
+      let audioRoutingItem = audioRoutingBarButtonItem()
+      items.insert(audioRoutingItem, at: audioRoutingBarButtonIndex)
+      let texts = sleepTimerTextFor(sleepTimer: audiobookManager.sleepTimer, chapter: chapter)
+      let sleepTimer = UIBarButtonItem(
+        title: texts.title,
+        style: .plain,
+        target: self,
+        action: #selector(AudiobookPlayerViewController.sleepTimerWasPressed(_:))
+      )
+      sleepTimer.width = toolbarButtonWidth
+      sleepTimer.accessibilityLabel = texts.accessibilityLabel
+
+      items.insert(sleepTimer, at: sleepTimerBarButtonIndex)
+      toolbar.setItems(items, animated: true)
+    }
+  
+    func setupPlaybackControlViewContainer() -> UIView {
+      let container = UIView()
+      container.addSubview(playbackControlView)
+      view.addSubview(container)
+      playbackControlView.delegate = self
+      playbackControlView.autoCenterInSuperview()
+      playbackControlView.autoPinEdge(toSuperviewEdge: .leading, withInset: 0, relation: .greaterThanOrEqual)
+      playbackControlView.autoPinEdge(toSuperviewEdge: .trailing, withInset: 0, relation: .greaterThanOrEqual)
+      playbackControlView.autoPinEdge(toSuperviewEdge: .top, withInset: 0, relation: .greaterThanOrEqual)
+      playbackControlView.autoPinEdge(toSuperviewEdge: .bottom, withInset: 0, relation: .greaterThanOrEqual)
+
+      container.autoSetDimension(.height, toSize: 75, relation: .greaterThanOrEqual)
+      container.autoPinEdge(toSuperviewEdge: .left)
+      container.autoPinEdge(toSuperviewEdge: .right)
+      container.autoPinEdge(.top, to: .bottom, of: coverView, withOffset: padding)
+      container.autoPinEdge(.bottom, to: .top, of: toolbar, withOffset: -padding * 2)
+      return container
+    }
     
     func updateUI() {
         guard let currentLocation = self.currentChapterLocation else {
@@ -480,6 +589,10 @@ let SkipTimeInterval: Double = 15
             }
             self.updateSpeedButtonIfNeeded()
             self.updatePlayPauseButtonIfNeeded()
+            if let bookmarkBusinessLogic = audiobookManager.bookmarkBusinessLogic {
+              let bookmarkOn = bookmarkBusinessLogic.bookmarkExisting(at: currentLocation) != nil
+              updateBookmarkButton(withState: bookmarkOn)
+            }
         }
         let color = progressViewBackgroundColor
         if (self.audiobookProgressView.backgroundColor != color) {
@@ -604,8 +717,16 @@ extension AudiobookPlayerViewController: AudiobookReaderPositionSelectionDelegat
   }
   
   func didSelectBookmark(_ bookmark: NYPLAudiobookBookmark) {
-    // Convert bookmark back to chapter location
-    //    advancePlayer(to: bookmark)
+    guard let chapterLocation = ChapterLocation(number: bookmark.chapter,
+                                                part: bookmark.part,
+                                                duration: bookmark.duration,
+                                                startOffset: 0,
+                                                playheadOffset: bookmark.time,
+                                                title: bookmark.title,
+                                                audiobookID: bookmark.audiobookId) else {
+      return
+    }
+    advancePlayer(to: chapterLocation)
     self.navigationController?.popViewController(animated: true)
   }
   
