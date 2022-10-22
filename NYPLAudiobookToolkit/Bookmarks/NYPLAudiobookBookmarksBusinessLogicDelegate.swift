@@ -8,8 +8,8 @@ public protocol NYPLAudiobookBookmarksBusinessLogicDelegate {
   
   func bookmarkExisting(at location: ChapterLocation) -> NYPLAudiobookBookmark?
   func bookmark(at index: Int) -> NYPLAudiobookBookmark?
-  func addAudiobookBookmark(_ chapterLocation: ChapterLocation) -> Bool
+  func addAudiobookBookmark(_ chapterLocation: ChapterLocation)
   func deleteAudiobookBookmark(at index: Int) -> Bool
-  func deleteAudiobookBookmark(_ bookmark: NYPLAudiobookBookmark) -> Bool
+  func deleteAudiobookBookmark(_ bookmark: NYPLAudiobookBookmark)
   func syncBookmarks(completion: @escaping (_ success: Bool) -> ())
 }

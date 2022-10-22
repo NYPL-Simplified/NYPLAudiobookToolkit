@@ -14,6 +14,10 @@ import NYPLUtilities
   public let device: String?
   public let creationTime: Date
   
+  private enum CodingKeys: String, CodingKey {
+    case title, chapter, part, duration, time, audiobookId, annotationId, device, creationTime
+  }
+  
   // MARK: Init
   
   @objc
@@ -82,49 +86,48 @@ import NYPLUtilities
   /// - Parameter dictionary: Dictionary representation of the bookmark. See
   /// `NYPLBookmarkDictionaryRepresentation` for valid keys.
   @objc public convenience init?(dictionary:NSDictionary) {
-    guard let chapter = dictionary[CodingKeys.chapter] as? UInt,
-          let part = dictionary[CodingKeys.part] as? UInt,
-          let duration = dictionary[CodingKeys.duration] as? TimeInterval,
-          let time = dictionary[CodingKeys.time] as? TimeInterval,
-          let audiobookId = dictionary[CodingKeys.audiobookId] as? String,
-          let creationTime = dictionary[CodingKeys.creationTime] as? Date else {
+    guard let chapter = dictionary[CodingKeys.chapter.rawValue] as? UInt,
+          let part = dictionary[CodingKeys.part.rawValue] as? UInt,
+          let duration = dictionary[CodingKeys.duration.rawValue] as? TimeInterval,
+          let time = dictionary[CodingKeys.time.rawValue] as? TimeInterval,
+          let audiobookId = dictionary[CodingKeys.audiobookId.rawValue] as? String,
+          let creationTimeInterval = dictionary[CodingKeys.creationTime.rawValue] as? TimeInterval else {
       return nil
     }
     
-    
-    self.init(title: dictionary[CodingKeys.title] as? String,
+    self.init(title: dictionary[CodingKeys.title.rawValue] as? String,
               chapter: chapter,
               part: part,
               duration: duration,
               time: time,
               audiobookId: audiobookId,
-              annotationId: dictionary[CodingKeys.annotationId] as? String,
-              device: dictionary[CodingKeys.device] as? String,
-              creationTime: creationTime)
+              annotationId: dictionary[CodingKeys.annotationId.rawValue] as? String,
+              device: dictionary[CodingKeys.device.rawValue] as? String,
+              creationTime: Date(timeIntervalSince1970: creationTimeInterval))
   }
   
   // MARK: Representation
   
   @objc public var dictionaryRepresentation:NSDictionary {
     let dict: NSMutableDictionary = [
-      CodingKeys.chapter: self.chapter,
-      CodingKeys.part: self.part,
-      CodingKeys.duration: self.duration,
-      CodingKeys.time: self.time,
-      CodingKeys.audiobookId: self.audiobookId,
-      CodingKeys.creationTime: self.creationTime,
+      CodingKeys.chapter.rawValue: self.chapter,
+      CodingKeys.part.rawValue: self.part,
+      CodingKeys.duration.rawValue: self.duration,
+      CodingKeys.time.rawValue: self.time,
+      CodingKeys.audiobookId.rawValue: self.audiobookId,
+      CodingKeys.creationTime.rawValue: self.creationTime.timeIntervalSince1970,
     ]
     
     if let title = title {
-      dict[CodingKeys.title] = title
+      dict[CodingKeys.title.rawValue] = title
     }
     
     if let annotationId = annotationId {
-      dict[CodingKeys.annotationId] = annotationId
+      dict[CodingKeys.annotationId.rawValue] = annotationId
     }
     
     if let device = device {
-      dict[CodingKeys.device] = device
+      dict[CodingKeys.device.rawValue] = device
     }
     
     return dict
