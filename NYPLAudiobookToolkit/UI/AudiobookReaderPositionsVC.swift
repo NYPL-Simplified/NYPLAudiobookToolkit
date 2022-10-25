@@ -289,6 +289,18 @@ extension AudiobookReaderPositionsVC: UITableViewDelegate {
       return .delete
     }
   }
+  
+  public func tableView(_ tableView: UITableView, didEndEditingRowAt indexPath: IndexPath?) {
+    switch currentTab {
+    case .toc:
+      return
+    case .bookmarks:
+      if let bizLogic = bookmarksBusinessLogic,
+         bizLogic.bookmarksCount == 0 {
+        didSelectSegment(segmentedControl)
+      }
+    }
+  }
 }
 
 // MARK: - AudiobookTableOfContentsUpdating

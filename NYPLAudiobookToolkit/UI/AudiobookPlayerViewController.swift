@@ -92,6 +92,11 @@ private let tocImageName = "table_of_contents"
         setupUI()
         enableConstraints() // iOS < 13 used to guarantee `traitCollectionDidChange` was called, but not anymore
         updateColors()
+      
+        if let bizLogic = audiobookManager.bookmarkBusinessLogic,
+            bizLogic.shouldAllowRefresh {
+          bizLogic.syncBookmarks { _ in }
+        }
     }
   
     override public func viewDidLayoutSubviews() {
