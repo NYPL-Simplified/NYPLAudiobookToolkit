@@ -9,6 +9,7 @@
 import UIKit
 
 /// Utility class to turn a time interval into a human readable string or timecode.
+/// All returned strings from this class are localized.
 class HumanReadableTimestamp {
     lazy var timecode: String = {
         let interval = Int(self.timeInterval)

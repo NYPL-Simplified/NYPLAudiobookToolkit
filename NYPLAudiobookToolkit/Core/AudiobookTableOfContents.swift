@@ -9,19 +9,32 @@
 import UIKit
 import NYPLUtilitiesObjc
 
-protocol AudiobookTableOfContentsDelegate: AnyObject {
-    func audiobookTableOfContentsDidRequestReload(_ audiobookTableOfContents: AudiobookTableOfContents)
-    func audiobookTableOfContentsPendingStatusDidUpdate(inProgress: Bool)
-    func audiobookTableOfContentsUserSelected(spineItem: SpineElement)
+protocol AudiobookTableOfContentsProviding {
+  var tocCount: Int { get }
+  var delegate: AudiobookTableOfContentsUpdating? { get set }
+  
+  func currentSpineIndex() -> Int?
+  func spineElement(for index: Int) -> SpineElement?
+  func spineIndex(for chapterLocation: ChapterLocation) -> Int?
 }
 
-/// This class may be used in conjunction with a UITableView to create a fully functioning Table of
-/// Contents UI for the current audiobook. To get a functioning ToC that works out of the box,
-/// construct a AudiobookTableOfContentsTableViewController.
-public final class AudiobookTableOfContents: NSObject {
+protocol AudiobookTableOfContentsUpdating: AnyObject {
+  /// This function should be called when
+  /// 1. TOC items downloading in progress and UI needs to be updated
+  /// 2. Player begins playing a different chapter and the tableview will scroll to/select the new chapter
+  func audiobookTableOfContentsDidUpdate(for chapterLocation: ChapterLocation?)
+}
+
+/// This class connects the audio player and network service to provide table of contents data
+/// through the `AudiobookTableOfContentsProviding` protocol.
+public final class AudiobookTableOfContents: NSObject, AudiobookTableOfContentsProviding {
     
     public var downloadProgress: Float {
         return self.networkService.downloadProgress
+    }
+  
+    var tocCount: Int {
+        return self.networkService.spine.count
     }
 
     /// Download all available files from network for the current audiobook.
@@ -34,7 +47,7 @@ public final class AudiobookTableOfContents: NSObject {
         self.networkService.deleteAll()
     }
 
-    weak var delegate: AudiobookTableOfContentsDelegate?
+    weak var delegate: AudiobookTableOfContentsUpdating?
     private let networkService: AudiobookNetworkService
     private let player: Player
     internal init(networkService: AudiobookNetworkService, player: Player) {
@@ -61,46 +74,27 @@ public final class AudiobookTableOfContents: NSObject {
         }
         return nil
     }
-}
-
-extension AudiobookTableOfContents: UITableViewDelegate {
-    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let spineElement = self.networkService.spine[indexPath.row]
-        self.player.playAtLocation(spineElement.chapter)
-        self.delegate?.audiobookTableOfContentsUserSelected(spineItem: spineElement)
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: true)
+  
+    func spineElement(for index: Int) -> SpineElement? {
+      guard index >= 0 && tocCount > index else {
+        return nil
+      }
+      
+      return self.networkService.spine[index]
+    }
+  
+    func spineIndex(for chapterLocation: ChapterLocation) -> Int? {
+      return networkService.spine.firstIndex{ $0.chapter == chapterLocation }
     }
 }
-
-
-extension AudiobookTableOfContents: UITableViewDataSource {
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.networkService.spine.count
-    }
-    
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let spineElement = self.networkService.spine[indexPath.row]
-        if let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTableOfContentsTableViewControllerCellIdentifier) as? AudiobookTrackTableViewCell {
-            cell.configureFor(spineElement)
-            return cell
-        } else {
-            let cell = AudiobookTrackTableViewCell(style: .value1, reuseIdentifier:AudiobookTableOfContentsTableViewControllerCellIdentifier)
-            cell.configureFor(spineElement)
-            return cell
-        }
-    }
-}
-
 
 extension AudiobookTableOfContents: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: chapter)
     }
     
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: chapter)
     }
 
     public func player(_ player: Player, didFailPlaybackOf chapter: ChapterLocation, withError error: NSError?) { }
@@ -111,27 +105,23 @@ extension AudiobookTableOfContents: PlayerDelegate {
 extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didReceive error: NSError?, for spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: spineElement.chapter)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didCompleteDownloadFor spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: spineElement.chapter)
     }
 
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didUpdateProgressFor spineElement: SpineElement)
     {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: spineElement.chapter)
     }
     
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didDeleteFileFor spineElement: SpineElement) {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: spineElement.chapter)
     }
 
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
@@ -141,8 +131,7 @@ extension AudiobookTableOfContents: AudiobookNetworkServiceDelegate {
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
                                         didTimeoutFor spineElement: SpineElement?,
                                         networkStatus: NetworkStatus) {
-        self.delegate?.audiobookTableOfContentsPendingStatusDidUpdate(inProgress: false)
-        self.delegate?.audiobookTableOfContentsDidRequestReload(self)
+        self.delegate?.audiobookTableOfContentsDidUpdate(for: spineElement?.chapter)
     }
   
     public func audiobookNetworkService(_ audiobookNetworkService: AudiobookNetworkService,
