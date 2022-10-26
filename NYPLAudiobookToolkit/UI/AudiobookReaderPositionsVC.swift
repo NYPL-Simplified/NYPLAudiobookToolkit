@@ -7,12 +7,6 @@
 
 import UIKit
 
-private let segmentControlSpacing: CGFloat = 10.0
-private let defaultNoBookmarksText = NSLocalizedString("There are no bookmarks for this audiobook",
-                                                       bundle: Bundle.audiobookToolkit()!,
-                                                       value: "There are no bookmarks for this audiobook",
-                                                       comment: "Announce there are no bookmarks for this audiobook")
-
 protocol AudiobookReaderPositionSelectionDelegate: AnyObject {
   func didSelectTOC(_ spineElement: SpineElement)
   func didSelectBookmark(_ bookmark: NYPLAudiobookBookmark)
@@ -30,7 +24,7 @@ public class AudiobookReaderPositionsVC: UIViewController {
     return label
   }()
   
-  private var bookmarksBusinessLogic: NYPLAudiobookBookmarksBusinessLogicDelegate?
+  private var bookmarksBusinessLogic: NYPLAudiobookBookmarking?
   private var tocProvider: AudiobookTableOfContentsProviding?
   weak var selectionDelegate: AudiobookReaderPositionSelectionDelegate?
   
@@ -43,17 +37,15 @@ public class AudiobookReaderPositionsVC: UIViewController {
     return Tab(rawValue: segmentedControl.selectedSegmentIndex) ?? .toc
   }
   
+  private let segmentControlSpacing: CGFloat = 10.0
+  
   // MARK: - init
   
-  init(bookmarksBusinessLogic: NYPLAudiobookBookmarksBusinessLogicDelegate?,
+  init(bookmarksBusinessLogic: NYPLAudiobookBookmarking?,
        tocProvider: AudiobookTableOfContentsProviding?) {
     segmentedControl = UISegmentedControl(items: [NSLocalizedString("Contents",
-                                                                    bundle: Bundle.audiobookToolkit()!,
-                                                                    value: "Contents",
                                                                     comment: "Present the table of contents of this audiobook"),
                                                   NSLocalizedString("Bookmarks",
-                                                                    bundle: Bundle.audiobookToolkit()!,
-                                                                    value: "Bookmarks",
                                                                     comment: "Present the bookmarks of this audiobook")])
     tableView = UITableView()
     
@@ -110,6 +102,9 @@ public class AudiobookReaderPositionsVC: UIViewController {
     view.addSubview(tableView)
     tableView.autoPinEdgesToSuperviewSafeArea(with: .zero, excludingEdge: .top)
     tableView.autoPinEdge(.top, to: .bottom, of: segmentedControl, withOffset: segmentControlSpacing)
+    
+    let defaultNoBookmarksText = NSLocalizedString("There are no bookmarks for this book.",
+                                                   comment: "Text showing in bookmarks view when there are no bookmarks")
     
     noBookmarksLabel.text = bookmarksBusinessLogic?.noBookmarksText ?? defaultNoBookmarksText
     view.insertSubview(noBookmarksLabel, belowSubview: tableView)
@@ -179,8 +174,10 @@ public class AudiobookReaderPositionsVC: UIViewController {
         self.tableView.reloadData()
         self.bookmarksRefreshControl?.endRefreshing()
         if !success {
-          let alert = UIAlertController(title: "Error Syncing Bookmarks",
-                                        message: "There was an error syncing bookmarks to the server. Ensure your device is connected to the internet or try again later.",
+          let alert = UIAlertController(title: NSLocalizedString("Error Syncing Bookmarks",
+                                                                 comment: "Title for sync failure alert"),
+                                        message: NSLocalizedString("There was an error syncing bookmarks to the server. Ensure your device is connected to the internet or try again later.",
+                                                                   comment: "Error message for bookmark sync error"),
                                         preferredStyle: .alert)
           alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
           self.present(alert, animated: true)

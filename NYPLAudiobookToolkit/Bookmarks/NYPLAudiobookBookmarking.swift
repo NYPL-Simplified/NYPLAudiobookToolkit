@@ -1,7 +1,7 @@
 import Foundation
 
 @objc
-public protocol NYPLAudiobookBookmarksBusinessLogicDelegate {
+public protocol NYPLAudiobookBookmarking {
   var bookmarksCount: Int { get }
   var shouldAllowRefresh: Bool { get }
   var noBookmarksText: String { get }

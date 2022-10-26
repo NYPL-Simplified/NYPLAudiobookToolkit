@@ -19,6 +19,9 @@ protocol AudiobookTableOfContentsProviding {
 }
 
 protocol AudiobookTableOfContentsUpdating: AnyObject {
+  /// This function should be called when
+  /// 1. TOC items downloading in progress and UI needs to be updated
+  /// 2. Player begins playing a different chapter and the tableview will scroll to/select the new chapter
   func audiobookTableOfContentsDidUpdate(for chapterLocation: ChapterLocation?)
 }
 

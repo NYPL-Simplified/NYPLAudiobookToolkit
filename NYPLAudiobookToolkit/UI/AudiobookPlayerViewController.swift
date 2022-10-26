@@ -234,7 +234,7 @@ private let tocImageName = "table_of_contents"
     private func updateSleepTimerIfNeeded() {
         if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex],
         let chapter = self.currentChapterLocation {
-            let texts = self.sleepTimerTextFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
+            let texts = self.sleepTimerText(forSleepTimer: self.audiobookManager.sleepTimer, chapter: chapter)
             barButtonItem.width = toolbarButtonWidth
             barButtonItem.title = texts.title
             barButtonItem.accessibilityLabel = texts.accessibilityLabel
@@ -495,7 +495,7 @@ private let tocImageName = "table_of_contents"
           chapter.playheadOffset,
           duration: chapter.duration,
           timeLeftInBook: timeLeftAfter(chapter: chapter),
-          middleText: middleTextFor(chapter: chapter)
+          middleText: middleText(forChapter: chapter)
         )
       }
     }
@@ -541,7 +541,7 @@ private let tocImageName = "table_of_contents"
 
       let audioRoutingItem = audioRoutingBarButtonItem()
       items.insert(audioRoutingItem, at: audioRoutingBarButtonIndex)
-      let texts = sleepTimerTextFor(sleepTimer: audiobookManager.sleepTimer, chapter: chapter)
+      let texts = sleepTimerText(forSleepTimer: audiobookManager.sleepTimer, chapter: chapter)
       let sleepTimer = UIBarButtonItem(
         title: texts.title,
         style: .plain,
@@ -584,10 +584,10 @@ private let tocImageName = "table_of_contents"
                 currentLocation.playheadOffset,
                 duration: currentLocation.duration,
                 timeLeftInBook: timeLeftInBook,
-                middleText: self.middleTextFor(chapter: currentLocation)
+                middleText: self.middleText(forChapter: currentLocation)
             )
             if let barButtonItem = self.toolbar.items?[self.sleepTimerBarButtonIndex] {
-                let texts = self.sleepTimerTextFor(sleepTimer: self.audiobookManager.sleepTimer, chapter: currentLocation)
+                let texts = self.sleepTimerText(forSleepTimer: self.audiobookManager.sleepTimer, chapter: currentLocation)
                 barButtonItem.title = texts.title
                 barButtonItem.accessibilityLabel = texts.accessibilityLabel
             }
@@ -632,13 +632,13 @@ private let tocImageName = "table_of_contents"
         self.toolbar.tintColor = self.navigationController?.navigationBar.tintColor
     }
 
-    func sleepTimerTextFor(sleepTimer: SleepTimer, chapter: ChapterLocation) -> (title: String, accessibilityLabel: String) {
+    func sleepTimerText(forSleepTimer timer: SleepTimer, chapter: ChapterLocation) -> (title: String, accessibilityLabel: String) {
         let title: String
         let accessibilityLabel: String
-        if sleepTimer.isActive {
-            title = HumanReadableTimestamp(timeInterval: sleepTimer.timeRemaining).timecode
+        if timer.isActive {
+            title = HumanReadableTimestamp(timeInterval: timer.timeRemaining).timecode
             let voiceOverTimeRemaining = VoiceOverTimestamp(
-                timeInterval: sleepTimer.timeRemaining
+                timeInterval: timer.timeRemaining
             ).value
             let middleTextFormat = NSLocalizedString("%@ until playback pauses", bundle: Bundle.audiobookToolkit()!, value: "%@ until playback pauses", comment: "localized time until playback pauses, for voice over")
             accessibilityLabel = String(format: middleTextFormat, voiceOverTimeRemaining)
@@ -649,7 +649,7 @@ private let tocImageName = "table_of_contents"
         return (title: title, accessibilityLabel: accessibilityLabel)
     }
 
-    func middleTextFor(chapter: ChapterLocation) -> String {
+    func middleText(forChapter chapter: ChapterLocation) -> String {
         let defaultTitleFormat = NSLocalizedString("Chapter %@", bundle: Bundle.audiobookToolkit()!, value: "Chapter %@", comment: "Default chapter title")
         let middleTextFormat = NSLocalizedString("%@ (file %@ of %d)", bundle: Bundle.audiobookToolkit()!, value: "%@ (file %@ of %d)", comment: "Current chapter and the amount of chapters left in the book")
         let indexString = oneBasedSpineIndex() ?? "--"
@@ -735,25 +735,21 @@ extension AudiobookPlayerViewController: AudiobookReaderPositionSelectionDelegat
   }
   
   func advancePlayer(to chapter: ChapterLocation) {
-    self.audiobookManager.audiobook.player.playAtLocation(chapter)
-    self.waitingForPlayer = true
-    self.activityIndicator.startAnimating()
+    audiobookManager.audiobook.player.playAtLocation(chapter)
+    waitingForPlayer = true
+    activityIndicator.startAnimating()
 
-    self.playbackControlView.showPauseButtonIfNeeded()
+    playbackControlView.showPauseButtonIfNeeded()
 
     let timeLeftInBook = self.timeLeftAfter(chapter: chapter)
-    self.seekBar.setOffset(
+    seekBar.setOffset(
       chapter.playheadOffset,
       duration: chapter.duration,
       timeLeftInBook: timeLeftInBook,
-      middleText: self.middleTextFor(chapter: chapter)
+      middleText: self.middleText(forChapter: chapter)
     )
 
-    if self.audiobookManager.audiobook.player.isPlaying {
-      self.shouldBeginToAutoPlay = true
-    } else {
-      self.shouldBeginToAutoPlay = false
-    }
+    shouldBeginToAutoPlay = audiobookManager.audiobook.player.isPlaying
   }
 }
 
@@ -775,7 +771,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
             self.seekBar.setOffset(adjustedLocation.playheadOffset,
                                    duration: adjustedLocation.duration,
                                    timeLeftInBook: self.timeLeftAfter(chapter: adjustedLocation),
-                                   middleText: self.middleTextFor(chapter: adjustedLocation)
+                                   middleText: self.middleText(forChapter: adjustedLocation)
             )
         }
     }
@@ -791,7 +787,7 @@ extension AudiobookPlayerViewController: PlaybackControlViewDelegate {
             self.seekBar.setOffset(adjustedLocation.playheadOffset,
                                    duration: adjustedLocation.duration,
                                    timeLeftInBook: self.timeLeftAfter(chapter: adjustedLocation),
-                                   middleText: self.middleTextFor(chapter: adjustedLocation)
+                                   middleText: self.middleText(forChapter: adjustedLocation)
             )
         }
     }
@@ -888,7 +884,7 @@ extension AudiobookPlayerViewController: ScrubberViewDelegate {
             self.seekBar.setOffset(adjustedLocation.playheadOffset,
                                    duration: adjustedLocation.duration,
                                    timeLeftInBook: self.timeLeftAfter(chapter: adjustedLocation),
-                                   middleText: self.middleTextFor(chapter: adjustedLocation)
+                                   middleText: self.middleText(forChapter: adjustedLocation)
             )
         }
      }
