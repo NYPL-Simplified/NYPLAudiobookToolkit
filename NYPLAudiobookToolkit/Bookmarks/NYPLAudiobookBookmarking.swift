@@ -8,6 +8,7 @@ public protocol NYPLAudiobookBookmarking {
   
   func bookmarkExisting(at location: ChapterLocation) -> NYPLAudiobookBookmark?
   func bookmark(at index: Int) -> NYPLAudiobookBookmark?
+  func bookmarkIsFirstInChapter(_ bookmark: NYPLAudiobookBookmark) -> Bool
   func addAudiobookBookmark(_ chapterLocation: ChapterLocation)
   func deleteAudiobookBookmark(at index: Int) -> Bool
   func deleteAudiobookBookmark(_ bookmark: NYPLAudiobookBookmark)

@@ -71,6 +71,7 @@ public class AudiobookReaderPositionsVC: UIViewController {
     tableView.delegate = self
     
     tableView.register(AudiobookTrackTableViewCell.self, forCellReuseIdentifier: AudiobookTrackTableViewCell.cellIdentifier)
+    tableView.register(AudiobookBookmarkTableViewCell.self, forCellReuseIdentifier: AudiobookBookmarkTableViewCell.cellIdentifier)
     
     segmentedControl.selectedSegmentIndex = currentTab.rawValue
   }
@@ -213,21 +214,26 @@ extension AudiobookReaderPositionsVC: UITableViewDataSource {
   }
   
   public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTrackTableViewCell.cellIdentifier,
-                                             for: indexPath)
     switch currentTab {
     case .toc:
+      let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookTrackTableViewCell.cellIdentifier,
+                                               for: indexPath)
       if let cell = cell as? AudiobookTrackTableViewCell,
          let spineElement = tocProvider?.spineElement(for: indexPath.row) {
         cell.configure(for:spineElement)
       }
+      return cell
     case .bookmarks:
-      if let cell = cell as? AudiobookTrackTableViewCell,
-         let bookmark = bookmarksBusinessLogic?.bookmark(at: indexPath.row) {
-        cell.configure(for:bookmark)
+      let cell = tableView.dequeueReusableCell(withIdentifier: AudiobookBookmarkTableViewCell.cellIdentifier,
+                                               for: indexPath)
+      if let cell = cell as? AudiobookBookmarkTableViewCell,
+         let bizLogic = bookmarksBusinessLogic,
+         let bookmark = bizLogic.bookmark(at: indexPath.row) {
+        let shouldDisplayChapter = bizLogic.bookmarkIsFirstInChapter(bookmark)
+        cell.configure(for: bookmark, shouldDisplayChapter: shouldDisplayChapter)
       }
+      return cell
     }
-    return cell
   }
   
   public func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
