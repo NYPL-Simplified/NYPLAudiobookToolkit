@@ -1,4 +1,5 @@
 import UIKit
+import PureLayout
 
 class AudiobookBookmarkTableViewCell: UITableViewCell {
   
@@ -39,13 +40,12 @@ class AudiobookBookmarkTableViewCell: UITableViewCell {
   }
   
   func configure(for bookmark: NYPLAudiobookBookmark, shouldDisplayChapter: Bool) {
-    let durationString = customFormatString(for: bookmark.duration)
-    let offsetString = customFormatString(for: bookmark.time)
-    
-    let detailLabelString = "\(offsetString) / \(durationString)"
+    let durationReadable = HumanReadableTimestamp(timeInterval: bookmark.duration)
+    let offsetReadable = HumanReadableTimestamp(timeInterval: bookmark.time)
+    timeLabel.text = "\(offsetReadable.timecode) / \(durationReadable.timecode)"
+    timeLabel.accessibilityLabel = "\(offsetReadable.accessibleDescription) / \(durationReadable.accessibleDescription)"
 
     chapterLabel.text = shouldDisplayChapter ? bookmark.title : ""
-    timeLabel.text = detailLabelString
     backgroundColor = NYPLColor.primaryBackgroundColor
     dateLabel.text = prettyDate(fromDate: bookmark.creationTime)
   }
@@ -54,13 +54,6 @@ class AudiobookBookmarkTableViewCell: UITableViewCell {
   
   private func prettyDate(fromDate date: Date) -> String {
     return AudiobookBookmarkTableViewCell.dateFormatter.string(from: date)
-  }
-  
-  private func customFormatString(for spineDuration: TimeInterval) -> String {
-    let duration = HumanReadableTimestamp(timeInterval: spineDuration).timecode
-    self.detailTextLabel?.accessibilityLabel = HumanReadableTimestamp(timeInterval: spineDuration).accessibleDescription
-    let labelFormat = NSLocalizedString("%@", bundle: Bundle.audiobookToolkit()!, value: "%@", comment: "Timecode that means the length of the track")
-    return String(format: labelFormat, duration)
   }
   
   // MARK: - UI Properties

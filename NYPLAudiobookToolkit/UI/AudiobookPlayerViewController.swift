@@ -182,12 +182,11 @@ private let tocImageName = "table_of_contents"
       
       if bookmarkButtonOn,
          let bookmark = businessLogic.bookmarkExisting(at: chapterLocation) {
-        updateBookmarkButton(withState: !bookmarkButtonOn)
         businessLogic.deleteAudiobookBookmark(bookmark)
       } else {
-        updateBookmarkButton(withState: !bookmarkButtonOn)
         businessLogic.addAudiobookBookmark(chapterLocation)
       }
+      updateBookmarkButton(withState: !bookmarkButtonOn)
     }
 
     @objc public func tocWasPressed(_ sender: Any) {
