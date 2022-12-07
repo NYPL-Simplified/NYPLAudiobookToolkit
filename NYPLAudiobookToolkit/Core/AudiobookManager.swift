@@ -42,6 +42,7 @@ var sharedLogHandler: LogHandler?
     var refreshDelegate: RefreshDelegate? { get set }
     var timerDelegate: AudiobookManagerTimerDelegate? { get set }
     var bookmarkBusinessLogic: NYPLAudiobookBookmarking? { get }
+    var lastListenPositionSynchronizer: NYPLLastListenPositionSynchronizing? { get }
 
     var networkService: AudiobookNetworkService { get }
     var metadata: AudiobookMetadata { get }
@@ -62,6 +63,7 @@ var sharedLogHandler: LogHandler?
     public weak var timerDelegate: AudiobookManagerTimerDelegate?
     public weak var refreshDelegate: RefreshDelegate?
     public var bookmarkBusinessLogic: NYPLAudiobookBookmarking?
+    public var lastListenPositionSynchronizer: NYPLLastListenPositionSynchronizing?
 
     static public func setLogHandler(_ handler: @escaping LogHandler) {
         sharedLogHandler = handler
@@ -88,7 +90,7 @@ var sharedLogHandler: LogHandler?
         return SleepTimer(player: self.audiobook.player)
     }()
 
-    private var progressSavingTimer: NYPLRepeatingTimer?
+    private var lastListenPositionSyncingTimer: NYPLRepeatingTimer?
     private(set) public var timer: Timer?
     private let mediaControlHandler: MediaControlHandler
     public init (metadata: AudiobookMetadata, audiobook: Audiobook, networkService: AudiobookNetworkService) {
@@ -158,6 +160,8 @@ var sharedLogHandler: LogHandler?
         self.timerDelegate?.audiobookManager(self, didUpdate: timer)
         guard self.audiobook.player.isLoaded else { return }
         if let chapter = self.audiobook.player.currentChapterLocation {
+            self.lastListenPositionSynchronizer?.updateLastListenPositionInMemory(chapter)
+          
             var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
             if let title = chapter.title {
                 info[MPMediaItemPropertyTitle] = title
@@ -182,30 +186,30 @@ var sharedLogHandler: LogHandler?
         self.networkService = DefaultAudiobookNetworkService(spine: spine)
     }
   
-    // MARK: - Helper for ProgressSavingTimer
+    // MARK: - Helper for LastListenPositionSyncingTimer
   
-    public func setProgressSavingTimer(_ timer: NYPLRepeatingTimer) {
-        self.progressSavingTimer = timer
+    public func setLastListenPositionSyncingTimer(_ timer: NYPLRepeatingTimer) {
+        self.lastListenPositionSyncingTimer = timer
     }
   
-    public func cancelProgressSavingTimer() {
-        self.progressSavingTimer = nil
-    }
-  
-    public func progressSavingTimerIsNil() -> Bool {
-        return self.progressSavingTimer == nil
+    public func movePlayhead(to bookmark: NYPLAudiobookBookmark) {
+      guard let location = ChapterLocation(from: bookmark) else {
+        return
+      }
+      
+      self.audiobook.player.movePlayheadToLocation(location)
     }
 }
 
 extension DefaultAudiobookManager: PlayerDelegate {
     public func player(_ player: Player, didBeginPlaybackOf chapter: ChapterLocation) {
         self.mediaControlHandler.enableMediaControlCommands()
-        if let timer = self.progressSavingTimer {
+        if let timer = self.lastListenPositionSyncingTimer {
             timer.resume()
         }
     }
     public func player(_ player: Player, didStopPlaybackOf chapter: ChapterLocation) {
-        if let timer = self.progressSavingTimer {
+        if let timer = self.lastListenPositionSyncingTimer {
             timer.suspend()
         }
     }

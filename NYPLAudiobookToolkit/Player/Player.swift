@@ -135,6 +135,16 @@ import Foundation
         self.title = title
         
     }
+  
+    public convenience init?(from bookmark: NYPLAudiobookBookmark) {
+      self.init(number: bookmark.chapter,
+                part: bookmark.part,
+                duration: bookmark.duration,
+                startOffset: 0,
+                playheadOffset: bookmark.time,
+                title: bookmark.title,
+                audiobookID: bookmark.audiobookId)
+    }
 
     public func update(playheadOffset offset: TimeInterval) -> ChapterLocation? {
         return ChapterLocation(
