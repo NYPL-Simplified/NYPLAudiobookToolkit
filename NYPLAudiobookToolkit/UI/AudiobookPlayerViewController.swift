@@ -734,7 +734,7 @@ extension AudiobookPlayerViewController: AudiobookReaderPositionSelectionDelegat
   }
   
   func advancePlayer(to chapter: ChapterLocation) {
-    audiobookManager.audiobook.player.playAtLocation(chapter)
+    audiobookManager.audiobook.player.movePlayhead(to: chapter, shouldBeginAutoPlay: true)
     waitingForPlayer = true
     activityIndicator.startAnimating()
 

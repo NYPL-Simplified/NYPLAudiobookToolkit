@@ -160,8 +160,10 @@ var sharedLogHandler: LogHandler?
         self.timerDelegate?.audiobookManager(self, didUpdate: timer)
         guard self.audiobook.player.isLoaded else { return }
         if let chapter = self.audiobook.player.currentChapterLocation {
-            self.lastListenPositionSynchronizer?.updateLastListenPositionInMemory(chapter)
-          
+            if self.audiobook.player.isPlaying {
+                self.lastListenPositionSynchronizer?.updateLastListenPositionInMemory(chapter)
+            }
+            
             var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
             if let title = chapter.title {
                 info[MPMediaItemPropertyTitle] = title
@@ -197,7 +199,7 @@ var sharedLogHandler: LogHandler?
         return
       }
       
-      self.audiobook.player.movePlayheadToLocation(location)
+      self.audiobook.player.movePlayhead(to: location, shouldBeginAutoPlay: false)
     }
 }
 
@@ -223,7 +225,7 @@ extension DefaultAudiobookManager: PlayerDelegate {
         }
         if lastChapter.inSameChapter(other: chapter) {
             self.playbackCompletionHandler?()
-            self.audiobook.player.movePlayheadToLocation(firstChapter)
+            self.audiobook.player.movePlayhead(to: firstChapter, shouldBeginAutoPlay: false)
         }
     }
     public func playerDidUnload(_ player: Player) {

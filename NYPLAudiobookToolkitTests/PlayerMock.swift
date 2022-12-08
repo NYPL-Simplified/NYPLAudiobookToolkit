@@ -14,9 +14,7 @@ class PlayerMock: Player {
 
     var isLoaded: Bool = false
 
-    func playAtLocation(_ location: ChapterLocation) { }
-    
-    func movePlayheadToLocation(_ location: ChapterLocation) { }
+    func movePlayhead(to location: ChapterLocation, shouldBeginAutoPlay: Bool) { }
     
     var playbackRate: PlaybackRate = .normalTime
     
