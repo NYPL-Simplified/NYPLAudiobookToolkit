@@ -160,7 +160,7 @@ class OpenAccessPlayer: NSObject, Player {
     ///
     /// - Parameter newLocation: Chapter Location with possible playhead offset
     ///   outside the bounds of audio for the current chapter
-    /// - Parameter shouldBeginAutoPlay: Pass in `true` will allow the player
+    /// - Parameter shouldBeginAutoPlay: Passing in `true` will allow the player
     ///   to begin playing if player is originally in `pause` state and ready to play
     func movePlayhead(to location: ChapterLocation, shouldBeginAutoPlay: Bool)
     {

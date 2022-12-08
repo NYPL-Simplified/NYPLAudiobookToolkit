@@ -230,6 +230,7 @@ extension DefaultAudiobookManager: PlayerDelegate {
     }
     public func playerDidUnload(_ player: Player) {
       self.mediaControlHandler.teardown()
+      lastListenPositionSynchronizer?.syncLastListenPositionToServer()
       self.timer?.invalidate()
     }
 }
