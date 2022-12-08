@@ -69,16 +69,14 @@ import Foundation
     /// returns the actual time interval delivered to the Player.
     func skipPlayhead(_ timeInterval: TimeInterval, completion: ((ChapterLocation)->())?) -> ()
 
-    /// Move playhead and immediately start playing
-    /// This method is useful for scenarios like a table of contents
-    /// where you select a new chapter and wish to immediately start
-    /// playback.
-    func playAtLocation(_ location: ChapterLocation)
-    
-    /// Move playhead but do not start playback. This is useful for
-    /// state restoration where we want to prepare for playback
-    /// at a specific point, but playback has not yet been requested.
-    func movePlayheadToLocation(_ location: ChapterLocation)
+    /// Move playhead to specific chapter location
+    /// This method is useful for scenarios like
+    /// 1. navigating to a chapter from table of contents
+    /// 2. navigating to a bookmark location
+    /// 3. restoring last listened position
+    /// Pass `true` to `shouldBeginAutoPlay` to begin playback immediately
+    /// if the player is paused and ready to play.
+    func movePlayhead(to location: ChapterLocation, shouldBeginAutoPlay: Bool)
 
     func registerDelegate(_ delegate: PlayerDelegate)
     func removeDelegate(_ delegate: PlayerDelegate)
@@ -134,6 +132,16 @@ import Foundation
         self.playheadOffset = playheadOffset
         self.title = title
         
+    }
+  
+    public convenience init?(from bookmark: NYPLAudiobookBookmark) {
+      self.init(number: bookmark.chapter,
+                part: bookmark.part,
+                duration: bookmark.duration,
+                startOffset: 0,
+                playheadOffset: bookmark.time,
+                title: bookmark.title,
+                audiobookID: bookmark.audiobookId)
     }
 
     public func update(playheadOffset offset: TimeInterval) -> ChapterLocation? {

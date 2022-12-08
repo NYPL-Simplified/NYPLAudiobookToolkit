@@ -145,7 +145,7 @@ class OpenAccessPlayer: NSObject, Player {
                                                     requestedSkipDuration: timeInterval)
 
         if let destinationLocation = currentLocation.update(playheadOffset: adjustedOffset) {
-            self.playAtLocation(destinationLocation)
+            movePlayhead(to: destinationLocation, shouldBeginAutoPlay: true)
             let newPlayhead = move(cursor: self.cursor, to: destinationLocation)
             completion?(newPlayhead.location)
         } else {
@@ -160,9 +160,11 @@ class OpenAccessPlayer: NSObject, Player {
     ///
     /// - Parameter newLocation: Chapter Location with possible playhead offset
     ///   outside the bounds of audio for the current chapter
-    func playAtLocation(_ newLocation: ChapterLocation)
+    /// - Parameter shouldBeginAutoPlay: Passing in `true` will allow the player
+    ///   to begin playing if player is originally in `pause` state and ready to play
+    func movePlayhead(to location: ChapterLocation, shouldBeginAutoPlay: Bool)
     {
-        let newPlayhead = move(cursor: self.cursor, to: newLocation)
+        let newPlayhead = move(cursor: self.cursor, to: location)
 
         guard let newItemDownloadStatus = assetFileStatus(newPlayhead.cursor.currentElement.downloadTask) else {
             let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
@@ -183,29 +185,25 @@ class OpenAccessPlayer: NSObject, Player {
                 if success {
                     self.cursor = newPlayhead.cursor
                     self.seekWithinCurrentItem(newOffset: newPlayhead.location.playheadOffset)
-                    self.play()
+                    if shouldBeginAutoPlay {
+                        self.play()
+                    }
                 } else {
                     ATLog(.error, "Failed to create a new queue for the player. Keeping playback at the current player item.")
                     let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
-                    self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
+                    self.notifyDelegatesOfPlaybackFailureFor(chapter: location, error)
                 }
             }
         case .missing(_):
             // TODO: Could eventually handle streaming from here.
             let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.downloadNotFinished.rawValue, userInfo: nil)
-            self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
+            notifyDelegatesOfPlaybackFailureFor(chapter: location, error)
             return
         case .unknown:
             let error = NSError(domain: errorDomain, code: OpenAccessPlayerError.unknown.rawValue, userInfo: nil)
-            self.notifyDelegatesOfPlaybackFailureFor(chapter: newLocation, error)
+            notifyDelegatesOfPlaybackFailureFor(chapter: location, error)
             return
         }
-    }
-
-    func movePlayheadToLocation(_ location: ChapterLocation)
-    {
-        self.playAtLocation(location)
-        self.pause()
     }
 
     /// Moving within the current AVPlayerItem.
