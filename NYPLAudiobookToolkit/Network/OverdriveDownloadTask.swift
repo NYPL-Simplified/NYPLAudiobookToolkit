@@ -16,7 +16,7 @@ final class OverdriveDownloadTask: DownloadTask {
 
     /// For monitoring download task with long download time.
     private var fetchStartTime: Date?
-    /// Timer for monitoring the duration of the download task takes to complete.
+    /// Timer for monitoring how long the download task takes to complete.
     /// We log a warning statement by calling the delegates
     /// when the download task reaches 30s and 180s marks.
     private var monitoringTimer: NYPLRepeatingTimer?

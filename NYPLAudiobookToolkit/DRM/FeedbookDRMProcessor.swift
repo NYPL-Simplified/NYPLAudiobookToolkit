@@ -135,9 +135,8 @@ class FeedbookDRMProcessor {
             
             guard status == noErr else {
                 if #available(iOS 11.3, *) {
-                    var errorMessage = ""
-                    SecCopyErrorMessageString(status, &errorMessage)
-                    ATLog(.error, "Failed to verify data - \(errorMessage)")
+                    let err = SecCopyErrorMessageString(status, nil) ?? "" as CFString
+                    ATLog(.error, "Failed to verify data - status: \(status.description) - error: \(err)")
                 } else {
                     ATLog(.error, "Failed to verify data - \(status.description)")
                 }

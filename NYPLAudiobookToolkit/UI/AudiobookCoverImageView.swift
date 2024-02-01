@@ -13,9 +13,7 @@ public class AudiobookCoverImageView: UIImageView {
         contentMode = .scaleAspectFill
         isAccessibilityElement = true
         accessibilityLabel = NSLocalizedString("Cover", bundle: Bundle.audiobookToolkit()!, value: "Cover", comment:"The art on an album cover.")
-        if #available(iOS 11.0, *) {
-            accessibilityIgnoresInvertColors = true
-        }
+        accessibilityIgnoresInvertColors = true
     }
 
     required init?(coder aDecoder: NSCoder) {
