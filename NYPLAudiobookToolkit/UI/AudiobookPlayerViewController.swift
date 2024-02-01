@@ -331,24 +331,7 @@ private let tocImageName = "table_of_contents"
     }
 
     func audioRoutingBarButtonItem() -> UIBarButtonItem {
-        let view: UIView
-        if #available(iOS 11.0, *) {
-            view = AVRoutePickerView()
-        } else {
-            let volumeView = MPVolumeView()
-            volumeView.showsVolumeSlider = false
-            volumeView.showsRouteButton = true
-            // Set tint of route button: https://stackoverflow.com/a/33016391
-            for view in volumeView.subviews {
-                if view.isKind(of: UIButton.self) {
-                    let buttonOnVolumeView = view as! UIButton
-                    volumeView.setRouteButtonImage(buttonOnVolumeView.currentImage?.withRenderingMode(.alwaysTemplate), for: .normal)
-                    break
-                }
-            }
-            volumeView.sizeToFit()
-            view = volumeView
-        }
+        let view = AVRoutePickerView()
         let buttonItem = UIBarButtonItem(customView: view)
         buttonItem.width = audioRouteButtonWidth
         buttonItem.isAccessibilityElement = true
